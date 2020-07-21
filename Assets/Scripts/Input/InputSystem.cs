@@ -5,17 +5,19 @@ using UnityEngine;
 // GIVE THIS A NEGATIVE INDEX IN THE SCRIPT EXECUTION ORDER
 // SO THAT THIS EXECUTES BEFORE ANYTHING ELSE!!!
 
-// the input methods indivudually can be easily JSONed and unJSONed
-// but you have to know which type it is to properly deserialize it
-// best case: it throws an exception, worst case, it just does it. wrongly.
+// why am i doing all this shit? 
+// so i can
+// > bind look up to the mouse or the controller
+// > bind things to the mousewheel or keys
+// > use the dpad for binds
 
-public class InputSystem : MonoBehaviour {
+public partial class InputSystem : MonoBehaviour {
 
     public const float ANALOG_TO_BOOL_THRESHOLD = 0.5f;
+    public const int MAX_INPUTS_PER_BINDING = 2;
 
     private static InputSystem instance;
 
-    private List<AxisInput> axisInputs;
     private Dictionary<ID, InputMethod> inputs;
 
     public enum ID {
@@ -32,9 +34,9 @@ public class InputSystem : MonoBehaviour {
             Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
             return;
         }
+        ValidateNameList();
         instance = this;
         inputs = new Dictionary<ID, InputMethod>();
-        axisInputs = new List<AxisInput>();
     }
 
     void OnDestroy () {
@@ -51,23 +53,57 @@ public class InputSystem : MonoBehaviour {
         EnsureAllInputsUpToDate();
     }
 
-    public void EnsureAllInputsUpToDate () {
+    void ValidateNameList () {
+        int issueCount = 0;
+        List<ID> issueIDs = new List<ID>();
+        foreach(var obj in System.Enum.GetValues(typeof(ID))){
+            if(GetName((ID)obj) == null){
+                issueCount++;
+                issueIDs.Add((ID)obj);
+            }
+        }
+        if(issueCount > 0){
+            string output = $"{issueCount} {nameof(ID)}s in {nameof(InputSystem)} don't have corresponding names!";
+            foreach(var issueID in issueIDs){
+                output += $"\n - {issueID}";
+            }
+        }
+    }
+
+    void EnsureAllInputsUpToDate () {
         if(Time.frameCount == lastUpdatedFrame){
             return;
         }
         lastUpdatedFrame = Time.frameCount;
-        foreach(var axisInput in axisInputs){
-            axisInput.Update();
+        foreach(var input in inputs.Values){
+            if(input is AxisInput axisInput){
+                axisInput.Update();
+            }
         }
     }
 
+    public static bool IsAlreadyBound (InputMethod newInput, out ID currentBind) {
+        currentBind = default; // TODO
+        return instance.inputs.ContainsValue(newInput);     // TODO see if this works as expected...
+        // foreach(var input in instance.inputs.Values){
+        //     if(input.Equals(newInput)){
+        //         return true;
+        //     }
+        // }
+        // return false;
+    }
+
     public static void Set (ID id, InputMethod newInput) {
-
+        if(!instance.inputs.ContainsKey(id)){
+            instance.inputs.Add(id, newInput);
+        }else{
+            instance.inputs[id] = newInput;
+        }
     }
 
-    public static InputMethod Get (ID id) {
-        return instance.inputs[id];
-    }
+    // public static InputMethod Get (ID id) {
+    //     return instance.inputs[id];
+    // }
 
     public static bool AnyInputHeld () {
         if(Input.anyKey){
@@ -96,6 +132,23 @@ public class InputSystem : MonoBehaviour {
         return null;
     }
 
+    public static string GetName (ID id) {
+        switch(id){
+
+            default: 
+                // Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
+                return null;
+        }
+    }
+
+    [System.Serializable]
+    public class InputBind {
+
+        
+
+    }
+
+    [System.Serializable]
     public abstract class InputMethod {
         
         public abstract bool Down { get; }
@@ -106,6 +159,7 @@ public class InputSystem : MonoBehaviour {
         public abstract string Name { get; }
     }
 
+    [System.Serializable]
     public class KeyCodeInput : InputMethod {
         
         public KeyCode keyCode;
@@ -137,6 +191,7 @@ public class InputSystem : MonoBehaviour {
         }
     }
 
+    [System.Serializable]
     public class AxisInput : InputMethod {
         
         public Axes.ID axisID;

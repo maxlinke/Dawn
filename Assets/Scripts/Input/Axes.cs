@@ -17,9 +17,9 @@ public static class Axes {
     private const string leftTrigger = "Left Trigger";
     private const string rightTrigger = "Right Trigger";
 
-    private static AxisConfig neutralAxisConfig;                // for anything that should not get any deadzone/sensitivity (ever)
-    private static AxisConfig leftStickConfig;                  // i've decided not to make individual x/y axis configs here
-    private static AxisConfig rightStickConfig;                 // TODO should i split the axes in all their configs and make axes for all the other possible ones? idk...
+    private static AxisConfig neutralAxisConfig;                // TODO also config for mouse because sensitivity? it would have to be unclamped though...
+    private static AxisConfig leftStickConfig;
+    private static AxisConfig rightStickConfig;
     private static AxisConfig triggersConfig;
 
     public const float MIN_DEADZONE = 0f;
@@ -42,34 +42,6 @@ public static class Axes {
         LEFT_TRIGGER,
         RIGHT_TRIGGER
     }
-
-    // this would be much nicer but i can't switch over structs/classes it seems
-    // and i need a way to link the axis config to the id... hmmmm....
-    // public class ID {
-        
-    //     public static readonly ID MOUSE_X =       new ID("Mouse X",                "Mouse X+",        "Mouse X-");
-    //     public static readonly ID MOUSE_Y =       new ID("Mouse Y",                "Mouse Y+",        "Mouse Y-");
-    //     public static readonly ID MOUSE_SCROLL =  new ID("Mouse ScrollWheel",      "Mouse Scroll Up", "Mouse Scroll Down");
-
-    //     public static readonly ID LEFT_STICK_X =  new ID("Left Stick Horizontal",  "Left Stick X+",   "Left Stick X-");
-    //     public static readonly ID LEFT_STICK_Y =  new ID("Left Stick Vertical",    "Left Stick Y+",   "Left Stick Y-");
-    //     public static readonly ID RIGHT_STICK_X = new ID("Right Stick Horizontal", "Right Stick X+", "Right Stick X-");
-    //     public static readonly ID RIGHT_STICK_Y = new ID("Right Stick Vertical",   "Right Stick Y+", "Right Stick Y-");
-    //     public static readonly ID DPAD_X =        new ID("DPad Horizontal",        "DPad Right",     "DPad Left");
-    //     public static readonly ID DPAD_Y =        new ID("DPad Vertical",          "DPad Up",        "DPad Down");
-    //     public static readonly ID LEFT_TRIGGER =  new ID("Left Trigger",           "Left Trigger",   string.Empty);
-    //     public static readonly ID RIGHT_TRIGGER = new ID("Right Trigger",          "Right Trigger",  string.Empty);
-
-    //     public readonly string unityInputIdentifier;
-    //     public readonly string positiveName;
-    //     public readonly string negativeName;
-        
-    //     private ID (string unityInputIdentifier, string positiveName, string negativeName) {
-    //         this.unityInputIdentifier = unityInputIdentifier;
-    //         this.positiveName = positiveName;
-    //         this.negativeName = negativeName;
-    //     }
-    // }
 
     public class AxisConfig {
 
