@@ -18,9 +18,9 @@ public partial class InputSystem : MonoBehaviour {
 
     private static InputSystem instance;
 
-    private Dictionary<ID, InputMethod> inputs;
+    private Dictionary<Bind, List<InputMethod>> binds;
 
-    public enum ID {
+    public enum Bind {
         PLAYER_MOVE_FWD,
         PLAYER_MOVE_BWD,
         PLAYER_MOVE_LEFT,
@@ -34,9 +34,19 @@ public partial class InputSystem : MonoBehaviour {
             Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
             return;
         }
+        Test();
         ValidateNameList();
         instance = this;
-        inputs = new Dictionary<ID, InputMethod>();
+        binds = new Dictionary<Bind, List<InputMethod>>();
+    }
+
+    void Test () {
+        var list = new List<JSONableInput>();
+        list.Add(new JSONableInput(Bind.PLAYER_MOVE_LEFT, new KeyCodeInput(KeyCode.Q)));
+        list.Add(new JSONableInput(Bind.PLAYER_MOVE_RIGHT, new AxisInput(Axis.RIGHT_STICK_X, true)));
+        var col = new JSONableInputCollection();
+        col.jsonableInputs = list.ToArray();
+        Debug.Log(JsonUtility.ToJson(col));
     }
 
     void OnDestroy () {
@@ -55,15 +65,15 @@ public partial class InputSystem : MonoBehaviour {
 
     void ValidateNameList () {
         int issueCount = 0;
-        List<ID> issueIDs = new List<ID>();
-        foreach(var obj in System.Enum.GetValues(typeof(ID))){
-            if(GetName((ID)obj) == null){
+        List<Bind> issueIDs = new List<Bind>();
+        foreach(var obj in System.Enum.GetValues(typeof(Bind))){
+            if(GetName((Bind)obj) == null){
                 issueCount++;
-                issueIDs.Add((ID)obj);
+                issueIDs.Add((Bind)obj);
             }
         }
         if(issueCount > 0){
-            string output = $"{issueCount} {nameof(ID)}s in {nameof(InputSystem)} don't have corresponding names!";
+            string output = $"{issueCount} {nameof(Bind)}s in {nameof(InputSystem)} don't have corresponding names!";
             foreach(var issueID in issueIDs){
                 output += $"\n - {issueID}";
             }
@@ -75,30 +85,32 @@ public partial class InputSystem : MonoBehaviour {
             return;
         }
         lastUpdatedFrame = Time.frameCount;
-        foreach(var input in inputs.Values){
-            if(input is AxisInput axisInput){
-                axisInput.Update();
+        foreach(var inputs in binds.Values){
+            foreach(var input in inputs){
+                if(input is AxisInput axisInput){   	// TODO just add abstract update to inputmethod? 
+                    axisInput.Update();
+                }
             }
         }
     }
 
-    public static bool IsAlreadyBound (InputMethod newInput, out ID currentBind) {
-        currentBind = default; // TODO
-        return instance.inputs.ContainsValue(newInput);     // TODO see if this works as expected...
-        // foreach(var input in instance.inputs.Values){
-        //     if(input.Equals(newInput)){
-        //         return true;
-        //     }
-        // }
-        // return false;
+    public static bool IsAlreadyBound (InputMethod newInput, out Bind currentBind) {
+        foreach(var id in instance.binds.Keys){
+            if(instance.binds[id].Contains(newInput)){
+                currentBind = id;
+                return true;
+            }
+        }
+        currentBind = default;
+        return false;
     }
 
-    public static void Set (ID id, InputMethod newInput) {
-        if(!instance.inputs.ContainsKey(id)){
-            instance.inputs.Add(id, newInput);
-        }else{
-            instance.inputs[id] = newInput;
-        }
+    public static void Set (Bind id, InputMethod newInput) {
+        // if(!instance.binds.ContainsKey(id)){
+        //     instance.binds.Add(id, newInput);
+        // }else{
+        //     instance.binds[id] = newInput;
+        // }
     }
 
     // public static InputMethod Get (ID id) {
@@ -109,7 +121,7 @@ public partial class InputSystem : MonoBehaviour {
         if(Input.anyKey){
             return true;
         }
-        foreach(var axisID in Axes.IDs()){
+        foreach(var axisID in Axes.AxisIDs()){
             if(Mathf.Abs(Axes.GetAxisRaw(axisID)) >= ANALOG_TO_BOOL_THRESHOLD){
                 return true;
             }
@@ -123,7 +135,7 @@ public partial class InputSystem : MonoBehaviour {
                 return new KeyCodeInput(kc);
             }
         }
-        foreach(var axisID in Axes.IDs()){
+        foreach(var axisID in Axes.AxisIDs()){
             var rawVal = Axes.GetAxisRaw(axisID);
             if(Mathf.Abs(rawVal) >= ANALOG_TO_BOOL_THRESHOLD){
                 return new AxisInput(axisID, rawVal > 0);
@@ -132,109 +144,12 @@ public partial class InputSystem : MonoBehaviour {
         return null;
     }
 
-    public static string GetName (ID id) {
+    public static string GetName (Bind id) {
         switch(id){
 
             default: 
                 // Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                 return null;
-        }
-    }
-
-    [System.Serializable]
-    public class InputBind {
-
-        
-
-    }
-
-    [System.Serializable]
-    public abstract class InputMethod {
-        
-        public abstract bool Down { get; }
-        public abstract bool Hold { get; }
-        public abstract bool Up { get; }
-        
-        public abstract float Value { get; }
-        public abstract string Name { get; }
-    }
-
-    [System.Serializable]
-    public class KeyCodeInput : InputMethod {
-        
-        public KeyCode keyCode;
-        
-        public KeyCodeInput (KeyCode keyCode) : base () {
-            this.keyCode = keyCode;
-        }
-        
-        public override bool Down => Input.GetKeyDown(keyCode);
-        public override bool Hold => Input.GetKey(keyCode);
-        public override bool Up => Input.GetKeyUp(keyCode);
-        
-        public override float Value => Hold ? 1f : 0f;
-        public override string Name => KeyCodeUtils.ToNiceString(this.keyCode);
-
-        public override bool Equals (object obj) {
-            if(obj is KeyCodeInput other){
-                return this.keyCode.Equals(other.keyCode);
-            }
-            return false;
-        }
-
-        public override int GetHashCode () {
-            return base.GetHashCode();
-        }
-
-        public override string ToString () {
-            return $"({nameof(KeyCodeInput)}) [{keyCode.ToString()}]";
-        }
-    }
-
-    [System.Serializable]
-    public class AxisInput : InputMethod {
-        
-        public Axes.ID axisID;
-        public bool positive;
-        
-        public AxisInput (Axes.ID axisID, bool positive) : base () {
-            this.axisID = axisID;
-            this.positive = positive;
-        }
-
-        public void Update () {
-            var wasHeld = Hold;
-            _value = Mathf.Clamp01(Axes.GetAxisRaw(axisID) * (positive ? 1f : -1f));
-            _hold = _value >= ANALOG_TO_BOOL_THRESHOLD;
-            _down = _hold & !wasHeld;
-            _up = wasHeld & !_hold;
-        }
-
-        private bool _down;
-        private bool _hold;
-        private bool _up;
-        private float _value;
-
-        public override bool Down => _down;
-        public override bool Hold => _hold;
-        public override bool Up => _up;
-
-        public override float Value => _value;
-        public override string Name => Axes.NiceSubAxisName(this.axisID, this.positive);
-
-        public override bool Equals (object obj) {
-            if(obj is AxisInput other){
-                return (this.axisID == other.axisID) && (this.positive == other.positive);
-            }
-            return false;
-        }
-
-        public override int GetHashCode () {
-            return base.GetHashCode();
-        }
-
-        public override string ToString () {
-            return $"({nameof(AxisInput)}) [{axisID.ToString()}, {positive.ToString()}]";
         }
     }
 	

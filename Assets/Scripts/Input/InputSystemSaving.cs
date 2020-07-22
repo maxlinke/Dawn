@@ -1,24 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public partial class InputSystem {
 
+    // registry (playerprefs) size limit is 1MB for strings, so either i'll have to save all keybinds per id OR use files for saving...
+    // or rather, the registry doesn't LIKE entries over a certain size but it still saves them... 
+    // i'll probably still do my own thing tho. for fun.
+    // and as practice for savegames.
+
     [System.Serializable]
-    public class JSONableInputCollection {
-        public JSONableInput[] jsonedInputs;
+    private class JSONableInputCollection {
+        public JSONableInput[] jsonableInputs;
     }
 
-    // this is pretty horrible works just fine
+    // this is pretty horrible
     [System.Serializable]
-    public class JSONableInput {
+    private class JSONableInput {
 
-        public ID id;
+        public Bind id;
         public KeyCodeInput keyCodeInput;
         public AxisInput axisInput;
         public string inputType;
 
-        public JSONableInput (ID id, InputMethod input) {
+        public JSONableInput (Bind id, InputMethod input) {
             this.id = id;
             this.inputType = input.GetType().ToString();
             if(input is KeyCodeInput){

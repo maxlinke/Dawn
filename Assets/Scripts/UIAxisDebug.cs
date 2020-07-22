@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class UIAxisDebug : MonoBehaviour {
 
     [Header("Important")]
-    [SerializeField] Axes.ID axisID = default;
+    [SerializeField] Axis axisID = default;
 
     [Header("Less important")]
     [SerializeField] RawImage image = default;
