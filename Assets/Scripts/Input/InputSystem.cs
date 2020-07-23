@@ -37,8 +37,6 @@ public partial class InputSystem : MonoBehaviour {
             Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
             return;
         }
-        AxisConfig.Initialize();
-        // Axes.
         // Test();
         // ValidateNameList();
         instance = this;
@@ -46,12 +44,12 @@ public partial class InputSystem : MonoBehaviour {
     }
 
     void Test () {
-        var list = new List<JSONableInput>();
-        list.Add(new JSONableInput(Bind.PLAYER_MOVE_LEFT, new KeyCodeInput(KeyCode.Q)));
-        list.Add(new JSONableInput(Bind.PLAYER_MOVE_RIGHT, new AxisInput(Axis.RIGHT_STICK_X, true)));
-        var col = new JSONableInputCollection();
-        col.jsonableInputs = list.ToArray();
-        Debug.Log(JsonUtility.ToJson(col));
+        // var list = new List<JSONableInput>();
+        // list.Add(new JSONableInput(Bind.PLAYER_MOVE_LEFT, new KeyCodeInput(KeyCode.Q)));
+        // list.Add(new JSONableInput(Bind.PLAYER_MOVE_RIGHT, new AxisInput(Axis.RIGHT_STICK_X, true)));
+        // var col = new JSONableInputCollection();
+        // col.jsonableInputs = list.ToArray();
+        // Debug.Log(JsonUtility.ToJson(col));
     }
 
     void OnDestroy () {
@@ -126,8 +124,8 @@ public partial class InputSystem : MonoBehaviour {
         if(Input.anyKey){
             return true;
         }
-        foreach(var axisID in Axes.AxisIDs()){
-            if(Mathf.Abs(Axes.GetAxisRaw(axisID)) >= ANALOG_TO_BOOL_THRESHOLD){
+        foreach(var axis in Axis.Axes()){
+            if(Mathf.Abs(axis.GetRaw()) >= ANALOG_TO_BOOL_THRESHOLD){
                 return true;
             }
         }
@@ -140,10 +138,10 @@ public partial class InputSystem : MonoBehaviour {
                 return new KeyCodeInput(kc);
             }
         }
-        foreach(var axisID in Axes.AxisIDs()){
-            var rawVal = Axes.GetAxisRaw(axisID);
+        foreach(var axis in Axis.Axes()){
+            var rawVal = axis.GetRaw();
             if(Mathf.Abs(rawVal) >= ANALOG_TO_BOOL_THRESHOLD){
-                return new AxisInput(axisID, rawVal > 0);
+                return new AxisInput(axis.id, rawVal > 0);
             }
         }
         return null;

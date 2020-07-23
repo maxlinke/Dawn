@@ -47,7 +47,7 @@ public partial class InputSystem {
     [System.Serializable]
     private class AxisInput : InputMethod {
         
-        public Axis axisID;
+        public Axis axis;
         public bool positive;
 
         private bool _down;
@@ -57,14 +57,14 @@ public partial class InputSystem {
 
         private float sign => (positive ? 1f : -1f);
         
-        public AxisInput (Axis axisID, bool positive) : base () {
-            this.axisID = axisID;
+        public AxisInput (Axis.ID axisID, bool positive) : base () {
+            this.axis = Axis.GetAxis(axisID);
             this.positive = positive;
         }
 
         public void Update () {
             var wasHeld = Hold;
-            _value = Mathf.Max(0f, Axes.GetAxisRaw(axisID) * this.sign);
+            _value = Mathf.Max(0f, this.axis.GetRaw() * this.sign);
             _hold = _value >= ANALOG_TO_BOOL_THRESHOLD;
             _down = _hold & !wasHeld;
             _up = wasHeld & !_hold;
@@ -75,11 +75,11 @@ public partial class InputSystem {
         public override bool Up => _up;
 
         public override float Value => _value;
-        public override string Name => Axes.SubAxisName(this.axisID, this.positive);
+        public override string Name => (positive ? this.axis.positiveName : this.axis.negativeName);
 
         public override bool Equals (object obj) {
             if(obj is AxisInput other){
-                return (this.axisID == other.axisID) && (this.positive == other.positive);
+                return (this.axis == other.axis) && (this.positive == other.positive);
             }
             return false;
         }
@@ -89,7 +89,7 @@ public partial class InputSystem {
         }
 
         public override string ToString () {
-            return $"({nameof(AxisInput)}) [{axisID.ToString()}, {positive.ToString()}]";
+            return $"({nameof(AxisInput)}) [{axis.ToString()}, {positive.ToString()}]";
         }
     }
 	

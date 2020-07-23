@@ -880,7 +880,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a81e5f1b818fa0847b3817c1436e9dc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  axisID: 3
+  axisID: 4
   image: {fileID: 229129277}
   textField: {fileID: 1132029349}
   valueField: {fileID: 27886215}

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class UIAxisDebug : MonoBehaviour {
 
     [Header("Important")]
-    [SerializeField] Axis axisID = default;
+    [SerializeField] Axis.ID axisID = default;
 
     [Header("Less important")]
     [SerializeField] RawImage image = default;
@@ -47,7 +47,7 @@ public class UIAxisDebug : MonoBehaviour {
             if(nextX == 0){
                 ClearTexture();
             }
-            float drawVal = Axes.GetAxisRaw(axisID);
+            float drawVal = Axis.GetAxis(axisID).GetRaw();
             valueField.text = drawVal.ToString();
             tex.SetPixel(nextX, ToScaledY(0), referenceColor);
             tex.SetPixel(nextX, ToScaledY(1), referenceColor);
