@@ -9,7 +9,6 @@
     RIGHT_STICK_Y,
     DPAD_X,
     DPAD_Y,
-    // TRIGGERS,                // this makes treating both triggers as buttons impossible
     LEFT_TRIGGER,
     RIGHT_TRIGGER
 }

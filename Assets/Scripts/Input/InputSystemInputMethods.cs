@@ -49,6 +49,13 @@ public partial class InputSystem {
         
         public Axis axisID;
         public bool positive;
+
+        private bool _down;
+        private bool _hold;
+        private bool _up;
+        private float _value;
+
+        private float sign => (positive ? 1f : -1f);
         
         public AxisInput (Axis axisID, bool positive) : base () {
             this.axisID = axisID;
@@ -57,23 +64,18 @@ public partial class InputSystem {
 
         public void Update () {
             var wasHeld = Hold;
-            _value = Mathf.Clamp01(Axes.GetAxisRaw(axisID) * (positive ? 1f : -1f));
+            _value = Mathf.Max(0f, Axes.GetAxisRaw(axisID) * this.sign);
             _hold = _value >= ANALOG_TO_BOOL_THRESHOLD;
             _down = _hold & !wasHeld;
             _up = wasHeld & !_hold;
         }
-
-        private bool _down;
-        private bool _hold;
-        private bool _up;
-        private float _value;
 
         public override bool Down => _down;
         public override bool Hold => _hold;
         public override bool Up => _up;
 
         public override float Value => _value;
-        public override string Name => Axes.NiceSubAxisName(this.axisID, this.positive);
+        public override string Name => Axes.SubAxisName(this.axisID, this.positive);
 
         public override bool Equals (object obj) {
             if(obj is AxisInput other){

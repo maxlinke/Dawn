@@ -18,9 +18,12 @@ public partial class InputSystem : MonoBehaviour {
 
     private static InputSystem instance;
 
-    private Dictionary<Bind, List<InputMethod>> binds;
+    private Dictionary<Bind, List<InputMethod>> binds;  // i don't like the list here...
+    // TODO some way for immutable binds... that should probably not show up in a binds menu... 
+    // partially manual binds menu instead of a 100% generated one?
 
     public enum Bind {
+        GAME_PAUSE_UNPAUSE,
         PLAYER_MOVE_FWD,
         PLAYER_MOVE_BWD,
         PLAYER_MOVE_LEFT,
