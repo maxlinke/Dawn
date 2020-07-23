@@ -4,17 +4,18 @@ using Persistence;
 [System.Serializable]
 public class AxisConfig {
 
-    private const string saveFileName = "axis_configuration";
+    public static readonly AxisConfig NEUTRAL = neutral;
+    public static readonly AxisConfig MOUSE = neutral;
+    public static readonly AxisConfig LEFT_STICK = neutral;
+    public static readonly AxisConfig TRIGGERS = neutral;
+    public static readonly AxisConfig RIGHT_STICK = neutral;
 
-    public static readonly AxisConfig NEUTRAL = defaultNeutral;
-    public static readonly AxisConfig MOUSE = defaultMouse;
-    public static readonly AxisConfig LEFT_STICK = defaultController;
-    public static readonly AxisConfig RIGHT_STICK = defaultController;
-    public static readonly AxisConfig TRIGGERS = defaultController;
+    private static AxisConfig neutral => new AxisConfig(0f, 1f);
+    private static AxisConfig mouseDefault => new AxisConfig(0f, 6f);
+    private static AxisConfig controllerDefault => new AxisConfig(0.1f, 1f);
 
-    private static AxisConfig defaultNeutral => new AxisConfig(0f, 1f);
-    private static AxisConfig defaultMouse => new AxisConfig(0f, 6f);
-    private static AxisConfig defaultController => new AxisConfig(0.1f, 1f);
+    private static bool m_initialized = false;
+    public static bool initialized => m_initialized;
 
     public float deadzone;
     public float sensitivity;
@@ -52,6 +53,17 @@ public class AxisConfig {
         }
     }
 
+    public static void Initialize () {
+        if(initialized){
+            Debug.LogError("Duplicate init call! Aborting...");
+            return;
+        }
+        if(!TryLoadFromDisk()){
+            ResetToDefault();
+        }
+        m_initialized = true;
+    }
+
     public static void SaveToDisk () {
         var fileName = FileNames.axisConfigs;
         var fileContents = JsonUtility.ToJson(SaveableAxisConfig.Create(), true);
@@ -72,11 +84,11 @@ public class AxisConfig {
     }
 
     public static void ResetToDefault () {
-        MOUSE.CopyDataFromOther(defaultMouse);
-        NEUTRAL.CopyDataFromOther(defaultNeutral);
-        LEFT_STICK.CopyDataFromOther(defaultController);
-        RIGHT_STICK.CopyDataFromOther(defaultController);
-        TRIGGERS.CopyDataFromOther(defaultController);
+        MOUSE.CopyDataFromOther(mouseDefault);
+        NEUTRAL.CopyDataFromOther(neutral);
+        LEFT_STICK.CopyDataFromOther(controllerDefault);
+        RIGHT_STICK.CopyDataFromOther(controllerDefault);
+        TRIGGERS.CopyDataFromOther(controllerDefault);
         SaveToDisk();
     }
 

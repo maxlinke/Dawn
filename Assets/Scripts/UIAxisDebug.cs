@@ -9,6 +9,7 @@ public class UIAxisDebug : MonoBehaviour {
     [Header("Less important")]
     [SerializeField] RawImage image = default;
     [SerializeField] Text textField = default;
+    [SerializeField] Text valueField = default;
     [SerializeField] Color clearColor = Color.black;
     [SerializeField] Color drawColor = Color.magenta;
     [SerializeField] Color referenceColor = Color.cyan;
@@ -36,6 +37,7 @@ public class UIAxisDebug : MonoBehaviour {
             textField.text = input.Name;
         }
         textField.color = drawColor;
+        valueField.color = drawColor;
         DrawGraph();
 
         void DrawGraph () {
@@ -46,6 +48,7 @@ public class UIAxisDebug : MonoBehaviour {
                 ClearTexture();
             }
             float drawVal = Axes.GetAxisRaw(axisID);
+            valueField.text = drawVal.ToString();
             tex.SetPixel(nextX, ToScaledY(0), referenceColor);
             tex.SetPixel(nextX, ToScaledY(1), referenceColor);
             tex.SetPixel(nextX, ToScaledY(-1), referenceColor);
@@ -55,9 +58,9 @@ public class UIAxisDebug : MonoBehaviour {
             for(int y=minY; y<=maxY; y++){
                 if(y >= 0 && y < tex.height){
                     tex.SetPixel(nextX, y, drawColor);
-                    tex.Apply(false);
                 }
             }
+            tex.Apply(false);
             nextX = (nextX + 1) % tex.width;
             lastY = currentY;
 

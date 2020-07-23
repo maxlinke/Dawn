@@ -37,8 +37,10 @@ public partial class InputSystem : MonoBehaviour {
             Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
             return;
         }
-        Test();
-        ValidateNameList();
+        AxisConfig.Initialize();
+        // Axes.
+        // Test();
+        // ValidateNameList();
         instance = this;
         binds = new Dictionary<Bind, List<InputMethod>>();
     }
