@@ -14,21 +14,19 @@ using UnityEngine;
 public partial class InputSystem : MonoBehaviour {
 
     public const float ANALOG_TO_BOOL_THRESHOLD = 0.5f;
-    public const int MAX_INPUTS_PER_BINDING = 2;
 
     private static InputSystem instance;
 
-    private Dictionary<Bind, List<InputMethod>> binds;  // i don't like the list here...
     // TODO some way for immutable binds... that should probably not show up in a binds menu... 
     // partially manual binds menu instead of a 100% generated one?
 
-    public enum Bind {
-        GAME_PAUSE_UNPAUSE,
-        PLAYER_MOVE_FWD,
-        PLAYER_MOVE_BWD,
-        PLAYER_MOVE_LEFT,
-        PLAYER_MOVE_RIGHT
-    }
+    // so, i can properly serialize the input methods, as they are based on enums, which serialize nicely.
+    // to serialize the binds i'll have to figure something out. something that won't make me go mad from constantly having to update things
+    // the class-enum-parallelity is probably the way to go again...
+    // upon deserialization, get the enum, get the object for the enum (via switch) and apply stuff. yes.
+    // then i also don't need the namelist stuff
+
+
 
     int lastUpdatedFrame = -1;
 
@@ -37,10 +35,7 @@ public partial class InputSystem : MonoBehaviour {
             Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
             return;
         }
-        // Test();
-        // ValidateNameList();
         instance = this;
-        binds = new Dictionary<Bind, List<InputMethod>>();
     }
 
     void Test () {
@@ -88,22 +83,26 @@ public partial class InputSystem : MonoBehaviour {
             return;
         }
         lastUpdatedFrame = Time.frameCount;
-        foreach(var inputs in binds.Values){
-            foreach(var input in inputs){
-                if(input is AxisInput axisInput){   	// TODO just add abstract update to inputmethod? 
-                    axisInput.Update();
-                }
-            }
-        }
+        // TODO big fukken todo
+
+        // foreach(var inputs in binds.Values){
+        //     foreach(var input in inputs){
+        //         if(input is AxisInput axisInput){   	// TODO just add abstract update to inputmethod? 
+        //             axisInput.Update();
+        //         }
+        //     }
+        // }
     }
 
     public static bool IsAlreadyBound (InputMethod newInput, out Bind currentBind) {
-        foreach(var id in instance.binds.Keys){
-            if(instance.binds[id].Contains(newInput)){
-                currentBind = id;
-                return true;
-            }
-        }
+        // TODO also this
+        
+        // foreach(var id in instance.binds.Keys){
+        //     if(instance.binds[id].Contains(newInput)){
+        //         currentBind = id;
+        //         return true;
+        //     }
+        // }
         currentBind = default;
         return false;
     }
