@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 // GIVE THIS A NEGATIVE INDEX IN THE SCRIPT EXECUTION ORDER
@@ -81,27 +80,11 @@ public partial class InputSystem : MonoBehaviour {
         instance.axisInputs.Clear();
         var allInputs = new List<InputMethod>();
         var faultyInputs = new List<(Bind badBind, InputMethod badInput)>();
-        foreach(var bind in Bind.Binds()){
-            foreach(var input in bind){
-                if(input is AxisInput axisInput){
-                    if(!instance.axisInputs.Contains(axisInput)){
-                        instance.axisInputs.Add(axisInput);
-                    }
-                }
-                if(allInputs.Contains(input)){
-                    DebugConsole.LogError($"Detected duplicate usage of {input}!");
-                    faultyInputs.Add((bind, input));
-                }else{
-                    allInputs.Add(input);
-                }
-            }
-        }
+        RegisterAxisInputsAndFlagRecurringInputs();
         bool doARecursiveCallAtTheEnd;
         if(faultyInputs.Count > 0){
             doARecursiveCallAtTheEnd = true;
-            foreach(var faultyInput in faultyInputs){
-                faultyInput.badBind.RemoveInput(faultyInput.badInput);  // would cause unintended recursion
-            }
+            RemoveRecurringInputs();
         }else{
             doARecursiveCallAtTheEnd = false;
             DebugConsole.Log("All binds valid");
@@ -112,6 +95,30 @@ public partial class InputSystem : MonoBehaviour {
         instance.currentlyCheckingInputValidity = false;
         if(doARecursiveCallAtTheEnd){
             BindsChanged(true);
+        }
+
+        void RegisterAxisInputsAndFlagRecurringInputs () {
+            foreach(var bind in Bind.Binds()){
+                foreach(var input in bind){
+                    if(input is AxisInput axisInput){
+                        if(!instance.axisInputs.Contains(axisInput)){
+                            instance.axisInputs.Add(axisInput);
+                        }
+                    }
+                    if(allInputs.Contains(input)){
+                        DebugConsole.LogError($"Detected duplicate usage of input \"{input}\"!");
+                        faultyInputs.Add((bind, input));
+                    }else{
+                        allInputs.Add(input);
+                    }
+                }
+            }
+        }
+
+        void RemoveRecurringInputs () {
+            foreach(var faultyInput in faultyInputs){
+                faultyInput.badBind.RemoveInput(faultyInput.badInput);  // would cause unintended recursion
+            }
         }
     }
 
@@ -126,18 +133,6 @@ public partial class InputSystem : MonoBehaviour {
         return false;
     }
 
-    public static void Set (Bind id, InputMethod newInput) {
-        // if(!instance.binds.ContainsKey(id)){
-        //     instance.binds.Add(id, newInput);
-        // }else{
-        //     instance.binds[id] = newInput;
-        // }
-    }
-
-    // public static InputMethod Get (ID id) {
-    //     return instance.inputs[id];
-    // }
-
     public static bool AnyInputHeld () {
         if(Input.anyKey){
             return true;
@@ -150,7 +145,6 @@ public partial class InputSystem : MonoBehaviour {
         return false;
     }
 
-    // TODO i don't like this. i'd much prefer to return just a keycode/axis-bool-combo or something like that
     public static InputMethod CurrentlyHeldInput () {
         foreach(var kc in KeyCodeUtils.KeyCodes()){
             if(Input.GetKey(kc)){

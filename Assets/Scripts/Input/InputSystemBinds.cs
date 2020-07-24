@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Persistence;
 
@@ -92,7 +91,6 @@ public partial class InputSystem {
             }
         }
 
-        // create with id and name
         private static void InitializeBinds () {
             PAUSE_CANCEL_ETC = new Bind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind");
             PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCode.Escape));
