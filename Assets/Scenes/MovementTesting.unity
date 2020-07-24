@@ -983,6 +983,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 708a29d7895af8540b25e483ebffbfba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  resetAxisConfigToDefault: 0
+  resetKeybindsToDefault: 0
 --- !u!4 &2118412967
 Transform:
   m_ObjectHideFlags: 0

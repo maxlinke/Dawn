@@ -69,16 +69,27 @@ public partial class InputSystem {
         private static bool m_initialized = false;
         public static bool initialized => m_initialized;
 
+        private static bool notifyInputSystemOfUpdates = true;
+
         public static void Initialize () {
             if(initialized){
                 DebugConsole.LogError("Duplicate init call, aborting!");
                 return;
             }
+            notifyInputSystemOfUpdates = false;
             InitializeBinds();
             if(!TryLoadingBindsFromDisk()){
                 ResetToDefault();
             }
+            notifyInputSystemOfUpdates = true;
             m_initialized = true;
+            InputSystem.BindsChanged();
+        }
+
+        private static void NotifyInputSystemIfAllowed () {
+            if(notifyInputSystemOfUpdates){
+                InputSystem.BindsChanged();
+            }
         }
 
         // create with id and name
@@ -99,8 +110,12 @@ public partial class InputSystem {
         }
 
         public static void ResetToDefault () {
+            var notifCache = notifyInputSystemOfUpdates;
+            notifyInputSystemOfUpdates = false;
             LoadDefaultBinds();
             SaveToDisk();
+            notifyInputSystemOfUpdates = notifCache;
+            NotifyInputSystemIfAllowed();
         }
 
         private static void LoadDefaultBinds () {
@@ -195,14 +210,14 @@ public partial class InputSystem {
 
         public bool Apply (Bind target) {
             if(target.id != this.bindID){
-                Debug.LogError($"{nameof(Bind.ID)} mismatch! ({this.bindID}, {target.id})");
+                DebugConsole.LogError($"{nameof(Bind.ID)} mismatch! ({this.bindID}, {target.id})");
                 return false;
             }
             foreach(var input in inputMethods){
                 if(input.TryRestoreInputMethod(out var restoredInput)){
                     target.AddInput(restoredInput);
                 }else{
-                    Debug.LogError("asdf");     // TODO better or remove
+                    DebugConsole.LogError("Couldn't restore input method");
                     return false;
                 }
             }

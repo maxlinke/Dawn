@@ -57,7 +57,6 @@ public partial class InputSystem {
         private bool _down;
         private bool _hold;
         private bool _up;
-        private float _value;
 
         private float sign => (positive ? 1f : -1f);
         
@@ -68,8 +67,7 @@ public partial class InputSystem {
 
         public void Update () {
             var wasHeld = Hold;
-            _value = Mathf.Max(0f, this.axis.GetRaw() * this.sign);
-            _hold = _value >= ANALOG_TO_BOOL_THRESHOLD;
+            _hold = Value >= ANALOG_TO_BOOL_THRESHOLD;
             _down = _hold & !wasHeld;
             _up = wasHeld & !_hold;
         }
@@ -78,7 +76,7 @@ public partial class InputSystem {
         public override bool Hold => _hold;
         public override bool Up => _up;
 
-        public override float Value => _value;
+        public override float Value => Mathf.Max(0f, this.axis.GetRaw() * this.sign);
         public override string Name => (positive ? this.axis.positiveName : this.axis.negativeName);
 
         public override bool Equals (object obj) {

@@ -18,14 +18,29 @@ namespace Persistence {
             System.Diagnostics.Process.Start(dataDirectory);
         }
 
-        public static void DeleteAllData () {
+        public static void DeleteAllConfigData () {
             if(Directory.Exists(configFilePath)){
                 try{
                     Directory.Delete(configFilePath, true);
                 }catch(System.Exception e){
-                    Debug.LogError(e);
+                    DebugConsole.LogError($"Problem deleting all config data: \n{e.Message}");
                 }
             }
+        }
+
+        public static void DeleteAllSaveData () {
+            if(Directory.Exists(saveFilePath)){
+                try{
+                    Directory.Delete(saveFilePath, true);
+                }catch(System.Exception e){
+                    DebugConsole.LogError($"Problem deleting all save data: \n{e.Message}");
+                }
+            }
+        }
+
+        public static void DeleteAllData () {
+            DeleteAllConfigData();
+            DeleteAllSaveData();
         }
 
         public static void SaveConfigFile (string fileName, string fileContents) {
@@ -46,7 +61,7 @@ namespace Persistence {
                     fs.Flush(true);
                 }
             }catch(System.Exception e){
-                Debug.LogError(e.Message);
+                DebugConsole.LogError($"Problem saving to file: \n{e.Message}");
             }
         }
 
@@ -75,7 +90,7 @@ namespace Persistence {
                 fileContents = File.ReadAllText(filePath, Encoding.UTF8);
                 return true;
             }catch(System.Exception e){
-                Debug.LogError(e.Message);
+                DebugConsole.LogError($"Problem loading file: \n{e.Message}");
                 fileContents = null;
                 return false;
             }

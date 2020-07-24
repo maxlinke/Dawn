@@ -53,13 +53,16 @@ public partial class InputSystem {
             while(inputs.Count > MAX_INPUTS_PER_BIND){
                 inputs.RemoveAt(0);
             }
+            NotifyInputSystemIfAllowed();
         }
 
         public bool RemoveInput (InputMethod inputToRemove) {
             if(ImmutableAbort()){
                 return false;
             }
-            return inputs.Remove(inputToRemove);
+            var output = inputs.Remove(inputToRemove);
+            NotifyInputSystemIfAllowed();
+            return output;
         }
 
         public void ClearInputs () {
@@ -67,6 +70,7 @@ public partial class InputSystem {
                 return;
             }
             inputs.Clear();
+            NotifyInputSystemIfAllowed();
         }
 
         public bool UsesInput (InputMethod otherInput) {

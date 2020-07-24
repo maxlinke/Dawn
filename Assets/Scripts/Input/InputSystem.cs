@@ -9,22 +9,18 @@ using UnityEngine;
 // so i can
 // > bind look up to the mouse or the controller
 // > bind things to the mousewheel or keys
-// > use the dpad for binds
+// > or use the dpad and triggers for binds
 
 public partial class InputSystem : MonoBehaviour {
 
+    [SerializeField] bool resetAxisConfigToDefault = false;
+    [SerializeField] bool resetKeybindsToDefault = false;
+
     private static InputSystem instance;
 
-    // TODO some way for immutable binds... that should probably not show up in a binds menu... 
-    // partially manual binds menu instead of a 100% generated one?
-
-    // so, i can properly serialize the input methods, as they are based on enums, which serialize nicely.
-    // to serialize the binds i'll have to figure something out. something that won't make me go mad from constantly having to update things
-    // the class-enum-parallelity is probably the way to go again...
-    // upon deserialization, get the enum, get the object for the enum (via switch) and apply stuff. yes.
-    // then i also don't need the namelist stuff
-
     int lastUpdatedFrame = -1;
+    List<AxisInput> axisInputs = new List<AxisInput>();
+    bool currentlyCheckingInputValidity = false;
 
     void Awake () {
         if(instance != null){
@@ -34,19 +30,18 @@ public partial class InputSystem : MonoBehaviour {
         instance = this;
         Test();
         Bind.Initialize();
-        Debug.Log(Bind.GetLog());
+        if(resetAxisConfigToDefault){
+            Axis.Config.ResetToDefault();
+        }
+        if(resetKeybindsToDefault){
+            Bind.ResetToDefault();
+        }
+        DebugConsole.Log($"Axis Log: \n{Axis.Config.GetLog()}");
+        DebugConsole.Log($"Keybind Log: \n{Bind.GetLog()}");
     }
 
     void Test () {
-        // InputMethod a = new KeyCodeInput(KeyCode.Q);
-        // // InputMethod b = new KeyCodeInput(KeyCode.Q);
-        // InputMethod b = new AxisInput(Axis.ID.RIGHT_STICK_X, true);
-        // var ja = JsonUtility.ToJson(new SaveableInputMethod(a));
-        // var jb = JsonUtility.ToJson(new SaveableInputMethod(b));
-        // JsonUtility.FromJson<SaveableInputMethod>(ja).TryRestoreInputMethod(out var na);
-        // JsonUtility.FromJson<SaveableInputMethod>(jb).TryRestoreInputMethod(out var nb);
-        // Debug.Log($"{na.Equals(a)}, {ja}");
-        // Debug.Log($"{nb.Equals(b)}, {jb}");
+
     }
 
     void OnDestroy () {
@@ -63,49 +58,71 @@ public partial class InputSystem : MonoBehaviour {
         EnsureAllInputsUpToDate();
     }
 
-    void ValidateNameList () {
-        int issueCount = 0;
-        List<Bind> issueIDs = new List<Bind>();
-        foreach(var obj in System.Enum.GetValues(typeof(Bind))){
-            if(GetName((Bind)obj) == null){
-                issueCount++;
-                issueIDs.Add((Bind)obj);
-            }
-        }
-        if(issueCount > 0){
-            string output = $"{issueCount} {nameof(Bind)}s in {nameof(InputSystem)} don't have corresponding names!";
-            foreach(var issueID in issueIDs){
-                output += $"\n - {issueID}";
-            }
-        }
-    }
-
     void EnsureAllInputsUpToDate () {
         if(Time.frameCount == lastUpdatedFrame){
             return;
         }
         lastUpdatedFrame = Time.frameCount;
-        // TODO big fukken todo
-
-        // foreach(var inputs in binds.Values){
-        //     foreach(var input in inputs){
-        //         if(input is AxisInput axisInput){   	// TODO just add abstract update to inputmethod? 
-        //             axisInput.Update();
-        //         }
-        //     }
-        // }
+        foreach(var axisInput in axisInputs){
+            axisInput.Update();
+        }
     }
 
-    public static bool IsAlreadyBound (InputMethod newInput, out Bind currentBind) {
-        // TODO also this
-        
-        // foreach(var id in instance.binds.Keys){
-        //     if(instance.binds[id].Contains(newInput)){
-        //         currentBind = id;
-        //         return true;
-        //     }
-        // }
-        currentBind = default;
+    static void BindsChanged (bool saveToDiskIfValid = false) {           // has to be static. trust me.
+        if(instance == null){
+            Debug.LogError($"SOMEBODY REALLY FUCKED UP SOMEWHERE! INSTANCE OF {nameof(InputSystem)} IS NULL!");
+            return;
+        }
+        if(instance.currentlyCheckingInputValidity){
+            return;
+        }
+        instance.currentlyCheckingInputValidity = true;
+        DebugConsole.Log("Checking validity of binds");
+        instance.axisInputs.Clear();
+        var allInputs = new List<InputMethod>();
+        var faultyInputs = new List<(Bind badBind, InputMethod badInput)>();
+        foreach(var bind in Bind.Binds()){
+            foreach(var input in bind){
+                if(input is AxisInput axisInput){
+                    if(!instance.axisInputs.Contains(axisInput)){
+                        instance.axisInputs.Add(axisInput);
+                    }
+                }
+                if(allInputs.Contains(input)){
+                    DebugConsole.LogError($"Detected duplicate usage of {input}!");
+                    faultyInputs.Add((bind, input));
+                }else{
+                    allInputs.Add(input);
+                }
+            }
+        }
+        bool doARecursiveCallAtTheEnd;
+        if(faultyInputs.Count > 0){
+            doARecursiveCallAtTheEnd = true;
+            foreach(var faultyInput in faultyInputs){
+                faultyInput.badBind.RemoveInput(faultyInput.badInput);  // would cause unintended recursion
+            }
+        }else{
+            doARecursiveCallAtTheEnd = false;
+            DebugConsole.Log("All binds valid");
+            if(saveToDiskIfValid){
+                Bind.SaveToDisk();
+            }
+        }
+        instance.currentlyCheckingInputValidity = false;
+        if(doARecursiveCallAtTheEnd){
+            BindsChanged(true);
+        }
+    }
+
+    public static bool IsAlreadyBound (InputMethod newInput, out Bind inputUsingBind) {
+        foreach(var bind in Bind.Binds()){
+            if(bind.UsesInput(newInput)){
+                inputUsingBind = bind;
+                return true;
+            }
+        }
+        inputUsingBind = default;
         return false;
     }
 
@@ -147,15 +164,6 @@ public partial class InputSystem : MonoBehaviour {
             }
         }
         return null;
-    }
-
-    public static string GetName (Bind id) {
-        switch(id){
-
-            default: 
-                // Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
-                return null;
-        }
     }
 	
 }
