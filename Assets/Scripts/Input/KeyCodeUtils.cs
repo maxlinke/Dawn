@@ -144,6 +144,19 @@ public static class KeyCodeUtils {
 		}
 	}
 
+    public enum XBoxKeyCode {
+        A = KeyCode.JoystickButton0,
+        B = KeyCode.JoystickButton1,
+        X = KeyCode.JoystickButton2,
+        Y = KeyCode.JoystickButton3,
+        LB = KeyCode.JoystickButton4,
+        RB = KeyCode.JoystickButton5,
+        BACK = KeyCode.JoystickButton6,
+        START = KeyCode.JoystickButton7,
+        LS = KeyCode.JoystickButton8,
+        RS = KeyCode.JoystickButton9,
+    }
+
 	public static KeyCode RemoveControllerNumber (KeyCode kcode) {
 		if(DetermineType(kcode) != KeyCodeType.CONTROLLER){
 			return kcode;

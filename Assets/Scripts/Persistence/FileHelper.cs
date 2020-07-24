@@ -36,7 +36,7 @@ namespace Persistence {
             SaveToFile(saveFilePath, fileName, fileContents);
         }
 
-        private static void SaveToFile (string directoryPath, string fileName, string fileContents) {
+        public static void SaveToFile (string directoryPath, string fileName, string fileContents) {
             try{
                 Directory.CreateDirectory(directoryPath);
                 var filePath = MakeFilePath(directoryPath, fileName);
@@ -48,6 +48,18 @@ namespace Persistence {
             }catch(System.Exception e){
                 Debug.LogError(e.Message);
             }
+        }
+
+        public static bool ConfigFileExists (string fileName) {
+            return FileExists(MakeFilePath(configFilePath, fileName));
+        }
+
+        public static bool SaveFileExists (string fileName) {
+            return FileExists(MakeFilePath(saveFilePath, fileName));
+        }
+
+        private static bool FileExists (string filePath) {
+            return File.Exists(filePath);
         }
 
         public static bool TryLoadConfigFile (string fileName, out string fileContents) {

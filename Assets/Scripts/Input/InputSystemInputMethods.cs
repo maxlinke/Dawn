@@ -12,13 +12,16 @@ public partial class InputSystem {
         public abstract string Name { get; }
     }
 
-    [System.Serializable]
     private class KeyCodeInput : InputMethod {
         
-        public KeyCode keyCode;
+        public readonly KeyCode keyCode;
         
         public KeyCodeInput (KeyCode keyCode) : base () {
             this.keyCode = keyCode;
+        }
+
+        public KeyCodeInput (KeyCodeUtils.XBoxKeyCode xBoxKeyCode) {
+            this.keyCode = (KeyCode)xBoxKeyCode;
         }
         
         public override bool Down => Input.GetKeyDown(keyCode);
@@ -44,11 +47,12 @@ public partial class InputSystem {
         }
     }
 
-    [System.Serializable]
     private class AxisInput : InputMethod {
+
+        public const float ANALOG_TO_BOOL_THRESHOLD = 0.5f;
         
-        public Axis axis;
-        public bool positive;
+        public readonly Axis axis;
+        public readonly bool positive;
 
         private bool _down;
         private bool _hold;
@@ -89,8 +93,44 @@ public partial class InputSystem {
         }
 
         public override string ToString () {
-            return $"({nameof(AxisInput)}) [{axis.ToString()}, {positive.ToString()}]";
+            return $"({nameof(AxisInput)}) [{axis.ToString()}, {(positive ? "POS" : "NEG")}]";
         }
+    }
+
+    [System.Serializable]
+    private class SaveableInputMethod {
+
+        public string typeName;
+        public KeyCode keyCode;
+        public Axis.ID axisID;
+        public bool axisPositive;
+
+        public SaveableInputMethod (InputMethod input) {
+            this.typeName = input.GetType().ToString();
+            if(input is KeyCodeInput keyCodeInput){
+                this.keyCode = keyCodeInput.keyCode;
+            }else if(input is AxisInput axisInput){
+                this.axisID = axisInput.axis.id;
+                this.axisPositive = axisInput.positive;
+            }else{
+                Debug.LogError($"Unknown {nameof(InputMethod)} \"{this.typeName}\"!");
+            }
+        }
+
+        public bool TryRestoreInputMethod (out InputMethod outputInputMethod) {
+            if(this.typeName.Equals(typeof(KeyCodeInput).ToString())){
+                outputInputMethod = new KeyCodeInput(this.keyCode);
+                return true;
+            }
+            if(this.typeName.Equals(typeof(AxisInput).ToString())){
+                outputInputMethod = new AxisInput(this.axisID, this.axisPositive);
+                return true;
+            }
+            outputInputMethod = null;
+            return false;
+
+        }
+
     }
 	
 }

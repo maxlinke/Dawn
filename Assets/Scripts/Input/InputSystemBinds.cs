@@ -1,137 +1,212 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Persistence;
 
 public partial class InputSystem {
 
-    public class Bind {
+    public partial class Bind {
+
+        public const int MAX_INPUTS_PER_BIND = 3;
 
         public enum ID {          
-            GAME_PAUSE_UNPAUSE,
-            PLAYER_MOVE_FWD,
-            PLAYER_MOVE_BWD,
-            PLAYER_MOVE_LEFT,
-            PLAYER_MOVE_RIGHT,
-            PLAYER_LOOK_UP,         // TODO update the properties and switch
-            PLAYER_LOOK_DOWN,
-            PLAYER_LOOK_LEFT,
-            PLAYER_LOOK_RIGHT
+            PAUSE_CANCEL_ETC,
+            MOVE_FWD,
+            MOVE_BWD,
+            MOVE_LEFT,
+            MOVE_RIGHT,
+            LOOK_UP,
+            LOOK_DOWN,
+            LOOK_LEFT,
+            LOOK_RIGHT
         }
+    
+        public static Bind PAUSE_CANCEL_ETC { get; private set; }
 
-        public static Bind GAME_PAUSE_UNPAUSE { get; private set; }
-        public static Bind PLAYER_MOVE_FWD { get; private set; }
-        public static Bind PLAYER_MOVE_BWD { get; private set; }
-        public static Bind PLAYER_MOVE_LEFT { get; private set; }
-        public static Bind PLAYER_MOVE_RIGHT { get; private set; }
+        public static Bind MOVE_FWD { get; private set; }
+        public static Bind MOVE_BWD { get; private set; }
+        public static Bind MOVE_LEFT { get; private set; }
+        public static Bind MOVE_RIGHT { get; private set; }
+        public static Bind LOOK_UP { get; private set; }
+        public static Bind LOOK_DOWN { get; private set; }
+        public static Bind LOOK_LEFT { get; private set; }
+        public static Bind LOOK_RIGHT { get; private set; }
+        // fire, alt fire?, interact
+        // crouch, jump, run/walk
+        // the scroll-weapon-switch stuff, the q-weapon-switch stuff
+        // weapon category keys
+        // kick?
 
         public static Bind GetBind (ID id) {
             switch(id){
-                case ID.GAME_PAUSE_UNPAUSE: return GAME_PAUSE_UNPAUSE;
-                case ID.PLAYER_MOVE_FWD: return PLAYER_MOVE_FWD;
-                case ID.PLAYER_MOVE_BWD: return PLAYER_MOVE_BWD;
-                case ID.PLAYER_MOVE_LEFT: return PLAYER_MOVE_LEFT;
-                case ID.PLAYER_MOVE_RIGHT: return PLAYER_MOVE_RIGHT;
+                case ID.PAUSE_CANCEL_ETC: return PAUSE_CANCEL_ETC;
+                case ID.MOVE_FWD: return MOVE_FWD;
+                case ID.MOVE_BWD: return MOVE_BWD;
+                case ID.MOVE_LEFT: return MOVE_LEFT;
+                case ID.MOVE_RIGHT: return MOVE_RIGHT;
+                case ID.LOOK_UP: return LOOK_UP;
+                case ID.LOOK_DOWN: return LOOK_DOWN;
+                case ID.LOOK_LEFT: return LOOK_LEFT;
+                case ID.LOOK_RIGHT: return LOOK_RIGHT;
                 default: 
-                    Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
+                    DebugConsole.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                     return null;
             }
         }
 
-        // TODO pretty much copy what i did with axis and axisconfig
-        // save and load stuff via persistence and json (but not as explicitly done here)
-        // more like iterate over all and save the ones that aren't immutable
-        // loading via inputsystem to ensure no dupes
-
-        // TODO also make some kind of ingame log so i can debug builds easier
-        // for issues with saving and loading data...
-        // would be cool if i could use reflection to literally call functions like the getlog for axisconfig
-
-        // for loading, do the immutables first, then try to load the rest from disk
-        // and if that ain't workin, do defaults.
-
-        public readonly ID id;
-        public readonly string name;
-
-        private bool m_immutable;
-        public bool immutable {
-            get {
-                return m_immutable;
-            } set {
-                m_immutable &= value;
+        public static IEnumerable<ID> BindIDs () {
+            foreach(var obj in System.Enum.GetValues(typeof(ID))){
+                yield return (ID)obj;
             }
         }
 
-        private Queue<InputMethod> inputs = new Queue<InputMethod>();
-
-        public Bind (ID id, string name) {
-            this.id = id;
-            this.name = name;
-            m_immutable = false;
-        }
-
-        // TODO limit number of inputs, do some returns for if can, what if added and replaced etc.
-        // this shit isn't done realtime so we gucci fam
-        // well, it is realtime but not every frame.
-
-    	// inputsystem will have to manage duplicate-avoidance
-        // shit, how do i go about categories? as in wasd for movement but also wasd for the tank?
-        // i guess another category enum
-        public void Add (InputMethod newInput) {
-            if(immutable){
-                return;     // < also complain
+        public static IEnumerable<Bind> Binds () {          // could also be implemented as a manual iteration over all the things à la Axis.Axes() but eh
+            foreach(var id in BindIDs()){                   // it would be faster but this shouldn't be called every frame anyways...
+                yield return GetBind(id);
             }
-            // if queue length is over limit, dequeue
-            // OR add and dequeue until satisfied.
         }
 
-        public bool Remove (InputMethod inputToRemove) {
-            return false;
+        private static bool m_initialized = false;
+        public static bool initialized => m_initialized;
+
+        public static void Initialize () {
+            if(initialized){
+                DebugConsole.LogError("Duplicate init call, aborting!");
+                return;
+            }
+            InitializeBinds();
+            if(!TryLoadingBindsFromDisk()){
+                ResetToDefault();
+            }
+            m_initialized = true;
         }
 
-        public void Clear () {
-            inputs.Clear();
+        // create with id and name
+        private static void InitializeBinds () {
+            PAUSE_CANCEL_ETC = new Bind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind");
+            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCode.Escape));
+            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START));
+            PAUSE_CANCEL_ETC.immutable = true;
+
+            MOVE_FWD = new Bind(ID.MOVE_FWD, "Move Forward");
+            MOVE_BWD = new Bind(ID.MOVE_BWD, "Move Back");
+            MOVE_LEFT = new Bind(ID.MOVE_LEFT, "Move Left");
+            MOVE_RIGHT = new Bind(ID.MOVE_RIGHT, "Move Right");
+            LOOK_UP = new Bind(ID.LOOK_UP, "Look Up");
+            LOOK_DOWN = new Bind(ID.LOOK_DOWN, "Look Down");
+            LOOK_LEFT = new Bind(ID.LOOK_LEFT, "Look Left");
+            LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
         }
 
-        public bool Uses (InputMethod otherInput) {
-            foreach(var input in inputs){
-                if(input.Equals(otherInput)){
+        public static void ResetToDefault () {
+            LoadDefaultBinds();
+            SaveToDisk();
+        }
+
+        private static void LoadDefaultBinds () {
+            DebugConsole.Log("Loading default keybinds");
+            ClearAndAdd(MOVE_FWD,   new KeyCodeInput(KeyCode.W), new AxisInput(Axis.ID.LEFT_STICK_Y, true));
+            ClearAndAdd(MOVE_BWD,   new KeyCodeInput(KeyCode.S), new AxisInput(Axis.ID.LEFT_STICK_Y, false));
+            ClearAndAdd(MOVE_LEFT,  new KeyCodeInput(KeyCode.A), new AxisInput(Axis.ID.LEFT_STICK_X, false));
+            ClearAndAdd(MOVE_RIGHT, new KeyCodeInput(KeyCode.D), new AxisInput(Axis.ID.LEFT_STICK_X, true));
+            ClearAndAdd(LOOK_UP,    new AxisInput(Axis.ID.MOUSE_Y, true),  new AxisInput(Axis.ID.RIGHT_STICK_Y, true));
+            ClearAndAdd(LOOK_DOWN,  new AxisInput(Axis.ID.MOUSE_Y, false), new AxisInput(Axis.ID.RIGHT_STICK_Y, false));
+            ClearAndAdd(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
+            ClearAndAdd(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
+
+            void ClearAndAdd (Bind bind, params InputMethod[] inputsToAdd) {
+                bind.ClearInputs();
+                foreach(var inputToAdd in inputsToAdd){
+                    bind.AddInput(inputToAdd);
+                }
+            }
+        }
+
+        private static bool TryLoadingBindsFromDisk () {
+            if(!FileHelper.ConfigFileExists(FileNames.keybinds)){
+                DebugConsole.Log("No keybind file found");
+                return false;
+            }
+            if(FileHelper.TryLoadConfigFile(FileNames.keybinds, out var json)){
+                try{
+                    var col = JsonUtility.FromJson<SaveableBindCollection>(json);
+                    foreach(var sb in col.binds){
+                        if(!sb.Apply(GetBind(sb.bindID))){
+                            return false;
+                        }
+                    }
+                    DebugConsole.Log("Successfully loaded keybinds");
                     return true;
+                }catch(System.Exception e){
+                    DebugConsole.LogError($"Issue loading keybinds \n{e.Message}");
                 }
             }
             return false;
         }
 
-        public bool GetKeyDown () {
-            var output = false;
-            foreach(var input in inputs){
-                output |= input.Down;
+        public static void SaveToDisk () {
+            var bindsList = new List<SaveableBind>();
+            foreach(var bindID in BindIDs()){
+                var bind = GetBind(bindID);
+                if(bind.immutable){
+                    continue;
+                }
+                bindsList.Add(new SaveableBind(bind));
+            }
+            var saveableObject = new SaveableBindCollection();
+            saveableObject.binds = bindsList.ToArray();
+            var json = JsonUtility.ToJson(saveableObject, true);
+            FileHelper.SaveConfigFile(FileNames.keybinds, json);
+            DebugConsole.Log("Saving keybinds to disk");
+        }
+
+        public static string GetLog () {
+            var output = string.Empty;
+            foreach(var bind in Binds()){
+                output += $"{bind.id}: {bind}\n";
             }
             return output;
         }
 
-        public bool GetKey () {
-            var output = false;
-            foreach(var input in inputs){
-                output |= input.Hold;
+    }
+
+    [System.Serializable]
+    private class SaveableBindCollection {
+
+        public SaveableBind[] binds;
+
+    }
+
+    [System.Serializable]
+    private class SaveableBind {
+
+        public Bind.ID bindID;
+        public SaveableInputMethod[] inputMethods;
+
+        public SaveableBind (Bind bind) {
+            this.bindID = bind.id;
+            this.inputMethods = new SaveableInputMethod[bind.inputCount];
+            int i=0;
+            foreach(var input in bind){
+                inputMethods[i] = new SaveableInputMethod(input);
+                i++;
             }
-            return output;
         }
 
-        public bool GetKeyUp () {
-            var output = false;
-            foreach(var input in inputs){
-                output |= input.Up;
+        public bool Apply (Bind target) {
+            if(target.id != this.bindID){
+                Debug.LogError($"{nameof(Bind.ID)} mismatch! ({this.bindID}, {target.id})");
+                return false;
             }
-            return output;
-        }
-
-        public float GetValue () {
-            var output = 0f;
-            foreach(var input in inputs){
-                // output = Mathf.Max(output, input.Value);
-                output += input.Value;
+            foreach(var input in inputMethods){
+                if(input.TryRestoreInputMethod(out var restoredInput)){
+                    target.AddInput(restoredInput);
+                }else{
+                    Debug.LogError("asdf");     // TODO better or remove
+                    return false;
+                }
             }
-            return output;
+            return true;
         }
 
     }

@@ -13,8 +13,6 @@ using UnityEngine;
 
 public partial class InputSystem : MonoBehaviour {
 
-    public const float ANALOG_TO_BOOL_THRESHOLD = 0.5f;
-
     private static InputSystem instance;
 
     // TODO some way for immutable binds... that should probably not show up in a binds menu... 
@@ -26,8 +24,6 @@ public partial class InputSystem : MonoBehaviour {
     // upon deserialization, get the enum, get the object for the enum (via switch) and apply stuff. yes.
     // then i also don't need the namelist stuff
 
-
-
     int lastUpdatedFrame = -1;
 
     void Awake () {
@@ -36,15 +32,21 @@ public partial class InputSystem : MonoBehaviour {
             return;
         }
         instance = this;
+        Test();
+        Bind.Initialize();
+        Debug.Log(Bind.GetLog());
     }
 
     void Test () {
-        // var list = new List<JSONableInput>();
-        // list.Add(new JSONableInput(Bind.PLAYER_MOVE_LEFT, new KeyCodeInput(KeyCode.Q)));
-        // list.Add(new JSONableInput(Bind.PLAYER_MOVE_RIGHT, new AxisInput(Axis.RIGHT_STICK_X, true)));
-        // var col = new JSONableInputCollection();
-        // col.jsonableInputs = list.ToArray();
-        // Debug.Log(JsonUtility.ToJson(col));
+        // InputMethod a = new KeyCodeInput(KeyCode.Q);
+        // // InputMethod b = new KeyCodeInput(KeyCode.Q);
+        // InputMethod b = new AxisInput(Axis.ID.RIGHT_STICK_X, true);
+        // var ja = JsonUtility.ToJson(new SaveableInputMethod(a));
+        // var jb = JsonUtility.ToJson(new SaveableInputMethod(b));
+        // JsonUtility.FromJson<SaveableInputMethod>(ja).TryRestoreInputMethod(out var na);
+        // JsonUtility.FromJson<SaveableInputMethod>(jb).TryRestoreInputMethod(out var nb);
+        // Debug.Log($"{na.Equals(a)}, {ja}");
+        // Debug.Log($"{nb.Equals(b)}, {jb}");
     }
 
     void OnDestroy () {
@@ -124,13 +126,14 @@ public partial class InputSystem : MonoBehaviour {
             return true;
         }
         foreach(var axis in Axis.Axes()){
-            if(Mathf.Abs(axis.GetRaw()) >= ANALOG_TO_BOOL_THRESHOLD){
+            if(Mathf.Abs(axis.GetRaw()) >= AxisInput.ANALOG_TO_BOOL_THRESHOLD){
                 return true;
             }
         }
         return false;
     }
 
+    // TODO i don't like this. i'd much prefer to return just a keycode/axis-bool-combo or something like that
     public static InputMethod CurrentlyHeldInput () {
         foreach(var kc in KeyCodeUtils.KeyCodes()){
             if(Input.GetKey(kc)){
@@ -139,7 +142,7 @@ public partial class InputSystem : MonoBehaviour {
         }
         foreach(var axis in Axis.Axes()){
             var rawVal = axis.GetRaw();
-            if(Mathf.Abs(rawVal) >= ANALOG_TO_BOOL_THRESHOLD){
+            if(Mathf.Abs(rawVal) >= AxisInput.ANALOG_TO_BOOL_THRESHOLD){
                 return new AxisInput(axis.id, rawVal > 0);
             }
         }

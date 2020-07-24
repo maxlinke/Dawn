@@ -124,4 +124,8 @@ public partial class Axis {
         return config.ApplyConfig(Input.GetAxis(unityInputIdentifier));
     }
 
+    public override string ToString () {
+        return id.ToString();
+    }
+
 }

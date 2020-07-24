@@ -58,22 +58,28 @@ public partial class Axis {
             var fileName = FileNames.axisConfigs;
             var fileContents = JsonUtility.ToJson(SaveableAxisConfig.Create(), true);
             FileHelper.SaveConfigFile(fileName, fileContents);
-            Debug.Log("saving");
+            DebugConsole.Log("Saving axis configs to disk");
         }
 
         public static bool TryLoadFromDisk () {
+            if(!FileHelper.ConfigFileExists(FileNames.axisConfigs)){
+                DebugConsole.Log("No axis config file found");
+                return false;
+            }
             if(FileHelper.TryLoadConfigFile(FileNames.axisConfigs, out var json)){
                 try{
                     JsonUtility.FromJson<SaveableAxisConfig>(json).Apply();
+                    DebugConsole.Log("Successfully loaded axis configs");
                     return true;
                 }catch(System.Exception e){
-                    Debug.LogError(e.Message);
-                }            
+                    DebugConsole.LogError($"Issue loading axis configs \n{e.Message}");
+                }
             }
             return false;
         }
 
         public static void ResetToDefault () {
+            DebugConsole.Log("Loading axis config defaults");
             MOUSE.CopyDataFromOther(mouseDefault);
             NEUTRAL.CopyDataFromOther(neutral);
             LEFT_STICK.CopyDataFromOther(controllerDefault);
