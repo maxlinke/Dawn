@@ -47,10 +47,10 @@ public partial class Axis {
                 + Line(nameof(MOUSE), MOUSE)
                 + Line(nameof(LEFT_STICK), LEFT_STICK)
                 + Line(nameof(RIGHT_STICK), RIGHT_STICK)
-                + Line(nameof(TRIGGERS), TRIGGERS);
+                + Line(nameof(TRIGGERS), TRIGGERS, false);
 
-            string Line (string inputAxisName, Config inputAxisConfig) {
-                return $"{inputAxisName}: {inputAxisConfig}\n";
+            string Line (string inputAxisName, Config inputAxisConfig, bool newlineAtEnd = true) {
+                return $"{inputAxisName}: {inputAxisConfig}{(newlineAtEnd ? "\n" : "")}";
             }
         }
 

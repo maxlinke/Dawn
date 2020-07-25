@@ -189,6 +189,9 @@ public partial class InputSystem {
             foreach(var bind in Binds()){
                 output += $"{bind.id}: {bind}\n";
             }
+            if(output.Length > 0){
+                output = output.Substring(0, output.Length - "\n".Length);
+            }
             return output;
         }
 

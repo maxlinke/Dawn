@@ -48,6 +48,9 @@ public partial class InputSystem : MonoBehaviour {
         foreach(var axisInput in instance.axisInputs){
             output += $"{axisInput}\n";
         }
+        if(output.Length > 0){
+            output = output.Substring(0, output.Length - "\n".Length);
+        }
         return output;
     }
 
