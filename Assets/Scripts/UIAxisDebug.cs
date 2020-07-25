@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using CustomInputSystem;
 
 public class UIAxisDebug : MonoBehaviour {
 

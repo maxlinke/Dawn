@@ -14,6 +14,14 @@ namespace Persistence {
             return $"{directoryPath}/{fileName}";
         }
 
+        public static void OpenConfigDirectory () {
+            System.Diagnostics.Process.Start(configFilePath);
+        }
+
+        public static void OpenSaveFileDirectory () {
+            System.Diagnostics.Process.Start(saveFilePath);
+        }
+
         public static void OpenDataDirectory () {
             System.Diagnostics.Process.Start(dataDirectory);
         }
