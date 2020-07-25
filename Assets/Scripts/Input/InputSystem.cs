@@ -19,7 +19,6 @@ public partial class InputSystem : MonoBehaviour {
 
     int lastUpdatedFrame = -1;
     List<AxisInput> axisInputs = new List<AxisInput>();
-    bool currentlyCheckingInputValidity = false;
 
     void Awake () {
         if(instance != null){
@@ -35,8 +34,21 @@ public partial class InputSystem : MonoBehaviour {
         if(resetKeybindsToDefault){
             Bind.ResetToDefault();
         }
+        LogState();
+    }
+
+    public static void LogState () {
         DebugConsole.Log($"Axis Log: \n{Axis.Config.GetLog()}");
         DebugConsole.Log($"Keybind Log: \n{Bind.GetLog()}");
+        DebugConsole.Log($"Managed Axis Inputs: \n{GetAxisInputLog()}");
+    }
+
+    public static string GetAxisInputLog () {
+        var output = string.Empty;
+        foreach(var axisInput in instance.axisInputs){
+            output += $"{axisInput}\n";
+        }
+        return output;
     }
 
     void Test () {
@@ -64,61 +76,6 @@ public partial class InputSystem : MonoBehaviour {
         lastUpdatedFrame = Time.frameCount;
         foreach(var axisInput in axisInputs){
             axisInput.Update();
-        }
-    }
-
-    static void BindsChanged (bool saveToDiskIfValid = false) {           // has to be static. trust me.
-        if(instance == null){
-            Debug.LogError($"SOMEBODY REALLY FUCKED UP SOMEWHERE! INSTANCE OF {nameof(InputSystem)} IS NULL!");
-            return;
-        }
-        if(instance.currentlyCheckingInputValidity){
-            return;
-        }
-        instance.currentlyCheckingInputValidity = true;
-        DebugConsole.Log("Checking validity of binds");
-        instance.axisInputs.Clear();
-        var allInputs = new List<InputMethod>();
-        var faultyInputs = new List<(Bind badBind, InputMethod badInput)>();
-        RegisterAxisInputsAndFlagRecurringInputs();
-        bool doARecursiveCallAtTheEnd;
-        if(faultyInputs.Count > 0){
-            doARecursiveCallAtTheEnd = true;
-            RemoveRecurringInputs();
-        }else{
-            doARecursiveCallAtTheEnd = false;
-            DebugConsole.Log("All binds valid");
-            if(saveToDiskIfValid){
-                Bind.SaveToDisk();
-            }
-        }
-        instance.currentlyCheckingInputValidity = false;
-        if(doARecursiveCallAtTheEnd){
-            BindsChanged(true);
-        }
-
-        void RegisterAxisInputsAndFlagRecurringInputs () {
-            foreach(var bind in Bind.Binds()){
-                foreach(var input in bind){
-                    if(input is AxisInput axisInput){
-                        if(!instance.axisInputs.Contains(axisInput)){
-                            instance.axisInputs.Add(axisInput);
-                        }
-                    }
-                    if(allInputs.Contains(input)){
-                        DebugConsole.LogError($"Detected duplicate usage of input \"{input}\"!");
-                        faultyInputs.Add((bind, input));
-                    }else{
-                        allInputs.Add(input);
-                    }
-                }
-            }
-        }
-
-        void RemoveRecurringInputs () {
-            foreach(var faultyInput in faultyInputs){
-                faultyInput.badBind.RemoveInput(faultyInput.badInput);  // would cause unintended recursion
-            }
         }
     }
 
@@ -158,6 +115,64 @@ public partial class InputSystem : MonoBehaviour {
             }
         }
         return null;
+    }
+
+    static void BindsChanged (bool saveToDiskIfValid = false) {
+        var badBinds = new List<(Bind bind, InputMethod input)>();
+        ScanForDoubleBinds(ref badBinds, true);
+        if(badBinds.Count > 0){
+            RemoveDoubleBinds(badBinds);
+            ScanForDoubleBinds(ref badBinds, false);
+            if(badBinds.Count > 0){
+                DebugConsole.LogError("Found more invalid binds, something went very wrong!");
+            }else{
+                DebugConsole.Log("All binds valid");
+                Bind.SaveToDisk();
+            }
+        }else{
+            DebugConsole.Log("All binds valid");
+        }
+        CollectAxisInputs();        
+    }
+
+    static void ScanForDoubleBinds (ref List<(Bind, InputMethod)> badBinds, bool logErrors) {
+        DebugConsole.Log("Checking validity of binds");
+        var allInputs = new List<InputMethod>();
+        foreach(var bind in Bind.Binds()){
+            foreach(var input in bind){
+                if(allInputs.Contains(input)){
+                    badBinds.Add((bind, input));
+                    DebugConsole.LogError($"{nameof(Bind)} \"{bind.name}\" uses {nameof(InputMethod)} \"{input.Name}\", which is already in use elsewhere!");
+                }else{
+                    allInputs.Add(input);
+                }
+            }
+        }
+    }
+
+    static void RemoveDoubleBinds (List<(Bind bind, InputMethod input)> badBinds) {
+        DebugConsole.Log("Removing invalid binds");
+        while(badBinds.Count > 0){
+            int i = badBinds.Count-1;
+            var badBind = badBinds[i];
+            badBind.bind.RemoveInput(badBind.input, false);
+            badBinds.RemoveAt(i);
+        }
+    }
+
+    static void CollectAxisInputs () {
+        instance.axisInputs.Clear();
+        foreach(var bind in Bind.Binds()){
+            foreach(var input in bind){
+                if(input is AxisInput axisInput){
+                    if(instance.axisInputs.Contains(axisInput)){
+                        DebugConsole.LogError($"Duplicate usage of {nameof(AxisInput)} \"{input.Name}\"!");
+                    }else{
+                        instance.axisInputs.Add(axisInput);
+                    }
+                }
+            }
+        }
     }
 	
 }

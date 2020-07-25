@@ -116,17 +116,20 @@ public partial class InputSystem {
         }
 
         public bool TryRestoreInputMethod (out InputMethod outputInputMethod) {
-            if(this.typeName.Equals(typeof(KeyCodeInput).ToString())){
+            if(this.typeName.Equals(typeof(KeyCodeInput).ToString()) && System.Enum.IsDefined(typeof(KeyCode), this.keyCode)){
                 outputInputMethod = new KeyCodeInput(this.keyCode);
                 return true;
             }
-            if(this.typeName.Equals(typeof(AxisInput).ToString())){
+            if(this.typeName.Equals(typeof(AxisInput).ToString()) && System.Enum.IsDefined(typeof(Axis.ID), this.axisID)){
                 outputInputMethod = new AxisInput(this.axisID, this.axisPositive);
                 return true;
             }
             outputInputMethod = null;
             return false;
+        }
 
+        public override string ToString () {
+            return $"[{typeName}, {keyCode}, {axisID}, {axisPositive}]";
         }
 
     }

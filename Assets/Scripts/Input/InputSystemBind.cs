@@ -39,13 +39,19 @@ public partial class InputSystem {
             return immutable;
         }
 
+        private void NotifyInputSystemIfAllowed (bool allowed) {
+            if(allowed){
+                InputSystem.BindsChanged();
+            }
+        }
+
         public IEnumerator<InputMethod> GetEnumerator () {
             foreach(var input in inputs){
                 yield return input;
             }
         }
 
-        public void AddInput (InputMethod newInput) {
+        public void AddInput (InputMethod newInput, bool notifyInputSystem = true) {
             if(ImmutableAbort()){
                 return;
             }
@@ -53,24 +59,24 @@ public partial class InputSystem {
             while(inputs.Count > MAX_INPUTS_PER_BIND){
                 inputs.RemoveAt(0);
             }
-            NotifyInputSystemIfAllowed();
+            NotifyInputSystemIfAllowed(notifyInputSystem);
         }
 
-        public bool RemoveInput (InputMethod inputToRemove) {
+        public bool RemoveInput (InputMethod inputToRemove, bool notifyInputSystem = true) {
             if(ImmutableAbort()){
                 return false;
             }
             var output = inputs.Remove(inputToRemove);
-            NotifyInputSystemIfAllowed();
+            NotifyInputSystemIfAllowed(notifyInputSystem);
             return output;
         }
 
-        public void ClearInputs () {
+        public void ClearInputs (bool notifyInputSystem = true) {
             if(ImmutableAbort()){
                 return;
             }
             inputs.Clear();
-            NotifyInputSystemIfAllowed();
+            NotifyInputSystemIfAllowed(notifyInputSystem);
         }
 
         public bool UsesInput (InputMethod otherInput) {

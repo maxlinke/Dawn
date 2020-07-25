@@ -17,20 +17,12 @@ public static class KeyCodeUtils {
         }
     }
 
-	public static KeyCode Parse (string s) {
-		return (KeyCode)System.Enum.Parse(typeof(KeyCode), s);
+	public static KeyCode Parse (string value, bool ignoreCase = true) {
+		return (KeyCode)System.Enum.Parse(typeof(KeyCode), value, ignoreCase);
 	}
 
-    public static bool TryParse (string s, out KeyCode kcode) {
-        bool success;
-        try{
-            kcode = Parse(s);
-            success = true;
-        }catch{
-            kcode = default;
-            success = false;
-        }
-        return success;
+    public static bool TryParse (string value, out KeyCode result, bool ignoreCase = true) {
+        return System.Enum.TryParse<KeyCode>(value, ignoreCase, out result);
     }
 
 	public static string ToNiceString (this KeyCode kcode) {

@@ -17,7 +17,8 @@ public partial class InputSystem {
             LOOK_UP,
             LOOK_DOWN,
             LOOK_LEFT,
-            LOOK_RIGHT
+            LOOK_RIGHT,
+            JUMP
         }
     
         public static Bind PAUSE_CANCEL_ETC { get; private set; }
@@ -30,6 +31,7 @@ public partial class InputSystem {
         public static Bind LOOK_DOWN { get; private set; }
         public static Bind LOOK_LEFT { get; private set; }
         public static Bind LOOK_RIGHT { get; private set; }
+        public static Bind JUMP { get; private set; }
         // fire, alt fire?, interact
         // crouch, jump, run/walk
         // the scroll-weapon-switch stuff, the q-weapon-switch stuff
@@ -47,6 +49,7 @@ public partial class InputSystem {
                 case ID.LOOK_DOWN: return LOOK_DOWN;
                 case ID.LOOK_LEFT: return LOOK_LEFT;
                 case ID.LOOK_RIGHT: return LOOK_RIGHT;
+                case ID.JUMP: return JUMP;
                 default: 
                     DebugConsole.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                     return null;
@@ -68,33 +71,23 @@ public partial class InputSystem {
         private static bool m_initialized = false;
         public static bool initialized => m_initialized;
 
-        private static bool notifyInputSystemOfUpdates = true;
-
         public static void Initialize () {
             if(initialized){
                 DebugConsole.LogError("Duplicate init call, aborting!");
                 return;
             }
-            notifyInputSystemOfUpdates = false;
             InitializeBinds();
             if(!TryLoadingBindsFromDisk()){
-                ResetToDefault();
+                ResetToDefault(false);
             }
-            notifyInputSystemOfUpdates = true;
             m_initialized = true;
             InputSystem.BindsChanged();
         }
 
-        private static void NotifyInputSystemIfAllowed () {
-            if(notifyInputSystemOfUpdates){
-                InputSystem.BindsChanged();
-            }
-        }
-
         private static void InitializeBinds () {
             PAUSE_CANCEL_ETC = new Bind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind");
-            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCode.Escape));
-            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START));
+            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCode.Escape), false);
+            PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START), false);
             PAUSE_CANCEL_ETC.immutable = true;
 
             MOVE_FWD = new Bind(ID.MOVE_FWD, "Move Forward");
@@ -105,32 +98,33 @@ public partial class InputSystem {
             LOOK_DOWN = new Bind(ID.LOOK_DOWN, "Look Down");
             LOOK_LEFT = new Bind(ID.LOOK_LEFT, "Look Left");
             LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
+            JUMP = new Bind(ID.JUMP, "Jump");
         }
 
-        public static void ResetToDefault () {
-            var notifCache = notifyInputSystemOfUpdates;
-            notifyInputSystemOfUpdates = false;
+        public static void ResetToDefault (bool notifyInputSystem = true) {
             LoadDefaultBinds();
             SaveToDisk();
-            notifyInputSystemOfUpdates = notifCache;
-            NotifyInputSystemIfAllowed();
+            if(notifyInputSystem){
+                InputSystem.BindsChanged();
+            }
         }
 
         private static void LoadDefaultBinds () {
             DebugConsole.Log("Loading default keybinds");
-            ClearAndAdd(MOVE_FWD,   new KeyCodeInput(KeyCode.W), new AxisInput(Axis.ID.LEFT_STICK_Y, true));
-            ClearAndAdd(MOVE_BWD,   new KeyCodeInput(KeyCode.S), new AxisInput(Axis.ID.LEFT_STICK_Y, false));
-            ClearAndAdd(MOVE_LEFT,  new KeyCodeInput(KeyCode.A), new AxisInput(Axis.ID.LEFT_STICK_X, false));
-            ClearAndAdd(MOVE_RIGHT, new KeyCodeInput(KeyCode.D), new AxisInput(Axis.ID.LEFT_STICK_X, true));
-            ClearAndAdd(LOOK_UP,    new AxisInput(Axis.ID.MOUSE_Y, true),  new AxisInput(Axis.ID.RIGHT_STICK_Y, true));
-            ClearAndAdd(LOOK_DOWN,  new AxisInput(Axis.ID.MOUSE_Y, false), new AxisInput(Axis.ID.RIGHT_STICK_Y, false));
-            ClearAndAdd(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
-            ClearAndAdd(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
+            ClearAndAddWithoutInputSystemNotification(MOVE_FWD,   new KeyCodeInput(KeyCode.W), new AxisInput(Axis.ID.LEFT_STICK_Y, true));
+            ClearAndAddWithoutInputSystemNotification(MOVE_BWD,   new KeyCodeInput(KeyCode.S), new AxisInput(Axis.ID.LEFT_STICK_Y, false));
+            ClearAndAddWithoutInputSystemNotification(MOVE_LEFT,  new KeyCodeInput(KeyCode.A), new AxisInput(Axis.ID.LEFT_STICK_X, false));
+            ClearAndAddWithoutInputSystemNotification(MOVE_RIGHT, new KeyCodeInput(KeyCode.D), new AxisInput(Axis.ID.LEFT_STICK_X, true));
+            ClearAndAddWithoutInputSystemNotification(LOOK_UP,    new AxisInput(Axis.ID.MOUSE_Y, true),  new AxisInput(Axis.ID.RIGHT_STICK_Y, true));
+            ClearAndAddWithoutInputSystemNotification(LOOK_DOWN,  new AxisInput(Axis.ID.MOUSE_Y, false), new AxisInput(Axis.ID.RIGHT_STICK_Y, false));
+            ClearAndAddWithoutInputSystemNotification(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
+            ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
+            ClearAndAddWithoutInputSystemNotification(JUMP, new KeyCodeInput(KeyCode.Space), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
 
-            void ClearAndAdd (Bind bind, params InputMethod[] inputsToAdd) {
-                bind.ClearInputs();
+            void ClearAndAddWithoutInputSystemNotification (Bind bind, params InputMethod[] inputsToAdd) {
+                bind.ClearInputs(false);
                 foreach(var inputToAdd in inputsToAdd){
-                    bind.AddInput(inputToAdd);
+                    bind.AddInput(inputToAdd, false);
                 }
             }
         }
@@ -142,14 +136,31 @@ public partial class InputSystem {
             }
             if(FileHelper.TryLoadConfigFile(FileNames.keybinds, out var json)){
                 try{
-                    var col = JsonUtility.FromJson<SaveableBindCollection>(json);
-                    foreach(var sb in col.binds){
-                        if(!sb.Apply(GetBind(sb.bindID))){
-                            return false;
+                    var allIDs = new List<Bind.ID>();
+                    foreach(var bind in Binds()){
+                        if(!bind.immutable){
+                            allIDs.Add(bind.id);
                         }
                     }
-                    DebugConsole.Log("Successfully loaded keybinds");
-                    return true;
+                    var col = JsonUtility.FromJson<SaveableBindCollection>(json);
+                    foreach(var sb in col.binds){
+                        if(!System.Enum.IsDefined(typeof(Bind.ID), sb.bindID)){
+                            throw new System.ArgumentException($"Undefined {nameof(Bind.ID)} \"{sb.bindID}\"");
+                        }
+                        if(!sb.Apply(GetBind(sb.bindID), out var errorMessage)){
+                            throw new System.ArgumentException(errorMessage);
+                        }
+                        if(!allIDs.Remove(sb.bindID)){
+                            throw new System.ArgumentException($"Multiple occurences of {nameof(Bind.ID)} \"{sb.bindID}\"");
+                        }
+                    }
+                    if(allIDs.Count > 0){
+                        DebugConsole.LogError("Not all binds could be loaded");
+                        return false;
+                    }else{
+                        DebugConsole.Log("Successfully loaded keybinds");
+                        return true;
+                    }
                 }catch(System.Exception e){
                     DebugConsole.LogError($"Issue loading keybinds \n{e.Message}");
                 }
@@ -206,16 +217,17 @@ public partial class InputSystem {
             }
         }
 
-        public bool Apply (Bind target) {
+        public bool Apply (Bind target, out string errorMessage) {
+            errorMessage = string.Empty;
             if(target.id != this.bindID){
-                DebugConsole.LogError($"{nameof(Bind.ID)} mismatch! ({this.bindID}, {target.id})");
+                errorMessage = $"{nameof(Bind.ID)} mismatch! ({this.bindID}, {target.id})";
                 return false;
             }
             foreach(var input in inputMethods){
                 if(input.TryRestoreInputMethod(out var restoredInput)){
-                    target.AddInput(restoredInput);
+                    target.AddInput(restoredInput, false);
                 }else{
-                    DebugConsole.LogError("Couldn't restore input method");
+                    errorMessage = $"Couldn't restore input method {input}";
                     return false;
                 }
             }

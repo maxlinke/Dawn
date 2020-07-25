@@ -90,6 +90,14 @@ public partial class Axis {
         }
     }
 
+    public static Axis.ID Parse (string value, bool ignoreCase = true) {
+        return (ID)(System.Enum.Parse(typeof(Axis.ID), value, ignoreCase));
+    }
+
+    public static bool TryParse (string value, out Axis.ID result, bool ignoreCase = true) {
+        return System.Enum.TryParse<Axis.ID>(value, ignoreCase, out result);
+    }
+
     private readonly string unityInputIdentifier;
     private readonly Config config;
 
