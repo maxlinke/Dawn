@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace CustomInputSystem {
 
@@ -36,7 +37,7 @@ namespace CustomInputSystem {
 
             private bool ImmutableAbort () {
                 if(immutable){
-                    DebugConsole.LogError($"Can't modify {nameof(Bind)} \"{id}\"!");
+                    Debug.LogError($"Can't modify {nameof(Bind)} \"{id}\"!");
                 }
                 return immutable;
             }

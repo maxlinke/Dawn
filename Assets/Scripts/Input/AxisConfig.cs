@@ -60,28 +60,28 @@ namespace CustomInputSystem {
                 var fileName = FileNames.axisConfigs;
                 var fileContents = JsonUtility.ToJson(SaveableAxisConfig.Create(), true);
                 FileHelper.SaveConfigFile(fileName, fileContents);
-                DebugConsole.Log("Saving axis configs to disk");
+                Debug.Log("Saving axis configs to disk");
             }
 
             public static bool TryLoadFromDisk () {
                 if(!FileHelper.ConfigFileExists(FileNames.axisConfigs)){
-                    DebugConsole.Log("No axis config file found");
+                    Debug.Log("No axis config file found");
                     return false;
                 }
                 if(FileHelper.TryLoadConfigFile(FileNames.axisConfigs, out var json)){
                     try{
                         JsonUtility.FromJson<SaveableAxisConfig>(json).Apply();
-                        DebugConsole.Log("Successfully loaded axis configs");
+                        Debug.Log("Successfully loaded axis configs");
                         return true;
                     }catch(System.Exception e){
-                        DebugConsole.LogError($"Issue loading axis configs \n{e.Message}");
+                        Debug.LogError($"Issue loading axis configs \n{e.Message}");
                     }
                 }
                 return false;
             }
 
             public static void ResetToDefault () {
-                DebugConsole.Log("Loading axis config defaults");
+                Debug.Log("Loading axis config defaults");
                 MOUSE.CopyDataFromOther(mouseDefault);
                 NEUTRAL.CopyDataFromOther(neutral);
                 LEFT_STICK.CopyDataFromOther(controllerDefault);

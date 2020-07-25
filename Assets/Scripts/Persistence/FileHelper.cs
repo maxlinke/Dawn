@@ -31,7 +31,7 @@ namespace Persistence {
                 try{
                     Directory.Delete(configFilePath, true);
                 }catch(System.Exception e){
-                    DebugConsole.LogError($"Problem deleting all config data: \n{e.Message}");
+                    Debug.LogError($"Problem deleting all config data: \n{e.Message}");
                 }
             }
         }
@@ -41,7 +41,7 @@ namespace Persistence {
                 try{
                     Directory.Delete(saveFilePath, true);
                 }catch(System.Exception e){
-                    DebugConsole.LogError($"Problem deleting all save data: \n{e.Message}");
+                    Debug.LogError($"Problem deleting all save data: \n{e.Message}");
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace Persistence {
                     fs.Flush(true);
                 }
             }catch(System.Exception e){
-                DebugConsole.LogError($"Problem saving to file: \n{e.Message}");
+                Debug.LogError($"Problem saving to file: \n{e.Message}");
             }
         }
 
@@ -98,7 +98,7 @@ namespace Persistence {
                 fileContents = File.ReadAllText(filePath, Encoding.UTF8);
                 return true;
             }catch(System.Exception e){
-                DebugConsole.LogError($"Problem loading file: \n{e.Message}");
+                Debug.LogError($"Problem loading file: \n{e.Message}");
                 fileContents = null;
                 return false;
             }

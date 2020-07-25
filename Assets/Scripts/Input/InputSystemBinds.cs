@@ -36,7 +36,7 @@ namespace CustomInputSystem {
             public static Bind JUMP { get; private set; }
             // fire, alt fire?, interact
             // crouch, jump, run/walk
-            // the scroll-weapon-switch stuff, the q-weapon-switch stuff
+            // the scroll-weapon-switch stuff, the q-weapon-switch stuff ("previous"/"next" and "last used")
             // weapon category keys
             // kick?
 
@@ -53,7 +53,7 @@ namespace CustomInputSystem {
                     case ID.LOOK_RIGHT: return LOOK_RIGHT;
                     case ID.JUMP: return JUMP;
                     default: 
-                        DebugConsole.LogError($"Unknown {nameof(ID)} \"{id}\"!");
+                        Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                         return null;
                 }
             }
@@ -75,7 +75,7 @@ namespace CustomInputSystem {
 
             public static void Initialize () {
                 if(initialized){
-                    DebugConsole.LogError("Duplicate init call, aborting!");
+                    Debug.LogError("Duplicate init call, aborting!");
                     return;
                 }
                 InitializeBinds();
@@ -112,7 +112,7 @@ namespace CustomInputSystem {
             }
 
             private static void LoadDefaultBinds () {
-                DebugConsole.Log("Loading default keybinds");
+                Debug.Log("Loading default keybinds");
                 ClearAndAddWithoutInputSystemNotification(MOVE_FWD,   new KeyCodeInput(KeyCode.W), new AxisInput(Axis.ID.LEFT_STICK_Y, true));
                 ClearAndAddWithoutInputSystemNotification(MOVE_BWD,   new KeyCodeInput(KeyCode.S), new AxisInput(Axis.ID.LEFT_STICK_Y, false));
                 ClearAndAddWithoutInputSystemNotification(MOVE_LEFT,  new KeyCodeInput(KeyCode.A), new AxisInput(Axis.ID.LEFT_STICK_X, false));
@@ -133,12 +133,12 @@ namespace CustomInputSystem {
 
             private static bool TryLoadingBindsFromDisk () {
                 if(!FileHelper.ConfigFileExists(FileNames.keybinds)){
-                    DebugConsole.Log("No keybind file found");
+                    Debug.Log("No keybind file found");
                     return false;
                 }
                 if(FileHelper.TryLoadConfigFile(FileNames.keybinds, out var json)){
                     if(json == null || json.Length == 0){
-                        DebugConsole.LogError("Keybinds file is empty!");
+                        Debug.LogError("Keybinds file is empty!");
                         return false;
                     }
                     try{
@@ -161,14 +161,14 @@ namespace CustomInputSystem {
                             }
                         }
                         if(allIDs.Count > 0){
-                            DebugConsole.LogError("Not all binds could be loaded");
+                            Debug.LogError("Not all binds could be loaded");
                             return false;
                         }else{
-                            DebugConsole.Log("Successfully loaded keybinds");
+                            Debug.Log("Successfully loaded keybinds");
                             return true;
                         }
                     }catch(System.Exception e){
-                        DebugConsole.LogError($"Issue loading keybinds \n{e.Message}");
+                        Debug.LogError($"Issue loading keybinds \n{e.Message}");
                     }
                 }
                 return false;
@@ -187,7 +187,7 @@ namespace CustomInputSystem {
                 saveableObject.binds = bindsList.ToArray();
                 var json = JsonUtility.ToJson(saveableObject, true);
                 FileHelper.SaveConfigFile(FileNames.keybinds, json);
-                DebugConsole.Log("Saving keybinds to disk");
+                Debug.Log("Saving keybinds to disk");
             }
 
             public static string GetLog () {

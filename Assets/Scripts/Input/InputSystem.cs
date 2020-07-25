@@ -18,6 +18,7 @@ namespace CustomInputSystem {
                 Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
                 return;
             }
+            DontDestroyOnLoad(gameObject);
             instance = this;
             Test();
             Bind.Initialize();
@@ -27,13 +28,13 @@ namespace CustomInputSystem {
             if(resetKeybindsToDefault){
                 Bind.ResetToDefault();
             }
-            LogState();
+            // LogState();
         }
 
         public static void LogState () {
-            DebugConsole.Log($"Axis Log: \n{Axis.Config.GetLog()}");
-            DebugConsole.Log($"Keybind Log: \n{Bind.GetLog()}");
-            DebugConsole.Log($"Managed Axis Inputs: \n{GetAxisInputLog()}");
+            Debug.Log($"Axis Log: \n{Axis.Config.GetLog()}");
+            Debug.Log($"Keybind Log: \n{Bind.GetLog()}");
+            Debug.Log($"Managed Axis Inputs: \n{GetAxisInputLog()}");
         }
 
         public static string GetAxisInputLog () {
@@ -120,25 +121,25 @@ namespace CustomInputSystem {
                 RemoveDoubleBinds(badBinds);
                 ScanForDoubleBinds(ref badBinds, false);
                 if(badBinds.Count > 0){
-                    DebugConsole.LogError("Found more invalid binds, something went very wrong!");
+                    Debug.LogError("Found more invalid binds, something went very wrong!");
                 }else{
-                    DebugConsole.Log("All binds valid");
+                    Debug.Log("All binds valid");
                     Bind.SaveToDisk();
                 }
             }else{
-                DebugConsole.Log("All binds valid");
+                Debug.Log("All binds valid");
             }
             CollectAxisInputs();        
         }
 
         static void ScanForDoubleBinds (ref List<(Bind, InputMethod)> badBinds, bool logErrors) {
-            DebugConsole.Log("Checking validity of binds");
+            Debug.Log("Checking validity of binds");
             var allInputs = new List<InputMethod>();
             foreach(var bind in Bind.Binds()){
                 foreach(var input in bind){
                     if(allInputs.Contains(input)){
                         badBinds.Add((bind, input));
-                        DebugConsole.LogError($"{nameof(Bind)} \"{bind.name}\" uses {nameof(InputMethod)} \"{input.Name}\", which is already in use elsewhere!");
+                        Debug.LogError($"{nameof(Bind)} \"{bind.name}\" uses {nameof(InputMethod)} \"{input.Name}\", which is already in use elsewhere!");
                     }else{
                         allInputs.Add(input);
                     }
@@ -147,7 +148,7 @@ namespace CustomInputSystem {
         }
 
         static void RemoveDoubleBinds (List<(Bind bind, InputMethod input)> badBinds) {
-            DebugConsole.Log("Removing invalid binds");
+            Debug.Log("Removing invalid binds");
             while(badBinds.Count > 0){
                 int i = badBinds.Count-1;
                 var badBind = badBinds[i];
@@ -162,7 +163,7 @@ namespace CustomInputSystem {
                 foreach(var input in bind){
                     if(input is AxisInput axisInput){
                         if(instance.axisInputs.Contains(axisInput)){
-                            DebugConsole.LogError($"Duplicate usage of {nameof(AxisInput)} \"{input.Name}\"!");
+                            Debug.LogError($"Duplicate usage of {nameof(AxisInput)} \"{input.Name}\"!");
                         }else{
                             instance.axisInputs.Add(axisInput);
                         }
