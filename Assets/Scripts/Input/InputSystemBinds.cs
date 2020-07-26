@@ -20,7 +20,8 @@ namespace CustomInputSystem {
                 LOOK_DOWN,
                 LOOK_LEFT,
                 LOOK_RIGHT,
-                JUMP
+                JUMP,
+                TOGGLE_DEBUG_CONSOLE
             }
         
             public static Bind PAUSE_CANCEL_ETC { get; private set; }
@@ -34,6 +35,7 @@ namespace CustomInputSystem {
             public static Bind LOOK_LEFT { get; private set; }
             public static Bind LOOK_RIGHT { get; private set; }
             public static Bind JUMP { get; private set; }
+            public static Bind TOGGLE_DEBUG_CONSOLE { get; private set; }
             // fire, alt fire?, interact
             // crouch, jump, run/walk
             // the scroll-weapon-switch stuff, the q-weapon-switch stuff ("previous"/"next" and "last used")
@@ -52,6 +54,7 @@ namespace CustomInputSystem {
                     case ID.LOOK_LEFT: return LOOK_LEFT;
                     case ID.LOOK_RIGHT: return LOOK_RIGHT;
                     case ID.JUMP: return JUMP;
+                    case ID.TOGGLE_DEBUG_CONSOLE: return TOGGLE_DEBUG_CONSOLE;
                     default: 
                         Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                         return null;
@@ -101,6 +104,7 @@ namespace CustomInputSystem {
                 LOOK_LEFT = new Bind(ID.LOOK_LEFT, "Look Left");
                 LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
                 JUMP = new Bind(ID.JUMP, "Jump");
+                TOGGLE_DEBUG_CONSOLE = new Bind(ID.TOGGLE_DEBUG_CONSOLE, "Toggle Debug Console");
             }
 
             public static void ResetToDefault (bool notifyInputSystem = true) {
@@ -122,6 +126,7 @@ namespace CustomInputSystem {
                 ClearAndAddWithoutInputSystemNotification(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
                 ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
                 ClearAndAddWithoutInputSystemNotification(JUMP, new KeyCodeInput(KeyCode.Space), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
+                ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_CONSOLE, new KeyCodeInput(KeyCode.F1));
 
                 void ClearAndAddWithoutInputSystemNotification (Bind bind, params InputMethod[] inputsToAdd) {
                     bind.ClearInputs(false);
@@ -194,9 +199,6 @@ namespace CustomInputSystem {
                 var output = string.Empty;
                 foreach(var bind in Binds()){
                     output += $"{bind.id}: {bind}\n";
-                }
-                if(output.Length > 0){
-                    output = output.Substring(0, output.Length - "\n".Length);
                 }
                 return output;
             }

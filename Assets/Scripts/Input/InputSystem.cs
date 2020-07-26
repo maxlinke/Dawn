@@ -15,11 +15,11 @@ namespace CustomInputSystem {
 
         void Awake () {
             if(instance != null){
-                Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!!!");
+                Destroy(this.gameObject);
                 return;
             }
-            DontDestroyOnLoad(gameObject);
             instance = this;
+            DontDestroyOnLoad(gameObject);
             Test();
             Bind.Initialize();
             if(resetAxisConfigToDefault){
@@ -28,7 +28,6 @@ namespace CustomInputSystem {
             if(resetKeybindsToDefault){
                 Bind.ResetToDefault();
             }
-            // LogState();
         }
 
         public static void LogState () {
@@ -41,9 +40,6 @@ namespace CustomInputSystem {
             var output = string.Empty;
             foreach(var axisInput in instance.axisInputs){
                 output += $"{axisInput}\n";
-            }
-            if(output.Length > 0){
-                output = output.Substring(0, output.Length - "\n".Length);
             }
             return output;
         }
@@ -123,17 +119,14 @@ namespace CustomInputSystem {
                 if(badBinds.Count > 0){
                     Debug.LogError("Found more invalid binds, something went very wrong!");
                 }else{
-                    Debug.Log("All binds valid");
+                    Debug.Log("Removed bad binds");
                     Bind.SaveToDisk();
                 }
-            }else{
-                Debug.Log("All binds valid");
             }
             CollectAxisInputs();        
         }
 
         static void ScanForDoubleBinds (ref List<(Bind, InputMethod)> badBinds, bool logErrors) {
-            Debug.Log("Checking validity of binds");
             var allInputs = new List<InputMethod>();
             foreach(var bind in Bind.Binds()){
                 foreach(var input in bind){
@@ -148,7 +141,6 @@ namespace CustomInputSystem {
         }
 
         static void RemoveDoubleBinds (List<(Bind bind, InputMethod input)> badBinds) {
-            Debug.Log("Removing invalid binds");
             while(badBinds.Count > 0){
                 int i = badBinds.Count-1;
                 var badBind = badBinds[i];
