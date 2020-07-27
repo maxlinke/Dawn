@@ -15,11 +15,11 @@ namespace CustomInputSystem {
 
         void Awake () {
             if(instance != null){
+                Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!");
                 Destroy(this.gameObject);
                 return;
             }
             instance = this;
-            DontDestroyOnLoad(gameObject);
             Test();
             Bind.Initialize();
             if(resetAxisConfigToDefault){

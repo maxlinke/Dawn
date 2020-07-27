@@ -21,6 +21,13 @@ public class Test : MonoBehaviour {
         if(Input.GetKeyDown(KeyCode.Alpha4)){
             ExceptionalMethod();
         }
+        if(Input.GetKeyDown(KeyCode.Q)){
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Test1");
+        }
+        if(Input.GetKeyDown(KeyCode.W)){
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MovementTesting");
+            // UnityEngine.SceneManagement.SceneManager.SetActiveScene
+        }
     }
 
     void ExceptionalMethod () {
