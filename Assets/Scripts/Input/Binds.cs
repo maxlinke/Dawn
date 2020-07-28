@@ -138,8 +138,8 @@ namespace CustomInputSystem {
                             allIDs.Add(bind.id);
                         }
                     }
-                    var col = JsonUtility.FromJson<SaveableBindCollection>(json);
-                    foreach(var sb in col.binds){
+                    var binds = JsonHelper.GetJsonArray<SaveableBind>(json);
+                    foreach(var sb in binds){
                         if(!System.Enum.IsDefined(typeof(Bind.ID), sb.bindID)){
                             throw new System.ArgumentException($"Undefined {nameof(Bind.ID)} \"{sb.bindID}\"");
                         }
@@ -173,9 +173,7 @@ namespace CustomInputSystem {
                 }
                 bindsList.Add(new SaveableBind(bind));
             }
-            var saveableObject = new SaveableBindCollection();
-            saveableObject.binds = bindsList.ToArray();
-            var json = JsonUtility.ToJson(saveableObject, true);
+            var json = JsonHelper.ToJsonArray<SaveableBind>(bindsList.ToArray(), true);
             FileHelper.SaveConfigFile(FileNames.keybinds, json);
             Debug.Log("Saving keybinds to disk");
         }

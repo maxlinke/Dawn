@@ -4,9 +4,14 @@ using UnityEngine;
 
 public static class JsonHelper {
 
+    public static string ToJsonArray<T> (T[] array, bool prettyPrint = false) {
+        var wrapper = new Wrapper<T>();
+        wrapper.array = array;
+        return JsonUtility.ToJson(wrapper, prettyPrint);
+    }
+
     public static T[] GetJsonArray<T> (string json) {
-        string newJson = $"{{ \" {nameof(Wrapper<T>.array)} : {json} }}";
-        var wrapper = JsonUtility.FromJson<Wrapper<T>>(newJson);
+        var wrapper = JsonUtility.FromJson<Wrapper<T>>(json);
         return wrapper.array;
     }
 
