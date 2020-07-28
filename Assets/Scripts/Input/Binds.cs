@@ -23,7 +23,8 @@ namespace CustomInputSystem {
 
             JUMP,
 
-            TOGGLE_DEBUG_LOG
+            TOGGLE_DEBUG_LOG,
+            TOGGLE_FRAMERATE_DISPLAY
         }
     
         public static readonly Bind PAUSE_CANCEL_ETC = CreateImmutableBind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind", new KeyCodeInput(KeyCode.Escape), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START));
@@ -40,6 +41,7 @@ namespace CustomInputSystem {
         public static readonly Bind JUMP =       new Bind(ID.JUMP, "Jump");
 
         public static readonly Bind TOGGLE_DEBUG_LOG = new Bind(ID.TOGGLE_DEBUG_LOG, "Toggle Debug Log");
+        public static readonly Bind TOGGLE_FRAMERATE_DISPLAY = new Bind(ID.TOGGLE_FRAMERATE_DISPLAY, "Toggle Framerate Display");
         // fire, alt fire?, interact
         // crouch, jump, run/walk
         // the scroll-weapon-switch stuff, the q-weapon-switch stuff ("previous"/"next" and "last used")
@@ -59,6 +61,7 @@ namespace CustomInputSystem {
                 case ID.LOOK_RIGHT: return LOOK_RIGHT;
                 case ID.JUMP: return JUMP;
                 case ID.TOGGLE_DEBUG_LOG: return TOGGLE_DEBUG_LOG;
+                case ID.TOGGLE_FRAMERATE_DISPLAY: return TOGGLE_FRAMERATE_DISPLAY;
                 default: 
                     Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                     return null;
@@ -112,6 +115,7 @@ namespace CustomInputSystem {
             ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
             ClearAndAddWithoutInputSystemNotification(JUMP, new KeyCodeInput(KeyCode.Space), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
             ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_LOG, new KeyCodeInput(KeyCode.F1));
+            ClearAndAddWithoutInputSystemNotification(TOGGLE_FRAMERATE_DISPLAY, new KeyCodeInput(KeyCode.F2));
 
             void ClearAndAddWithoutInputSystemNotification (Bind bind, params InputMethod[] inputsToAdd) {
                 bind.ClearInputs(false);

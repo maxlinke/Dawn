@@ -13,6 +13,13 @@ namespace SceneLoading {
             WITH_LOADING_SCREEN_AND_MANUAL_CONTINUE
         }
 
+        // TODO merge this and the loading screen. make the loading screen a part of this i guess
+        // some way of keeping track of initializations
+        // scenes not being fully loaded until all awake and start procedures are done is nice
+        // but it doesn't help for loading saves and such
+        // reloading a save doesn't need to reload the entire scene asset, just reset the stuff contained within
+        // Time.timeScale could be useful here
+
         [SerializeField] SceneID initialScene = default;
         [SerializeField] LoadingScreen loadingScreen = default;
 
@@ -40,6 +47,7 @@ namespace SceneLoading {
             instance.LoadNext(loadMode);
         }
 
+        // important: the loads are only "done" when the awakes are also done. so i can do my inits without having to do anything here, i think...
         void Load (SceneID newScene, LoadMode loadMode) {
             List<AsyncOperation> loadOps = new List<AsyncOperation>();
             UnloadCurrentScene();
