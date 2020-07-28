@@ -56,6 +56,12 @@ namespace CustomInputSystem {
                 }
             }
 
+            static Config () {
+                if(!TryLoadFromDisk()){
+                    ResetToDefault();
+                }
+            }
+
             public static void SaveToDisk () {
                 var fileName = FileNames.axisConfigs;
                 var fileContents = JsonUtility.ToJson(SaveableAxisConfig.Create(), true);

@@ -28,6 +28,7 @@ namespace CustomInputSystem {
             if(resetKeybindsToDefault){
                 Bind.ResetToDefault();
             }
+            LogState();
         }
 
         public static void LogState () {

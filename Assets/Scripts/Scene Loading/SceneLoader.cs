@@ -72,7 +72,7 @@ namespace SceneLoading {
                     foreach(var loadOp in loadOps){
                         sum += loadOp.progress;
                     }
-                    progress =  sum / loadOps.Count;
+                    progress =  sum / loadOps.Count;    // TODO < i don't trust floating point numbers, use the booleans...
                     yield return null;
                 }
                 loadingScreen.Hide();
@@ -80,9 +80,6 @@ namespace SceneLoading {
                 // TODO maybe merge the loading screen into this?
                 // TODO some way of letting the scene initialize itself before removing the loadingscreen
                 // ^ static class with some kind of thingy. idk. 
-
-                // also don't forget to fix the debug console
-                // and "import" some more extensions. for coroutines, recttransform, gameobjects, components, etc.
             }
         }
 

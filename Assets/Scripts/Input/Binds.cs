@@ -12,6 +12,7 @@ namespace CustomInputSystem {
 
             public enum ID {          
                 PAUSE_CANCEL_ETC,
+
                 MOVE_FWD,
                 MOVE_BWD,
                 MOVE_LEFT,
@@ -20,22 +21,26 @@ namespace CustomInputSystem {
                 LOOK_DOWN,
                 LOOK_LEFT,
                 LOOK_RIGHT,
+
                 JUMP,
-                TOGGLE_DEBUG_CONSOLE
+
+                TOGGLE_DEBUG_LOG
             }
         
-            public static Bind PAUSE_CANCEL_ETC { get; private set; }
+            public static readonly Bind PAUSE_CANCEL_ETC = CreateImmutableBind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind", new KeyCodeInput(KeyCode.Escape), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START));
 
-            public static Bind MOVE_FWD { get; private set; }
-            public static Bind MOVE_BWD { get; private set; }
-            public static Bind MOVE_LEFT { get; private set; }
-            public static Bind MOVE_RIGHT { get; private set; }
-            public static Bind LOOK_UP { get; private set; }
-            public static Bind LOOK_DOWN { get; private set; }
-            public static Bind LOOK_LEFT { get; private set; }
-            public static Bind LOOK_RIGHT { get; private set; }
-            public static Bind JUMP { get; private set; }
-            public static Bind TOGGLE_DEBUG_CONSOLE { get; private set; }
+            public static readonly Bind MOVE_FWD =   new Bind(ID.MOVE_FWD, "Move Forward");
+            public static readonly Bind MOVE_BWD =   new Bind(ID.MOVE_BWD, "Move Back");
+            public static readonly Bind MOVE_LEFT =  new Bind(ID.MOVE_LEFT, "Move Left");
+            public static readonly Bind MOVE_RIGHT = new Bind(ID.MOVE_RIGHT, "Move Right");
+            public static readonly Bind LOOK_UP =    new Bind(ID.LOOK_UP, "Look Up");
+            public static readonly Bind LOOK_DOWN =  new Bind(ID.LOOK_DOWN, "Look Down");
+            public static readonly Bind LOOK_LEFT =  new Bind(ID.LOOK_LEFT, "Look Left");
+            public static readonly Bind LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
+            
+            public static readonly Bind JUMP =       new Bind(ID.JUMP, "Jump");
+
+            public static readonly Bind TOGGLE_DEBUG_LOG = new Bind(ID.TOGGLE_DEBUG_LOG, "Toggle Debug Log");
             // fire, alt fire?, interact
             // crouch, jump, run/walk
             // the scroll-weapon-switch stuff, the q-weapon-switch stuff ("previous"/"next" and "last used")
@@ -54,7 +59,7 @@ namespace CustomInputSystem {
                     case ID.LOOK_LEFT: return LOOK_LEFT;
                     case ID.LOOK_RIGHT: return LOOK_RIGHT;
                     case ID.JUMP: return JUMP;
-                    case ID.TOGGLE_DEBUG_CONSOLE: return TOGGLE_DEBUG_CONSOLE;
+                    case ID.TOGGLE_DEBUG_LOG: return TOGGLE_DEBUG_LOG;
                     default: 
                         Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                         return null;
@@ -81,30 +86,11 @@ namespace CustomInputSystem {
                     Debug.LogError("Duplicate init call, aborting!");
                     return;
                 }
-                InitializeBinds();
                 if(!TryLoadingBindsFromDisk()){
                     ResetToDefault(false);
                 }
                 m_initialized = true;
                 InputSystem.BindsChanged();
-            }
-
-            private static void InitializeBinds () {
-                PAUSE_CANCEL_ETC = new Bind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind");
-                PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCode.Escape), false);
-                PAUSE_CANCEL_ETC.AddInput(new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START), false);
-                PAUSE_CANCEL_ETC.immutable = true;
-
-                MOVE_FWD = new Bind(ID.MOVE_FWD, "Move Forward");
-                MOVE_BWD = new Bind(ID.MOVE_BWD, "Move Back");
-                MOVE_LEFT = new Bind(ID.MOVE_LEFT, "Move Left");
-                MOVE_RIGHT = new Bind(ID.MOVE_RIGHT, "Move Right");
-                LOOK_UP = new Bind(ID.LOOK_UP, "Look Up");
-                LOOK_DOWN = new Bind(ID.LOOK_DOWN, "Look Down");
-                LOOK_LEFT = new Bind(ID.LOOK_LEFT, "Look Left");
-                LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
-                JUMP = new Bind(ID.JUMP, "Jump");
-                TOGGLE_DEBUG_CONSOLE = new Bind(ID.TOGGLE_DEBUG_CONSOLE, "Toggle Debug Console");
             }
 
             public static void ResetToDefault (bool notifyInputSystem = true) {
@@ -126,7 +112,7 @@ namespace CustomInputSystem {
                 ClearAndAddWithoutInputSystemNotification(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
                 ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
                 ClearAndAddWithoutInputSystemNotification(JUMP, new KeyCodeInput(KeyCode.Space), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
-                ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_CONSOLE, new KeyCodeInput(KeyCode.F1));
+                ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_LOG, new KeyCodeInput(KeyCode.F1));
 
                 void ClearAndAddWithoutInputSystemNotification (Bind bind, params InputMethod[] inputsToAdd) {
                     bind.ClearInputs(false);

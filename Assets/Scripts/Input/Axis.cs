@@ -20,36 +20,18 @@ namespace CustomInputSystem {
             RIGHT_TRIGGER
         }
 
-        public static Axis NONE { get; private set; }
-        public static Axis MOUSE_X { get; private set; }
-        public static Axis MOUSE_Y { get; private set; }
-        public static Axis MOUSE_SCROLL { get; private set; }
-        public static Axis LEFT_STICK_X { get; private set; }
-        public static Axis LEFT_STICK_Y { get; private set; }
-        public static Axis RIGHT_STICK_X { get; private set; }
-        public static Axis RIGHT_STICK_Y { get; private set; }
-        public static Axis DPAD_X { get; private set; }
-        public static Axis DPAD_Y { get; private set; }
-        public static Axis LEFT_TRIGGER { get; private set; }
-        public static Axis RIGHT_TRIGGER { get; private set; }
-
-        static Axis () {
-            if(!Config.TryLoadFromDisk()){
-                Config.ResetToDefault();
-            }
-            NONE =           new Axis("None",    ID.NONE,    Config.ZERO,  "None");
-            MOUSE_X =        new Axis("Mouse X", ID.MOUSE_X, Config.MOUSE, "Mouse X");
-            MOUSE_Y =        new Axis("Mouse Y", ID.MOUSE_Y, Config.MOUSE, "Mouse Y");
-            MOUSE_SCROLL =   new Axis("Mouse ScrollWheel", ID.MOUSE_SCROLL, Config.NEUTRAL, "Mouse Scroll");
-            LEFT_STICK_X =   new Axis("Axis1",  ID.LEFT_STICK_X,  Config.LEFT_STICK,  "Left Stick X");
-            LEFT_STICK_Y =   new Axis("Axis2",  ID.LEFT_STICK_Y,  Config.LEFT_STICK,  "Left Stick Y");
-            RIGHT_STICK_X =  new Axis("Axis4",  ID.RIGHT_STICK_X, Config.RIGHT_STICK, "Right Stick X");
-            RIGHT_STICK_Y =  new Axis("Axis5",  ID.RIGHT_STICK_Y, Config.RIGHT_STICK, "Right Stick Y");
-            DPAD_X =         new Axis("Axis6",  ID.DPAD_X,        Config.NEUTRAL,     "DPad X",        "DPad Right",    "DPad Left");
-            DPAD_Y =         new Axis("Axis7",  ID.DPAD_Y,        Config.NEUTRAL,     "DPad Y",        "DPad Up",       "DPad Down");
-            LEFT_TRIGGER =   new Axis("Axis9",  ID.LEFT_TRIGGER,  Config.TRIGGERS,    "Left Trigger",  "Left Trigger",  "Left Trigger NEGATIVE??!");
-            RIGHT_TRIGGER =  new Axis("Axis10", ID.RIGHT_TRIGGER, Config.TRIGGERS,    "Right Trigger", "Right Trigger", "Right Trigger NEGATIVE??!");
-        }
+        public static readonly Axis NONE =           new Axis("None",    ID.NONE,    Config.ZERO,  "None");
+        public static readonly Axis MOUSE_X =        new Axis("Mouse X", ID.MOUSE_X, Config.MOUSE, "Mouse X");
+        public static readonly Axis MOUSE_Y =        new Axis("Mouse Y", ID.MOUSE_Y, Config.MOUSE, "Mouse Y");
+        public static readonly Axis MOUSE_SCROLL =   new Axis("Mouse ScrollWheel", ID.MOUSE_SCROLL, Config.NEUTRAL, "Mouse Scroll");
+        public static readonly Axis LEFT_STICK_X =   new Axis("Axis1",  ID.LEFT_STICK_X,  Config.LEFT_STICK,  "Left Stick X");
+        public static readonly Axis LEFT_STICK_Y =   new Axis("Axis2",  ID.LEFT_STICK_Y,  Config.LEFT_STICK,  "Left Stick Y");
+        public static readonly Axis RIGHT_STICK_X =  new Axis("Axis4",  ID.RIGHT_STICK_X, Config.RIGHT_STICK, "Right Stick X");
+        public static readonly Axis RIGHT_STICK_Y =  new Axis("Axis5",  ID.RIGHT_STICK_Y, Config.RIGHT_STICK, "Right Stick Y");
+        public static readonly Axis DPAD_X =         new Axis("Axis6",  ID.DPAD_X,        Config.NEUTRAL,     "DPad X",        "DPad Right",    "DPad Left");
+        public static readonly Axis DPAD_Y =         new Axis("Axis7",  ID.DPAD_Y,        Config.NEUTRAL,     "DPad Y",        "DPad Up",       "DPad Down");
+        public static readonly Axis LEFT_TRIGGER =   new Axis("Axis9",  ID.LEFT_TRIGGER,  Config.TRIGGERS,    "Left Trigger",  "Left Trigger",  "Left Trigger NEGATIVE??!");
+        public static readonly Axis RIGHT_TRIGGER =  new Axis("Axis10", ID.RIGHT_TRIGGER, Config.TRIGGERS,    "Right Trigger", "Right Trigger", "Right Trigger NEGATIVE??!");
 
         public static IEnumerable<Axis> Axes () {
             yield return NONE;

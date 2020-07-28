@@ -46,7 +46,7 @@ public class DebugConsole : MonoBehaviour {
     
     private static DebugConsole instance;
 
-    Queue<string> outstandingLogs;
+    Queue<string> queuedLogs;
     List<Text> clonedTextFields;
     Text activeLogTextField;
 
@@ -64,7 +64,7 @@ public class DebugConsole : MonoBehaviour {
         }
         instance = this;
         InitUI();
-        outstandingLogs = new Queue<string>();
+        queuedLogs = new Queue<string>();
         clonedTextFields = new List<Text>();
         activeLogTextField = logTextFieldTemplate;
         Clear();
@@ -94,7 +94,7 @@ public class DebugConsole : MonoBehaviour {
     }
 
     void Update () {
-        if(InputSystem.Bind.TOGGLE_DEBUG_CONSOLE.GetKeyDown()){
+        if(InputSystem.Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
             visible = !visible;
         }
     }
@@ -146,7 +146,7 @@ public class DebugConsole : MonoBehaviour {
 
         void UpdateLogs () {
             if(currentLog.Length + logAppend.Length >= UNITY_TEXT_CHAR_LIMIT){
-                outstandingLogs.Enqueue(currentLog);
+                queuedLogs.Enqueue(currentLog);
                 currentLog = logAppend;     // no newline at start because that would result in a two-newline gap between the texts
             }else{
                 currentLog += $"\n{logAppend}";
@@ -160,8 +160,8 @@ public class DebugConsole : MonoBehaviour {
 
     void UpdateDisplay () {
         var normedPos = scrollView.verticalNormalizedPosition;
-        while(outstandingLogs.Count > 0){
-            UpdateCurrentTextField(outstandingLogs.Dequeue());
+        while(queuedLogs.Count > 0){
+            UpdateCurrentTextField(queuedLogs.Dequeue());
             CreateNewActiveTextField();
         }
         UpdateCurrentTextField(currentLog);
@@ -212,7 +212,7 @@ public class DebugConsole : MonoBehaviour {
         }
 
         void ClearLogs () {
-            outstandingLogs.Clear();
+            queuedLogs.Clear();
             currentLog = string.Empty;
         }
 
@@ -241,6 +241,8 @@ public class DebugConsole : MonoBehaviour {
         scrollView.verticalScrollbar.handleRect.GetComponent<Image>().color = foregroundColor;
         scrollView.horizontalScrollbar.GetComponent<Image>().color = midgroundColor;
         scrollView.horizontalScrollbar.handleRect.GetComponent<Image>().color = foregroundColor;
+        scrollView.content.SetAnchorAndPivot(0, 1);
+        logTextFieldTemplate.rectTransform.SetAnchorAndPivot(0, 1);
         logTextFieldTemplate.text = string.Empty;
         logTextFieldTemplate.color = textColor;
         clearButton.targetGraphic.color = Color.white;

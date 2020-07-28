@@ -10,7 +10,7 @@ namespace CustomInputSystem {
             public readonly ID id;
             public readonly string name;
 
-            public bool immutable { get; private set; }     // TODO i'd like to get rid of it. but then i'd have to treat pause/unpause like a special snowflake in a FEW places. might be worth it.
+            public bool immutable { get; private set; }
 
             private List<InputMethod> inputs = new List<InputMethod>();
 
@@ -20,6 +20,19 @@ namespace CustomInputSystem {
                 this.id = id;
                 this.name = name;
                 immutable = false;
+            }
+
+            private Bind (ID id, string name, params InputMethod[] initialInputs) {
+                this.id = id;
+                this.name = name;
+                this.inputs.AddRange(initialInputs);
+                immutable = false;
+            }
+
+            public static Bind CreateImmutableBind (ID id, string name, params InputMethod[] initialInputs) {
+                var output = new Bind(id, name, initialInputs);
+                output.immutable = true;
+                return output;
             }
 
             public override string ToString () {
