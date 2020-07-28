@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using CustomInputSystem.Inputs;
 
 namespace CustomInputSystem {
 
-    public partial class InputSystem : MonoBehaviour {
+    public class InputSystem : MonoBehaviour {
 
         [SerializeField] bool resetAxisConfigToDefault = false;
         [SerializeField] bool resetKeybindsToDefault = false;
@@ -111,7 +112,7 @@ namespace CustomInputSystem {
             return null;
         }
 
-        static void BindsChanged (bool saveToDiskIfValid = false) {
+        public static void ValidateBinds () {
             var badBinds = new List<(Bind bind, InputMethod input)>();
             ScanForDoubleBinds(ref badBinds, true);
             if(badBinds.Count > 0){
@@ -124,7 +125,9 @@ namespace CustomInputSystem {
                     Bind.SaveToDisk();
                 }
             }
-            CollectAxisInputs();        
+            if(instance != null){
+                CollectAxisInputs();
+            }
         }
 
         static void ScanForDoubleBinds (ref List<(Bind, InputMethod)> badBinds, bool logErrors) {

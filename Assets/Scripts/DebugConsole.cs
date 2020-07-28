@@ -94,7 +94,7 @@ public class DebugConsole : MonoBehaviour {
     }
 
     void Update () {
-        if(InputSystem.Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
+        if(Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
             visible = !visible;
         }
     }
