@@ -114,11 +114,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 2596352589241916807}
   image: {fileID: 2596352589604887845}
+  background: {fileID: 2596352590439499574}
   rawFPSText: {fileID: 2596352589466947736}
   avgFPSText: {fileID: 2596352589457404087}
   minFPSText: {fileID: 2596352590679351393}
   maxFPSText: {fileID: 2596352590839577682}
-  lineCol: {r: 1, g: 1, b: 1, a: 0}
+  colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
 --- !u!1 &2596352589457403977
 GameObject:
   m_ObjectHideFlags: 0

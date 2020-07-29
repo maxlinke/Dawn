@@ -19,17 +19,8 @@ namespace DebugTools {
         [SerializeField] ScrollRect scrollView = default;
         [SerializeField] Image background = default;
 
-        [Header("UI Element Colors")]
-        [SerializeField] Color textColor = Color.black;
-        [SerializeField] Color backgroundColor = Color.black;
-        [SerializeField] Color midgroundColor = Color.black;
-        [SerializeField] Color foregroundColor = Color.black;
-
-        [Header("Log Colors")]
-        [SerializeField] Color logColor = Color.black;
-        [SerializeField] Color warningColor = Color.black;
-        [SerializeField] Color errorColor = Color.black;
-        [SerializeField] Color exceptionColor = Color.black;
+        [Header("Colors")]
+        [SerializeField] DebugToolColorScheme colorScheme = default;
 
         bool visible {
             get {
@@ -58,6 +49,11 @@ namespace DebugTools {
         int warningCount;
         int errorCount;
 
+        string hexLogColor;
+        string hexWarningColor;
+        string hexRrrorColor;
+        string hexExceptionColor;
+
         void Awake () {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(DebugLog)} is not null!");
@@ -70,6 +66,10 @@ namespace DebugTools {
             queuedLogs = new Queue<string>();
             clonedTextFields = new List<Text>();
             activeLogTextField = logTextFieldTemplate;
+            hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
+            hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
+            hexRrrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
+            hexExceptionColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugExceptionColor);
             Clear();
             visible = false;
             Application.logMessageReceived += HandleLog;
@@ -119,22 +119,22 @@ namespace DebugTools {
                 switch(logType){
                     case LogType.Log:
                         logCount++;
-                        coloredString = FormatWithColor(logLabel, logColor);
+                        coloredString = FormatWithColor(logLabel, hexLogColor);
                         break;
                     case LogType.Warning:
                         warningCount++;
-                        coloredString = FormatWithColor(logLabel, warningColor);
+                        coloredString = FormatWithColor(logLabel, hexWarningColor);
                         break;
                     case LogType.Error:
                         errorCount++;
-                        coloredString = FormatWithColor(logLabel, errorColor);
+                        coloredString = FormatWithColor(logLabel, hexRrrorColor);
                         break;
                     case LogType.Exception:
                         errorCount++;
-                        coloredString = FormatWithColor(logLabel, exceptionColor);
+                        coloredString = FormatWithColor(logLabel, hexExceptionColor);
                         break;
                     default:
-                        coloredString = FormatWithColor(logLabel, logColor);
+                        coloredString = FormatWithColor(logLabel, hexLogColor);
                         break;
                 }
             }
@@ -157,8 +157,8 @@ namespace DebugTools {
             }
         }
 
-        string FormatWithColor (object textToFormat, Color colorToUse) {
-            return $"<color=#{ColorUtility.ToHtmlStringRGB(colorToUse)}>{textToFormat}</color>";
+        string FormatWithColor (object textToFormat, string hexColorToUse) {
+            return $"<color=#{hexColorToUse}>{textToFormat}</color>";
         }
 
         void UpdateDisplay () {
@@ -195,14 +195,14 @@ namespace DebugTools {
 
             void UpdateCountTextField () {  
                 var total = $"Total: {totalLogCount}";
-                var logs = $"Logs: {ColorIfGreaterZero(logCount, logColor)}";
-                var warnings = $"Warnings: {ColorIfGreaterZero(warningCount, warningColor)}";
-                var errors = $"Errors: {ColorIfGreaterZero(errorCount, errorColor)}";
+                var logs = $"Logs: {ColorIfGreaterZero(logCount, hexLogColor)}";
+                var warnings = $"Warnings: {ColorIfGreaterZero(warningCount, hexWarningColor)}";
+                var errors = $"Errors: {ColorIfGreaterZero(errorCount, hexRrrorColor)}";
                 countDisplayTextField.text = $"{total} | {logs}, {warnings}, {errors}";
             }
 
-            string ColorIfGreaterZero (int inputCount, Color color) {
-                return inputCount > 0 ? FormatWithColor(inputCount, color) : inputCount.ToString();
+            string ColorIfGreaterZero (int inputCount, string hexColor) {
+                return inputCount > 0 ? FormatWithColor(inputCount, hexColor) : inputCount.ToString();
             }
         }
 
@@ -239,29 +239,29 @@ namespace DebugTools {
         }
 
         void InitUI () {
-            background.color = backgroundColor;
-            scrollView.verticalScrollbar.GetComponent<Image>().color = midgroundColor;
-            scrollView.verticalScrollbar.handleRect.GetComponent<Image>().color = foregroundColor;
-            scrollView.horizontalScrollbar.GetComponent<Image>().color = midgroundColor;
-            scrollView.horizontalScrollbar.handleRect.GetComponent<Image>().color = foregroundColor;
+            background.color = colorScheme.BackgroundColor;
+            scrollView.verticalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
+            scrollView.verticalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
+            scrollView.horizontalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
+            scrollView.horizontalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
             scrollView.content.SetAnchorAndPivot(0, 1);
             logTextFieldTemplate.rectTransform.SetAnchorAndPivot(0, 1);
             logTextFieldTemplate.text = string.Empty;
-            logTextFieldTemplate.color = textColor;
+            logTextFieldTemplate.color = colorScheme.TextColor;
             clearButton.targetGraphic.color = Color.white;
             clearButton.transition = Selectable.Transition.ColorTint;
             var cbCols = new ColorBlock();
             cbCols.fadeDuration = 0f;
             cbCols.colorMultiplier = 1f;
             cbCols.normalColor = Color.clear;
-            cbCols.highlightedColor = foregroundColor;
-            cbCols.pressedColor = midgroundColor;
+            cbCols.highlightedColor = colorScheme.ForegroundColor;
+            cbCols.pressedColor = colorScheme.MidgroundColor;
             cbCols.disabledColor = Color.magenta;
             clearButton.colors = cbCols;
             clearButton.onClick.AddListener(() => {Clear();});
-            clearButtonLabel.color = textColor;
+            clearButtonLabel.color = colorScheme.TextColor;
             countDisplayTextField.text = string.Empty;
-            countDisplayTextField.color = textColor;
+            countDisplayTextField.color = colorScheme.TextColor;
         }
     }
 }

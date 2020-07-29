@@ -6,13 +6,17 @@ namespace DebugTools {
 
     public class FramerateDisplay : MonoBehaviour {
 
-        [SerializeField] Canvas canvas;
-        [SerializeField] RawImage image;
-        [SerializeField] Text rawFPSText;
-        [SerializeField] Text avgFPSText;
-        [SerializeField] Text minFPSText;
-        [SerializeField] Text maxFPSText;
-        [SerializeField] Color lineCol;
+        [Header("Components")]
+        [SerializeField] Canvas canvas = default;
+        [SerializeField] RawImage image = default;
+        [SerializeField] Image background = default;
+        [SerializeField] Text rawFPSText = default;
+        [SerializeField] Text avgFPSText = default;
+        [SerializeField] Text minFPSText = default;
+        [SerializeField] Text maxFPSText = default;
+
+        [Header("Colors")]
+        [SerializeField] DebugToolColorScheme colorScheme = default;
 
         bool visible {
             get {
@@ -33,6 +37,8 @@ namespace DebugTools {
 
         RectTransform imageRT => image.rectTransform;
         Texture2D tex;
+        Color32 lineCol32;
+        Color32 clearCol32;
 
         float[] framerates;
         float currentFPS;
@@ -52,14 +58,10 @@ namespace DebugTools {
             }
             instance = this;
             canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_FRAMERATE;
-            tex = new Texture2D(
-                width: (int)(imageRT.rect.width), 
-                height: (int)(imageRT.rect.height), 
-                textureFormat: TextureFormat.RGBA32,
-                mipChain: false,
-                linear: false
-            );
-            image.texture = tex;
+            ResetTexture();
+            lineCol32 = colorScheme.FramerateLineColor;
+            clearCol32 = Color.clear;
+            InitUI();
             framerates = new float[tex.width];
             visible = false;
         }
@@ -87,7 +89,7 @@ namespace DebugTools {
             }
             currentFPS = 1f / Time.unscaledDeltaTime;
             if(currentFrameIndex == 0){
-                tex.SetPixels(Color.clear, false, false);
+                tex.SetPixels32(clearCol32, false, false);
                 avgFPS = currentFPS;
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
@@ -111,7 +113,7 @@ namespace DebugTools {
             if(currentFPS < texMin || currentFPS > texMax){
                 texMin = Mathf.Min(texMin, currentFPS);
                 texMax = Mathf.Max(texMax, currentFPS);
-                tex.SetPixels(Color.clear, false, false);
+                tex.SetPixels32(clearCol32, false, false);
                 startIndex = 0;
             }
             float lastValue = (startIndex == 0) ? framerates[0] : framerates[startIndex-1];
@@ -122,7 +124,7 @@ namespace DebugTools {
                 int minY = Mathf.Min(currentY, lastY);
                 int maxY = Mathf.Max(currentY, lastY);
                 for(int y=minY; y<=maxY; y++){
-                    tex.SetPixel(i, y, lineCol);
+                    tex.SetPixel(i, y, lineCol32);
                 }
                 lastValue = currentValue;
             }
@@ -139,6 +141,33 @@ namespace DebugTools {
             avgFPSText.text = $"Avg: {avgFPS:F1}";
             minFPSText.text = $"Min: {minFPS:F1}";
             maxFPSText.text = $"Max: {maxFPS:F1}";
+        }
+
+        void ResetTexture () {
+            if(tex != null){
+                tex.Resize(
+                    width: (int)(imageRT.rect.width), 
+                    height: (int)(imageRT.rect.height)
+                );
+            }else{
+                tex = new Texture2D(
+                    width: (int)(imageRT.rect.width), 
+                    height: (int)(imageRT.rect.height), 
+                    textureFormat: TextureFormat.RGBA32,
+                    mipChain: false,
+                    linear: false
+                );
+            }
+            tex.SetPixels32(clearCol32, true, false);
+        }
+
+        void InitUI () {
+            image.texture = tex;
+            background.color = colorScheme.BackgroundColor;
+            rawFPSText.color = colorScheme.TextColor;
+            avgFPSText.color = colorScheme.TextColor;
+            minFPSText.color = colorScheme.TextColor;
+            maxFPSText.color = colorScheme.TextColor;
         }
         
     }

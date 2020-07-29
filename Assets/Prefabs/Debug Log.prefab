@@ -277,7 +277,7 @@ GameObject:
   - component: {fileID: 4984440591279747814}
   - component: {fileID: 4984440591279747818}
   m_Layer: 5
-  m_Name: Debug Console
+  m_Name: Debug Log
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -382,14 +382,7 @@ MonoBehaviour:
   clearButtonLabel: {fileID: 4984440591731615303}
   scrollView: {fileID: 4984440592777864210}
   background: {fileID: 4984440592333231589}
-  textColor: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
-  backgroundColor: {r: 0.1254902, g: 0.1254902, b: 0.1254902, a: 0.7529412}
-  midgroundColor: {r: 1, g: 1, b: 1, a: 0.2509804}
-  foregroundColor: {r: 1, g: 1, b: 1, a: 0.5019608}
-  logColor: {r: 1, g: 1, b: 1, a: 1}
-  warningColor: {r: 1, g: 0.76862746, b: 0.15294118, a: 1}
-  errorColor: {r: 1, g: 0.32820654, b: 0.1745283, a: 1}
-  exceptionColor: {r: 1, g: 0, b: 0.24407196, a: 1}
+  colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
 --- !u!1 &4984440591362190459
 GameObject:
   m_ObjectHideFlags: 0
