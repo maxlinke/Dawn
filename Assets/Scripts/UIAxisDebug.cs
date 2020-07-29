@@ -92,17 +92,7 @@ public class UIAxisDebug : MonoBehaviour {
     }
 
     void ClearTexture () {
-        var cols32 = new Color32[tex.width * tex.height];
-        var r = (byte)(clearColor.r * 255);
-        var g = (byte)(clearColor.g * 255);
-        var b = (byte)(clearColor.b * 255);
-        var a = (byte)(clearColor.a * 255);
-        var clearCol32 = new Color32(r, g, b, a);
-        for(int i=0; i<cols32.Length; i++){
-            cols32[i] = clearCol32;
-        }
-        tex.SetPixels32(cols32);
-        tex.Apply(false);
+        tex.SetPixels(clearColor, true, false);
     }
 	
 }

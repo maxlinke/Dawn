@@ -65,6 +65,7 @@ namespace DebugTools {
                 return;
             }
             instance = this;
+            canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_LOG;
             InitUI();
             queuedLogs = new Queue<string>();
             clonedTextFields = new List<Text>();
