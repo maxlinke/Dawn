@@ -89,7 +89,7 @@ namespace DebugTools {
             }
             currentFPS = 1f / Time.unscaledDeltaTime;
             if(currentFrameIndex == 0){
-                tex.SetPixels32(clearCol32, false, false);
+                tex.SetPixels(clearCol32, false, false);
                 avgFPS = currentFPS;
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
@@ -113,7 +113,7 @@ namespace DebugTools {
             if(currentFPS < texMin || currentFPS > texMax){
                 texMin = Mathf.Min(texMin, currentFPS);
                 texMax = Mathf.Max(texMax, currentFPS);
-                tex.SetPixels32(clearCol32, false, false);
+                tex.SetPixels(clearCol32, false, false);
                 startIndex = 0;
             }
             float lastValue = (startIndex == 0) ? framerates[0] : framerates[startIndex-1];
@@ -158,7 +158,7 @@ namespace DebugTools {
                     linear: false
                 );
             }
-            tex.SetPixels32(clearCol32, true, false);
+            tex.SetPixels(clearCol32, true, false);
         }
 
         void InitUI () {
