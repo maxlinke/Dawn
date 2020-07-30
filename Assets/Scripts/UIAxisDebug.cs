@@ -48,7 +48,7 @@ public class UIAxisDebug : MonoBehaviour {
             if(nextX == 0){
                 ClearTexture();
             }
-            float drawVal = Axis.GetAxis(axisID).GetRaw();
+            float drawVal = Axis.GetAxis(axisID).GetUnsmoothed();
             valueField.text = drawVal.ToString();
             tex.SetPixel(nextX, ToScaledY(0), referenceColor);
             tex.SetPixel(nextX, ToScaledY(1), referenceColor);

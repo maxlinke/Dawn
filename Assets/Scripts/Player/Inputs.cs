@@ -31,7 +31,7 @@ namespace PlayerUtils {
         }
 
         public struct MovementInputs {
-            public readonly Vector3 localMoveDir;
+            public readonly Vector3 localMoveDir;       // also contain up/down for swimming? (jump/crouch, usually discarded when flattening the vector)
             public readonly bool shouldWalk;
             public readonly bool shouldCrouch;
             public readonly bool shouldJump;
@@ -44,9 +44,9 @@ namespace PlayerUtils {
         }
 
         public struct ViewInputs {
-            public readonly Vector2 mouseDelta;
-            public ViewInputs (Vector2 mouseDelta) {
-                this.mouseDelta = mouseDelta;
+            public readonly Vector2 viewDirDelta;
+            public ViewInputs (Vector2 viewDirDelta) {
+                this.viewDirDelta = viewDirDelta;
             }
         }
         

@@ -795,6 +795,7 @@ GameObject:
   - component: {fileID: 1702448567}
   - component: {fileID: 1702448566}
   - component: {fileID: 1702448565}
+  - component: {fileID: 1702448569}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -814,7 +815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4fbefab6e7b2264eae704369cede800, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cc: {fileID: 0}
+  cc: {fileID: 1702448567}
 --- !u!114 &1702448566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -827,11 +828,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ea3e06b680a98841b703a2b0ee3463d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  head: {fileID: 0}
+  head: {fileID: 283246919}
   config: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
   inputSystem: {fileID: 0}
   movementSystem: {fileID: 1702448565}
-  viewSystem: {fileID: 0}
+  viewSystem: {fileID: 1702448569}
 --- !u!143 &1702448567
 CharacterController:
   m_ObjectHideFlags: 0
@@ -865,6 +866,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1702448569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702448564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a07d835725a73944b178296066870da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1753144042
 GameObject:
   m_ObjectHideFlags: 0

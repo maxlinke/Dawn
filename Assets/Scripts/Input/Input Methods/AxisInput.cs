@@ -31,7 +31,7 @@ namespace CustomInputSystem.Inputs {
         public override bool Hold => _hold;
         public override bool Up => _up;
 
-        public override float Value => Mathf.Max(0f, this.axis.GetRaw() * this.sign);
+        public override float Value => Mathf.Max(0f, this.axis.GetUnsmoothed() * this.sign);
         public override string Name => (positive ? this.axis.positiveName : this.axis.negativeName);
 
         public override bool Equals (object obj) {

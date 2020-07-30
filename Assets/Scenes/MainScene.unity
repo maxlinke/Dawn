@@ -125,7 +125,7 @@ GameObject:
   - component: {fileID: 201239480}
   - component: {fileID: 201239479}
   - component: {fileID: 201239483}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Loading Screen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -350,7 +350,7 @@ GameObject:
   - component: {fileID: 379145419}
   - component: {fileID: 379145421}
   - component: {fileID: 379145420}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -534,7 +534,7 @@ GameObject:
   - component: {fileID: 1793123963}
   - component: {fileID: 1793123965}
   - component: {fileID: 1793123964}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}

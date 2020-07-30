@@ -90,7 +90,7 @@ namespace CustomInputSystem {
                 return true;
             }
             foreach(var axis in Axis.Axes()){
-                if(Mathf.Abs(axis.GetRaw()) >= AxisInput.ANALOG_TO_BOOL_THRESHOLD){
+                if(Mathf.Abs(axis.GetUnsmoothed()) >= AxisInput.ANALOG_TO_BOOL_THRESHOLD){
                     return true;
                 }
             }
@@ -104,7 +104,7 @@ namespace CustomInputSystem {
                 }
             }
             foreach(var axis in Axis.Axes()){
-                var rawVal = axis.GetRaw();
+                var rawVal = axis.GetUnsmoothed();
                 if(Mathf.Abs(rawVal) >= AxisInput.ANALOG_TO_BOOL_THRESHOLD){
                     return new AxisInput(axis.id, rawVal > 0);
                 }

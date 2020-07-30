@@ -20,18 +20,18 @@ namespace CustomInputSystem {
             RIGHT_TRIGGER
         }
 
-        public static readonly Axis NONE =           new Axis("None",    ID.NONE,    Config.ZERO,  "None");
-        public static readonly Axis MOUSE_X =        new Axis("Mouse X", ID.MOUSE_X, Config.MOUSE, "Mouse X");
-        public static readonly Axis MOUSE_Y =        new Axis("Mouse Y", ID.MOUSE_Y, Config.MOUSE, "Mouse Y");
-        public static readonly Axis MOUSE_SCROLL =   new Axis("Mouse ScrollWheel", ID.MOUSE_SCROLL, Config.NEUTRAL, "Mouse Scroll");
-        public static readonly Axis LEFT_STICK_X =   new Axis("Axis1",  ID.LEFT_STICK_X,  Config.LEFT_STICK,  "Left Stick X");
-        public static readonly Axis LEFT_STICK_Y =   new Axis("Axis2",  ID.LEFT_STICK_Y,  Config.LEFT_STICK,  "Left Stick Y");
-        public static readonly Axis RIGHT_STICK_X =  new Axis("Axis4",  ID.RIGHT_STICK_X, Config.RIGHT_STICK, "Right Stick X");
-        public static readonly Axis RIGHT_STICK_Y =  new Axis("Axis5",  ID.RIGHT_STICK_Y, Config.RIGHT_STICK, "Right Stick Y");
-        public static readonly Axis DPAD_X =         new Axis("Axis6",  ID.DPAD_X,        Config.NEUTRAL,     "DPad X",        "DPad Right",    "DPad Left");
-        public static readonly Axis DPAD_Y =         new Axis("Axis7",  ID.DPAD_Y,        Config.NEUTRAL,     "DPad Y",        "DPad Up",       "DPad Down");
-        public static readonly Axis LEFT_TRIGGER =   new Axis("Axis9",  ID.LEFT_TRIGGER,  Config.TRIGGERS,    "Left Trigger",  "Left Trigger",  "Left Trigger NEGATIVE??!");
-        public static readonly Axis RIGHT_TRIGGER =  new Axis("Axis10", ID.RIGHT_TRIGGER, Config.TRIGGERS,    "Right Trigger", "Right Trigger", "Right Trigger NEGATIVE??!");
+        public static readonly Axis NONE =           new Axis("None",    ID.NONE,    Config.ZERO,  true, "None");
+        public static readonly Axis MOUSE_X =        new Axis("Mouse X", ID.MOUSE_X, Config.MOUSE, false, "Mouse X");
+        public static readonly Axis MOUSE_Y =        new Axis("Mouse Y", ID.MOUSE_Y, Config.MOUSE, false, "Mouse Y");
+        public static readonly Axis MOUSE_SCROLL =   new Axis("Mouse ScrollWheel", ID.MOUSE_SCROLL, Config.NEUTRAL, true, "Mouse Scroll");
+        public static readonly Axis LEFT_STICK_X =   new Axis("Axis1",  ID.LEFT_STICK_X,  Config.LEFT_STICK,  true, "Left Stick X");
+        public static readonly Axis LEFT_STICK_Y =   new Axis("Axis2",  ID.LEFT_STICK_Y,  Config.LEFT_STICK,  true, "Left Stick Y");
+        public static readonly Axis RIGHT_STICK_X =  new Axis("Axis4",  ID.RIGHT_STICK_X, Config.RIGHT_STICK, true, "Right Stick X");
+        public static readonly Axis RIGHT_STICK_Y =  new Axis("Axis5",  ID.RIGHT_STICK_Y, Config.RIGHT_STICK, true, "Right Stick Y");
+        public static readonly Axis DPAD_X =         new Axis("Axis6",  ID.DPAD_X,        Config.NEUTRAL,     true, "DPad X",        "DPad Right",    "DPad Left");
+        public static readonly Axis DPAD_Y =         new Axis("Axis7",  ID.DPAD_Y,        Config.NEUTRAL,     true, "DPad Y",        "DPad Up",       "DPad Down");
+        public static readonly Axis LEFT_TRIGGER =   new Axis("Axis9",  ID.LEFT_TRIGGER,  Config.TRIGGERS,    true, "Left Trigger",  "Left Trigger",  "Left Trigger NEGATIVE??!");
+        public static readonly Axis RIGHT_TRIGGER =  new Axis("Axis10", ID.RIGHT_TRIGGER, Config.TRIGGERS,    true, "Right Trigger", "Right Trigger", "Right Trigger NEGATIVE??!");
 
         public static IEnumerable<Axis> Axes () {
             yield return NONE;
@@ -89,31 +89,38 @@ namespace CustomInputSystem {
         public readonly string name;
         public readonly string positiveName;
         public readonly string negativeName;
+        private readonly bool deltaTimeInvariant;
 
-        private Axis (string unityInputIdentifier, ID id, Config config, string name, string positiveName, string negativeName) {
+        private Axis (string unityInputIdentifier, ID id, Config config, bool deltaTimeInvariant, string name, string positiveName, string negativeName) {
             this.unityInputIdentifier = unityInputIdentifier;
             this.id = id;
             this.config = config;
             this.name = name;
             this.positiveName = positiveName;
             this.negativeName = negativeName;
+            this.deltaTimeInvariant = deltaTimeInvariant;
         }
 
-        private Axis (string unityInputIdentifier, ID id, Config config, string name) {
+        private Axis (string unityInputIdentifier, ID id, Config config, bool deltaTimeInvariant, string name) {
             this.unityInputIdentifier = unityInputIdentifier;
             this.id = id;
             this.config = config;
             this.name = name;
             this.positiveName = $"{name}+";
             this.negativeName = $"{name}-";
+            this.deltaTimeInvariant = deltaTimeInvariant;
         }
 
-        public float GetRaw () {
-            return config.ApplyConfig(Input.GetAxisRaw(unityInputIdentifier));
+        public virtual float GetActuallyRaw () {
+            return Input.GetAxisRaw(unityInputIdentifier);
         }
 
-        public float GetSmoothed () {
-            return config.ApplyConfig(Input.GetAxis(unityInputIdentifier));
+        public virtual float GetUnsmoothed () {
+            return config.ApplyConfig(Input.GetAxisRaw(unityInputIdentifier) / (deltaTimeInvariant ? 1f : 60f * Time.unscaledDeltaTime));
+        }
+
+        public virtual float GetSmoothed () {
+            return config.ApplyConfig(Input.GetAxis(unityInputIdentifier) / (deltaTimeInvariant ? 1f : 60f * Time.unscaledDeltaTime));
         }
 
         public override string ToString () {
@@ -121,4 +128,5 @@ namespace CustomInputSystem {
         }
 
     }
+
 }
