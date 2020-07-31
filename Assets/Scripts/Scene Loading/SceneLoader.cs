@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 namespace SceneLoading {
@@ -13,20 +14,15 @@ namespace SceneLoading {
             WITH_LOADING_SCREEN_AND_MANUAL_CONTINUE
         }
 
-        // TODO merge this and the loading screen. make the loading screen a part of this i guess
-        // some way of keeping track of initializations
-        // scenes not being fully loaded until all awake and start procedures are done is nice
-        // but it doesn't help for loading saves and such
-        // reloading a save doesn't need to reload the entire scene asset, just reset the stuff contained within
-        // Time.timeScale could be useful here
-
         [SerializeField] SceneID initialScene = default;
-        [SerializeField] LoadingScreen loadingScreen = default;
+        [SerializeField] Canvas loadingScreenCanvas = default;
+        [SerializeField] Image loadingBar = default;
+        [SerializeField] Text[] loadingTexts = default;
 
         private static SceneLoader instance;
 
         SceneID currentScene = SceneID.NONE;
-        Coroutine loadVis = null;
+        Coroutine loadCoroutine = null;
 
         void Start () {
             if(instance != null){
@@ -35,8 +31,8 @@ namespace SceneLoading {
                 return;
             }
             instance = this;
-            Load(initialScene, LoadMode.NO_LOADING_SCREEN);     // get load mode from the same scriptable object that says what the next level is
-            // maybe even make a separate struct for "level" or something that can contain multiple scenes? like, level, navigation, background?
+            loadingScreenCanvas.sortingOrder = (int)(CanvasSortingOrder.LOADING_SCREEN);
+            Load(initialScene, LoadMode.NO_LOADING_SCREEN);
         }
 
         public static void LoadScene (SceneID newScene, LoadMode loadMode) {
@@ -49,20 +45,25 @@ namespace SceneLoading {
 
         // important: the loads are only "done" when the awakes are also done. so i can do my inits without having to do anything here, i think...
         void Load (SceneID newScene, LoadMode loadMode) {
+            if(loadCoroutine != null){
+                Debug.LogError($"Currently loading another scene, call to load \"{newScene}\" will be ignored!");
+                return;
+            }
             List<AsyncOperation> loadOps = new List<AsyncOperation>();
-            UnloadCurrentScene();
+            UnloadCurrentScenes();
             LoadNewScene();
             if(loadOps.Count > 0){
-                loadVis = StartCoroutine(LoadingVis());
+                loadCoroutine = StartCoroutine(LoadingVis());
             }
-            // set new as active, preferrably as soon as it's loaded fully
             
-            void UnloadCurrentScene () {
-                // SceneManager.GetAllScenes    // < unload all of those except this one? how can i tell THIS one?
-                if(currentScene == SceneID.NONE){
-                    return;
+            void UnloadCurrentScenes () {
+                for(int i=0; i<SceneManager.sceneCount; i++){
+                    var scene = SceneManager.GetSceneAt(i);
+                    if(scene == this.gameObject.scene){
+                        continue;
+                    }
+                    loadOps.Add(SceneManager.UnloadSceneAsync(scene));
                 }
-                loadOps.Add(SceneManager.UnloadSceneAsync((int)currentScene));
             }
 
             void LoadNewScene () {
@@ -73,21 +74,26 @@ namespace SceneLoading {
             }
 
             IEnumerator LoadingVis () {
-                loadingScreen.Show();
-                var progress = 0f;
-                while(progress < 1f){
-                    float sum = 0f;
+                loadingScreenCanvas.enabled = true;
+                bool doneLoading = false;
+                while(!doneLoading){
+                    float progressSum = 0f;
+                    doneLoading = true;
                     foreach(var loadOp in loadOps){
-                        sum += loadOp.progress;
+                        progressSum += loadOp.progress;
+                        doneLoading &= loadOp.isDone;
                     }
-                    progress =  sum / loadOps.Count;    // TODO < i don't trust floating point numbers, use the booleans...
+                    var progress =  progressSum / loadOps.Count;
+                    loadingBar.fillAmount = progress;
+                    var loadingTextText = $"{(100f * progress):F0}%";
+                    foreach(var text in loadingTexts){
+                        text.text = loadingTextText;
+                    }
                     yield return null;
                 }
-                loadingScreen.Hide();
-
-                // TODO maybe merge the loading screen into this?
-                // TODO some way of letting the scene initialize itself before removing the loadingscreen
-                // ^ static class with some kind of thingy. idk. 
+                SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex((int)newScene));
+                loadingScreenCanvas.enabled = false;
+                loadCoroutine = null;
             }
         }
 
