@@ -136,7 +136,7 @@ namespace CustomInputSystem {
                 foreach(var input in bind){
                     if(allInputs.Contains(input)){
                         badBinds.Add((bind, input));
-                        Debug.LogError($"{nameof(Bind)} \"{bind.name}\" uses {nameof(InputMethod)} \"{input.Name}\", which is already in use elsewhere!");
+                        Debug.LogWarning($"{nameof(Bind)} \"{bind.name}\" uses {nameof(InputMethod)} \"{input.Name}\", which is already in use elsewhere!");
                     }else{
                         allInputs.Add(input);
                     }
@@ -159,7 +159,7 @@ namespace CustomInputSystem {
                 foreach(var input in bind){
                     if(input is AxisInput axisInput){
                         if(instance.axisInputs.Contains(axisInput)){
-                            Debug.LogError($"Duplicate usage of {nameof(AxisInput)} \"{input.Name}\"!");
+                            Debug.LogWarning($"Duplicate usage of {nameof(AxisInput)} \"{input.Name}\"!");
                         }else{
                             instance.axisInputs.Add(axisInput);
                         }

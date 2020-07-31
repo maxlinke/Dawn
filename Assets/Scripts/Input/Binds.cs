@@ -132,7 +132,7 @@ namespace CustomInputSystem {
             }
             if(FileHelper.TryLoadConfigFile(FileNames.keybinds, out var json)){
                 if(json == null || json.Length == 0){
-                    Debug.LogError("Keybinds file is empty!");
+                    Debug.LogWarning("Keybinds file is empty!");
                     return false;
                 }
                 try{
@@ -155,14 +155,14 @@ namespace CustomInputSystem {
                         }
                     }
                     if(allIDs.Count > 0){
-                        Debug.LogError("Not all binds could be loaded");
+                        Debug.LogWarning("Not all binds could be loaded");
                         return false;
                     }else{
                         Debug.Log("Successfully loaded keybinds");
                         return true;
                     }
                 }catch(System.Exception e){
-                    Debug.LogError($"Issue loading keybinds \n{e.Message}");
+                    Debug.LogWarning($"Issue loading keybinds \n{e.Message}");
                 }
             }
             return false;

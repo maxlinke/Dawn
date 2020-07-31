@@ -46,7 +46,7 @@ namespace SceneLoading {
         // important: the loads are only "done" when the awakes are also done. so i can do my inits without having to do anything here, i think...
         void Load (SceneID newScene, LoadMode loadMode) {
             if(loadCoroutine != null){
-                Debug.LogError($"Currently loading another scene, call to load \"{newScene}\" will be ignored!");
+                Debug.LogWarning($"Currently loading another scene, call to load \"{newScene}\" will be ignored!");
                 return;
             }
             List<AsyncOperation> loadOps = new List<AsyncOperation>();

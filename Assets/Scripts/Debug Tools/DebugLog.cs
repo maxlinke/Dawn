@@ -48,10 +48,12 @@ namespace DebugTools {
         int logCount;
         int warningCount;
         int errorCount;
+        int exceptionCount;
+        int otherCount;
 
         string hexLogColor;
         string hexWarningColor;
-        string hexRrrorColor;
+        string hexErrorColor;
         string hexExceptionColor;
 
         void Awake () {
@@ -68,7 +70,7 @@ namespace DebugTools {
             activeLogTextField = logTextFieldTemplate;
             hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
-            hexRrrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
+            hexErrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
             hexExceptionColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugExceptionColor);
             Clear();
             visible = false;
@@ -127,13 +129,14 @@ namespace DebugTools {
                         break;
                     case LogType.Error:
                         errorCount++;
-                        coloredString = FormatWithColor(logLabel, hexRrrorColor);
+                        coloredString = FormatWithColor(logLabel, hexErrorColor);
                         break;
                     case LogType.Exception:
-                        errorCount++;
+                        exceptionCount++;
                         coloredString = FormatWithColor(logLabel, hexExceptionColor);
                         break;
                     default:
+                        otherCount++;
                         coloredString = FormatWithColor(logLabel, hexLogColor);
                         break;
                 }
@@ -193,17 +196,28 @@ namespace DebugTools {
                 activeLogTextField = newActiveField;
             }
 
-            void UpdateCountTextField () {  
+            void UpdateCountTextField () {
                 var total = $"Total: {totalLogCount}";
-                var logs = $"Logs: {ColorIfGreaterZero(logCount, hexLogColor)}";
-                var warnings = $"Warnings: {ColorIfGreaterZero(warningCount, hexWarningColor)}";
-                var errors = $"Errors: {ColorIfGreaterZero(errorCount, hexRrrorColor)}";
-                countDisplayTextField.text = $"{total} | {logs}, {warnings}, {errors}";
-            }
+                if(totalLogCount <= 0){
+                    countDisplayTextField.text = total;
+                    return;
+                }
+                bool commaNeeded = false;
+                var categorized = string.Empty;
+                AddCategoryIfCountGreaterZero("Log", logCount, hexLogColor);
+                AddCategoryIfCountGreaterZero("Warning", warningCount, hexWarningColor);
+                AddCategoryIfCountGreaterZero("Error", errorCount, hexErrorColor);
+                AddCategoryIfCountGreaterZero("Exception", exceptionCount, hexExceptionColor);
+                AddCategoryIfCountGreaterZero("Other", otherCount, hexLogColor);
+                countDisplayTextField.text = $"{total} | {categorized}";
 
-            string ColorIfGreaterZero (int inputCount, string hexColor) {
-                return inputCount > 0 ? FormatWithColor(inputCount, hexColor) : inputCount.ToString();
-            }
+                void AddCategoryIfCountGreaterZero (string type, int count, string hexColor) {
+                    if(count > 0){
+                        categorized = $"{categorized}{(commaNeeded ? ", " : "")}{FormatWithColor($"{count} {(count > 1 ? $"{type}s" : type)}", hexColor)}";
+                        commaNeeded = true;
+                    }
+                }
+            }            
         }
 
         void Clear () {
@@ -224,6 +238,8 @@ namespace DebugTools {
                 logCount = 0;
                 warningCount = 0;
                 errorCount = 0;
+                exceptionCount = 0;
+                otherCount = 0;
             }
 
             void ResetUI () {

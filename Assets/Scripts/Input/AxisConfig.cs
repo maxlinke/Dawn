@@ -80,7 +80,7 @@ namespace CustomInputSystem {
                         Debug.Log("Successfully loaded axis configs");
                         return true;
                     }catch(System.Exception e){
-                        Debug.LogError($"Issue loading axis configs \n{e.Message}");
+                        Debug.LogWarning($"Issue loading axis configs \n{e.Message}");
                     }
                 }
                 return false;
