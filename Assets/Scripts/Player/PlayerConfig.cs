@@ -14,19 +14,10 @@ public class PlayerConfig : ScriptableObject {
     public float EyeOffset => eyeOffset;
     public float ColliderRadius => colliderRadius;
 
-    [Header("Phyics")]
-    [SerializeField] PhysicMaterial physMat = default;
-    [SerializeField] float moveMass = 30f;
-    [SerializeField] float gravityMass = 90f;
-
-    public PhysicMaterial PhysMat => physMat;
-    public float MoveMass => moveMass;
-    public float GravityMass => gravityMass;
-
     [Header("Movement")]
-    [SerializeField] float moveSpeed = 8f;
+    [SerializeField] float moveSpeed = 12f;
     [SerializeField] float moveAccel = 32f;
-    [SerializeField] float airSpeed = 8f;
+    [SerializeField] float airSpeed = 12f;
     [SerializeField] float airAccel = 32f;
     [SerializeField] float jumpHeight = 1f;
     [SerializeField] float jumpCalcGravity = 29.43f;

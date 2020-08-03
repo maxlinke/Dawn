@@ -12,9 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 070f8f5acf8444e48aa0981863c4e972, type: 3}
   m_Name: New Player Config
   m_EditorClassIdentifier: 
-  moveSpeed: 8
-  moveAccel: 32
-  airSpeed: 8
-  airAccel: 32
-  jumpHeight: 1
+  normalHeight: 1.8
+  crouchHeight: 0.9
+  eyeOffset: -0.15
+  colliderRadius: 0.4
+  moveSpeed: 12
+  moveAccel: 92
+  airSpeed: 12
+  airAccel: 48
+  jumpHeight: 1.2
   jumpCalcGravity: 29.43

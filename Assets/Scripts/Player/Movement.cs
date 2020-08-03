@@ -12,6 +12,7 @@ namespace PlayerUtils {
 
         public abstract float Height { get;}
         public abstract Vector3 Velocity { get; }
+        public abstract Vector3 WorldCenter { get; }
 
         public virtual void Initialize (PlayerConfig config, Player player) {
             this.config = config;
@@ -19,15 +20,7 @@ namespace PlayerUtils {
             m_initialized = true;
         }
 
-        public abstract void ExecuteUpdate ();
 
-        public abstract void ExecuteFixedUpdate ();
-
-        protected Vector3 TEMP_GetLocalSpaceMoveInput () {
-            float move = (Input.GetKey(KeyCode.W) ? 1 : 0) - (Input.GetKey(KeyCode.S) ? 1 : 0);
-            float strafe = (Input.GetKey(KeyCode.D) ? 1 : 0) - (Input.GetKey(KeyCode.A) ? 1 : 0);
-            return new Vector3(strafe, 0f, move);
-        }
 
     }
 

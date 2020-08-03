@@ -20,8 +20,7 @@ namespace SceneLoading {
         [SerializeField] Text[] loadingTexts = default;
 
         private static SceneLoader instance;
-
-        SceneID currentScene = SceneID.NONE;
+        
         Coroutine loadCoroutine = null;
 
         void Start () {
