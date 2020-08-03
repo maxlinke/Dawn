@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [CreateAssetMenu(menuName = "Player Config", fileName = "New Player Config")]
-public class PlayerConfig : ScriptableObject {
+public class PlayerControllerProperties : ScriptableObject {
 
     [Header("General")]
     [SerializeField] float normalHeight = 1.8f;
@@ -14,17 +14,25 @@ public class PlayerConfig : ScriptableObject {
     public float EyeOffset => eyeOffset;
     public float ColliderRadius => colliderRadius;
 
+    [Header("Phyics")]
+    [SerializeField] float playerMass = 80f;
+    // [SerializeField] TODO phyiscs mat etc?
+
+    public float PlayerMass => playerMass;
+
     [Header("Movement")]
-    [SerializeField] float moveSpeed = 12f;
-    [SerializeField] float moveAccel = 32f;
-    [SerializeField] float airSpeed = 12f;
+    [SerializeField] float moveSpeedWalk = 8f;
+    [SerializeField] float moveSpeedRun = 12f;
+    [SerializeField] float moveSpeedCrouch = 4f;
+    [SerializeField] float groundAccel = 32f;
     [SerializeField] float airAccel = 32f;
     [SerializeField] float jumpHeight = 1f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 
-    public float MoveSpeed => moveSpeed;
-    public float MoveAccel => moveAccel;
-    public float AirSpeed => airSpeed;
+    public float MoveSpeedWalk => moveSpeedWalk;
+    public float MoveSpeedRun => moveSpeedRun;
+    public float MoveSpeedCrouch => moveSpeedCrouch;
+    public float GroundAccel => groundAccel;
     public float AirAccel => airAccel;
     public float JumpHeight => jumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;

@@ -4,14 +4,14 @@ namespace PlayerUtils {
 
     public class View : MonoBehaviour {
 
-        protected PlayerConfig config;
+        protected PlayerControllerProperties pcProps;
         protected Player player;
         protected Transform head;
 
         public float headTilt { get; private set; }
 
-        public virtual void Initialize (PlayerConfig config, Player player, Transform head, float headTilt) {
-            this.config = config;
+        public virtual void Initialize (PlayerControllerProperties pcProps, Player player, Transform head, float headTilt) {
+            this.pcProps = pcProps;
             this.player = player;
             this.head = head;
             this.headTilt = headTilt;
@@ -20,7 +20,7 @@ namespace PlayerUtils {
         // TODO some kind of univeral "update" thing, like head side tilt with (local) velocity and stuff
 
         public void UpdateHeadLocalPosition () {
-            head.localPosition = new Vector3(0f, player.Height + config.EyeOffset, 0f);
+            head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
         }
 
         public void Look (Vector2 viewDelta) {

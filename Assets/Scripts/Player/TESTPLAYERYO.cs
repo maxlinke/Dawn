@@ -5,7 +5,7 @@ using CustomInputSystem;
 
 public class TESTPLAYERYO : MonoBehaviour {
 
-    [SerializeField] PlayerConfig config;
+    [SerializeField] PlayerControllerProperties pcProps;
     [SerializeField] CharacterController cc;
     [SerializeField] Transform head;
 
@@ -17,12 +17,12 @@ public class TESTPLAYERYO : MonoBehaviour {
     void Start () {
         ccHits = new List<ControllerColliderHit>();
         headPitch = 0f;
-        Cursor.lockState = CursorLockMode.Locked;
+        CursorLockManager.UpdateLockState();
     }
 
     void Update () {
         if(Input.GetKeyDown(KeyCode.Mouse0)){
-            Cursor.lockState = CursorLockMode.Locked;
+            CursorLockManager.UpdateLockState();
         }
         // if(Cursor.lockState != CursorLockMode.Locked){
         //     return; // probably not the best move, should rather still execute all that stuff but have the inputs zeroed
@@ -34,7 +34,7 @@ public class TESTPLAYERYO : MonoBehaviour {
         }
         Move();
         Look();
-        head.localPosition = new Vector3(0f, cc.height + config.EyeOffset, 0f);
+        head.localPosition = new Vector3(0f, cc.height + pcProps.EyeOffset, 0f);
         // don't forget to orient with gravity
     }
 
@@ -46,7 +46,7 @@ public class TESTPLAYERYO : MonoBehaviour {
             Debug.DrawRay(surfacePoint.point, surfacePoint.normal * 0.1f, Color.blue, 0f, false);
             velocity += GetGroundAcceleration(worldMoveInput, surfacePoint.normal) * Time.deltaTime;
             if(Bind.JUMP.GetKeyDown()){
-                velocity += transform.up * Mathf.Sqrt(2f * config.JumpCalcGravity * config.JumpHeight);     // TODO instead of adding, set the "local velocity y". feels more gamey than this
+                velocity += transform.up * Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);     // TODO instead of adding, set the "local velocity y". feels more gamey than this
             }
         }else{
             velocity += GetAirAcceleration(worldMoveInput) * Time.deltaTime;    // stops me from freefall
@@ -57,12 +57,12 @@ public class TESTPLAYERYO : MonoBehaviour {
     }
 
     Vector3 GetGroundAcceleration (Vector3 worldMoveInput, Vector3 groundNormal) {
-        return ClampedDeltaVAcceleration(velocity, GroundMoveVector(worldMoveInput, groundNormal) * config.MoveSpeed, config.MoveAccel);
+        return ClampedDeltaVAcceleration(velocity, GroundMoveVector(worldMoveInput, groundNormal) * pcProps.MoveSpeedWalk, pcProps.GroundAccel);
     }
 
     Vector3 GetAirAcceleration (Vector3 worldMoveInput) {
         // TODO drag ~ lack of input (less here than on ground)
-        return ClampedDeltaVAcceleration(Vector3.ProjectOnPlane(velocity, transform.up), worldMoveInput * config.AirSpeed, config.AirAccel * worldMoveInput.magnitude);
+        return ClampedDeltaVAcceleration(Vector3.ProjectOnPlane(velocity, transform.up), worldMoveInput * pcProps.MoveSpeedWalk, pcProps.AirAccel * worldMoveInput.magnitude);
     }
 
     Vector3 GetMoveInput () {
