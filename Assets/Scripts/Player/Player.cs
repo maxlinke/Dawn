@@ -59,6 +59,8 @@ public class Player : MonoBehaviour {
                 CursorLockManager.UpdateLockState();
             }
         #endif
+        // i think that checking the cursor lock mode is ONE good way to see if i should gather input at all. like totally. 
+        // the enums on top are valid too tho...
     }
 
     Vector2 GetViewInput () {

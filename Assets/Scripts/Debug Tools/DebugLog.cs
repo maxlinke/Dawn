@@ -100,7 +100,16 @@ namespace DebugTools {
 
         void Update () {
             if(Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
-                visible = !visible;
+                if(!visible){
+                    visible = true;
+                }else if(!CursorLockManager.CursorIsUnlocked()){
+                    CursorLockManager.AddUnlocker(this);
+                }else{
+                    if(CursorLockManager.IsUnlocker(this)){
+                        CursorLockManager.RemoveUnlocker(this);
+                    }
+                    visible = false;
+                }
             }
         }
 

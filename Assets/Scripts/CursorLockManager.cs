@@ -25,6 +25,10 @@ public static class CursorLockManager {
             Cursor.lockState = CursorLockMode.Locked;
         }
     }
+
+    public static bool CursorIsUnlocked () {
+        return Cursor.lockState != CursorLockMode.Locked;
+    }
 	
     public static bool AddUnlocker (object unlocker) {      // TODO some kind of identifier would be nice, like a name
         if(unlockObjects.Contains(unlocker)){               // i can't save a tuple tho. i'd have to stash the name in a dictionary i guess
@@ -41,6 +45,10 @@ public static class CursorLockManager {
             return true;
         }
         return false;
+    }
+
+    public static bool IsUnlocker (object obj) {
+        return unlockObjects.Contains(obj);
     }
 
     public static void ForceCursorLock () {
