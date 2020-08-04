@@ -1,33 +1,54 @@
 ﻿using UnityEngine;
 
-namespace PlayerUtils {
+namespace PlayerController {
 
     public class View : MonoBehaviour {
 
-        protected PlayerControllerProperties pcProps;
-        protected Player player;
-        protected Transform head;
+        PlayerControllerProperties pcProps;
+        Player player;
+        Rigidbody rb;
+        Transform head;
 
         public float headTilt { get; private set; }
+        public float headPan { get; private set; }
+        public float headRoll { get; private set; }
 
-        public virtual void Initialize (PlayerControllerProperties pcProps, Player player, Transform head, float headTilt) {
+        public void Initialize (PlayerControllerProperties pcProps, Player player, Rigidbody rb, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
+            this.rb = rb;
             this.head = head;
-            this.headTilt = headTilt;
         }
 
-        // TODO some kind of univeral "update" thing, like head side tilt with (local) velocity and stuff
+        public void SetHeadOrientation (float headTilt, float headPan, float headRoll) {
+            this.headTilt = headTilt;
+            this.headPan = headPan;
+            this.headRoll = headRoll;
+        }
+
+        void ApplyHeadEuler () {
+            head.localEulerAngles = new Vector3(headTilt, headPan, headRoll);
+        }
 
         public void UpdateHeadLocalPosition () {
             head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
         }
 
+        public void MatchRBRotationToHead () {
+            var tiltCache = headTilt;
+            headTilt = 0f;
+            ApplyHeadEuler();
+            rb.rotation = Quaternion.LookRotation(head.forward, rb.transform.up);
+            headTilt = tiltCache;
+            headPan = 0f;
+            ApplyHeadEuler();
+        }
+
         public void Look (Vector2 viewDelta) {
             viewDelta *= 60f * Time.deltaTime;
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
-            head.localRotation = Quaternion.Euler(headTilt, 0f, 0f);
-            transform.Rotate(new Vector3(0f, viewDelta.x, 0f), Space.Self);
+            headPan = Mathf.Repeat(headPan + viewDelta.x, 360f);
+            ApplyHeadEuler();
         }
 
         // TODO test

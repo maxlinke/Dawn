@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using PlayerUtils;
+using PlayerController;
 using CustomInputSystem;
 
 public class Player : MonoBehaviour {
@@ -10,6 +10,8 @@ public class Player : MonoBehaviour {
     [SerializeField] View viewSystem = default;
 
     [Header("GameObject Parts")]
+    [SerializeField] Rigidbody rb = default;
+    [SerializeField] CapsuleCollider col = default;
     [SerializeField] Transform head = default;
 
     public float Height => movementSystem.Height;
@@ -50,7 +52,12 @@ public class Player : MonoBehaviour {
     // TODO some way of managing the cameras. cameraregistry maybe? (CameraID enum)
 
     void Start () {
-
+        viewSystem.Initialize(pcProps, this, rb, head);
+        viewSystem.SetHeadOrientation(
+            headTilt: 0f, 
+            headPan: 0f,
+            headRoll: 0f
+        ); // should be deserialized or something later on
     }
 
     void Update () {
@@ -59,8 +66,20 @@ public class Player : MonoBehaviour {
                 CursorLockManager.UpdateLockState();
             }
         #endif
+        Vector2 viewInput;
+        if(!CursorLockManager.CursorIsUnlocked()){
+            viewInput = GetViewInput();
+        }else{
+            viewInput = Vector2.zero;
+        }
+        viewSystem.Look(viewInput);
         // i think that checking the cursor lock mode is ONE good way to see if i should gather input at all. like totally. 
         // the enums on top are valid too tho...
+    }
+
+    void FixedUpdate () {
+
+        viewSystem.MatchRBRotationToHead();
     }
 
     Vector2 GetViewInput () {
