@@ -24,6 +24,8 @@ public class Player : MonoBehaviour {
     public MoveControl modeControl;
     public ViewControl viewControl;
 
+    public Transform viewTarget;    // temp
+
     public enum MoveControl {
         FULL,
         BLOCK_INPUT,
@@ -66,20 +68,25 @@ public class Player : MonoBehaviour {
                 CursorLockManager.UpdateLockState();
             }
         #endif
-        Vector2 viewInput;
-        if(!CursorLockManager.CursorIsUnlocked()){
-            viewInput = GetViewInput();
+        if((viewControl == ViewControl.FULL) && !CursorLockManager.CursorIsUnlocked()){
+            viewSystem.Look(GetViewInput());
+        }else if((viewControl == ViewControl.TARGETED) && viewTarget != null){
+            viewSystem.LookAt(viewTarget);
         }else{
-            viewInput = Vector2.zero;
+            // nothing
         }
-        viewSystem.Look(viewInput);
         // i think that checking the cursor lock mode is ONE good way to see if i should gather input at all. like totally. 
         // the enums on top are valid too tho...
     }
 
     void FixedUpdate () {
-
         viewSystem.MatchRBRotationToHead();
+        Vector3 moveInput;
+        if(!CursorLockManager.CursorIsUnlocked()){
+            moveInput = GetLocalSpaceMoveInput();
+        }else{
+            moveInput = Vector3.zero;
+        }
     }
 
     Vector2 GetViewInput () {
