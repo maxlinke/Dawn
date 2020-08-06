@@ -1,8 +1,15 @@
 ﻿using UnityEngine;
+using CustomInputSystem;
 
 namespace PlayerController {
 
     public class View : MonoBehaviour {
+
+        public enum ControlMode {
+            FULL,
+            BLOCK_INPUT,
+            TARGETED
+        }
 
         PlayerControllerProperties pcProps;
         Player player;
@@ -13,11 +20,20 @@ namespace PlayerController {
         public float headPan { get; private set; }
         public float headRoll { get; private set; }
 
+        public ControlMode controlMode;
+        public Transform viewTarget;
+
         public void Initialize (PlayerControllerProperties pcProps, Player player, Rigidbody rb, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
             this.rb = rb;
             this.head = head;
+        }
+
+        Vector2 GetViewInput () {
+            var dx = Bind.LOOK_RIGHT.GetValue() - Bind.LOOK_LEFT.GetValue();
+            var dy = Bind.LOOK_DOWN.GetValue() - Bind.LOOK_UP.GetValue();
+            return new Vector2(dx, dy);
         }
 
         public void SetHeadOrientation (float headTilt, float headPan, float headRoll) {
@@ -44,22 +60,32 @@ namespace PlayerController {
             ApplyHeadEuler();
         }
 
-        public void Look (Vector2 viewDelta) {
+        // TODO velocity based head rolling (in every case)
+        public void Look (bool readInput) {
+            switch(controlMode){
+                case ControlMode.FULL: 
+                    DeltaLook(readInput ? GetViewInput() : Vector2.zero);
+                    break;
+                case ControlMode.TARGETED:
+                    TargetLook(viewTarget.position);
+                    break;
+                case ControlMode.BLOCK_INPUT:
+                    break;
+                default: 
+                    Debug.LogError($"Unknown {typeof(ControlMode)} \"{controlMode}\"!");
+                    break;
+            }
+        }
+
+        void DeltaLook (Vector2 viewDelta) {
             viewDelta *= 60f * Time.deltaTime;
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
             headPan = Mathf.Repeat(headPan + viewDelta.x, 360f);
             ApplyHeadEuler();
         }
 
-        public void LookAt (Transform viewTarget) {
-            if(viewTarget == null){
-                return;
-            }
-            LookAt(viewTarget.position);
-        }
-
-        public void LookAt (Vector3 worldPoint) {
-            var toTargetLocal = rb.transform.InverseTransformDirection(worldPoint - head.position).normalized;
+        void TargetLook (Vector3 viewTargetPoint) {
+            var toTargetLocal = rb.transform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
             headPan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
             headTilt = -1f * Mathf.Rad2Deg * Mathf.Asin(toTargetLocal.y);
             ApplyHeadEuler();

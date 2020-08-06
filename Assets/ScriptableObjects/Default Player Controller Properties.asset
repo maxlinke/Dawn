@@ -21,6 +21,7 @@ MonoBehaviour:
   moveSpeedRun: 12
   moveSpeedCrouch: 4
   groundAccel: 32
-  airAccel: 48
+  airAccel: 24
   jumpHeight: 1.2
   jumpCalcGravity: 29.43
+  slopeLimit: 60

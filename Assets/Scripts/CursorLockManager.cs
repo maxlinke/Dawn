@@ -3,14 +3,6 @@ using UnityEngine;
 
 public static class CursorLockManager {
 
-    // doesn't need a monobehaviour instance that listens to OnApplicationFocus because the lockstate is automatically set to what it is upon tabbing back in.
-    // the purpose of this: i don't want the player class to mess with the cursor lock state
-    // yes, the pause menu has to SHOW the cursor and thus unlock it but closing it MIGHT not have to lock the cursor, if you know what i mean. 
-    // i can't currently think of any reasons why there should be multiple layers of cursor unlockage but i can always remove this thing if it's pointless
-    // one good reason could be a bona fide CONSOLE but i don't have that yet :)
-    // the player would also have to then check if the debug console was open
-    // OR the input system would have to be "blocked" (override all commands ? force a getkeyup for everything and then just falses... sounds like a lot of work)
-
     private static List<object> unlockObjects;
 
     static CursorLockManager () {
@@ -26,13 +18,13 @@ public static class CursorLockManager {
         }
     }
 
-    public static bool CursorIsUnlocked () {
-        return Cursor.lockState != CursorLockMode.Locked;
+    public static bool CursorIsLocked () {
+        return Cursor.lockState == CursorLockMode.Locked;
     }
 	
-    public static bool AddUnlocker (object unlocker) {      // TODO some kind of identifier would be nice, like a name
-        if(unlockObjects.Contains(unlocker)){               // i can't save a tuple tho. i'd have to stash the name in a dictionary i guess
-            return false;                                   // or use another list and with each add or remove match indices...
+    public static bool AddUnlocker (object unlocker) {
+        if(unlockObjects.Contains(unlocker)){
+            return false;
         }
         unlockObjects.Add(unlocker);
         UpdateLockState();

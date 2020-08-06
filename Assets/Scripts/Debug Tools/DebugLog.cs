@@ -102,7 +102,7 @@ namespace DebugTools {
             if(Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
                 if(!visible){
                     visible = true;
-                }else if(!CursorLockManager.CursorIsUnlocked()){
+                }else if(CursorLockManager.CursorIsLocked()){
                     CursorLockManager.AddUnlocker(this);
                 }else{
                     if(CursorLockManager.IsUnlocker(this)){

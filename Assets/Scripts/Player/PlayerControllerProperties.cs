@@ -28,6 +28,7 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float airAccel = 32f;
     [SerializeField] float jumpHeight = 1f;
     [SerializeField] float jumpCalcGravity = 29.43f;
+    [SerializeField] float slopeLimit = 60f;
 
     public float MoveSpeedWalk => moveSpeedWalk;
     public float MoveSpeedRun => moveSpeedRun;
@@ -36,5 +37,6 @@ public class PlayerControllerProperties : ScriptableObject {
     public float AirAccel => airAccel;
     public float JumpHeight => jumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;
+    public float SlopeLimit => slopeLimit;
 	
 }
