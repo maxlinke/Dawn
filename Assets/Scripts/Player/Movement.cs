@@ -12,6 +12,22 @@ namespace PlayerController {
             ANCHORED
         }
 
+        public enum MoveType {
+            GROUND,
+            AIR,
+            DODGE
+        }
+
+        public struct State {
+            public SurfacePoint surfacePoint;
+            public MoveType moveType;
+            public Vector3 localVelocity;
+            public bool jumped;
+            // local velocity
+            // in- and outgoing velocity?
+            // jumped?
+        }
+
         PlayerControllerProperties pcProps;
         Player player;
         Rigidbody rb;
@@ -24,9 +40,13 @@ namespace PlayerController {
         public Vector3 Velocity { get; }
         public Vector3 WorldCenter => rb.transform.TransformPoint(col.center);
 
+        public ControlMode controlMode;
+
         int lastMoveFrame;
+        int lastFixedJumpFrame;
         bool gotValidJumpCommandBetweenMoves;
         List<ContactPoint> contactPoints;
+        State lastState;
 
         // TODO dodge is separate from rest
         // accelerate to dodge speed (or decelerate, but there is a maximum amount of time that acceleration can take. fuck it. it's a timed acceleration)
@@ -42,7 +62,10 @@ namespace PlayerController {
             this.col = col;
             contactPoints = new List<ContactPoint>();
             m_initialized = true;
+            // TODO init rigidbody
         }
+
+        // TODO partial class and move all the utilities there?
 
         Vector3 GetLocalSpaceMoveInput () {
             float move = Bind.MOVE_FWD.GetValue() - Bind.MOVE_BWD.GetValue();
@@ -88,56 +111,102 @@ namespace PlayerController {
             return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
         }
 
+        // TODO use methods or properties to manage these things
         public void ExecuteUpdate () {
             if(Time.frameCount != lastMoveFrame){   // TODO and grounded (last state?)
-                gotValidJumpCommandBetweenMoves |= Bind.JUMP.GetKeyDown();
+                gotValidJumpCommandBetweenMoves |= Bind.JUMP.GetKeyDown();  // TODO also dodge
             }
         }
 
         public void Move (bool readInput) {
-            StartMove(out var surfacePoint);
-            // TODO dodge has priority
-            if(surfacePoint == null){
-                AerialMovement(readInput);
-            }else{
-                GroundedMovement(readInput, surfacePoint);
+            StartMove(out var currentState);
+            switch(controlMode){
+                case ControlMode.FULL:
+                    ExecuteMove(readInput, currentState);
+                    break;
+                case ControlMode.BLOCK_INPUT:
+                    ExecuteMove(false, currentState);
+                    break;
+                case ControlMode.ANCHORED:
+                    rb.velocity = Vector3.zero;
+                    break;
+                    // anchored: important
+                    // kinematic rb
+                    // velocity 0
+                    // disable interpolation
+                    // collision detection discrete or speculative
+                default:
+                    Debug.LogError($"Unknown {nameof(ControlMode)} \"{controlMode}\"!");
+                    rb.velocity = Vector3.zero;
+                    break;
             }
-            // gravity? per movement i guess...
-            FinishMove();
+            FinishMove(currentState);
         }
 
-        void StartMove (out SurfacePoint surfacePoint) {
-            // if i do the spherecast method, i can process collisions immediately, right?
-            // collide with ground, DEFINITELY grounded (but check, just to be sure)
-            // no collisions at all, not grounded
-            // collide with ladder, laddered
-            // a) capsulecast exists
-            // b) cast rb.down or gravity? rb.down...
+        void StartMove (out State currentState) {
+            currentState.surfacePoint = DetermineSurfacePoint();
+            currentState.localVelocity = DetermineLocalVelocity(currentState.surfacePoint);
+            currentState.moveType = currentState.surfacePoint == null ? MoveType.AIR : MoveType.GROUND;
+            currentState.jumped = false;
 
-            int flattestPoint = -1;
-            // float maxDot = 0;
-            float maxDot = 0.0175f;     // cos(89°), to exclude walls
-            for(int i=0; i<contactPoints.Count; i++){
-                var dot = Vector3.Dot(contactPoints[i].normal, rb.transform.up);
-                if(dot > maxDot){
-                    flattestPoint = i;
-                    maxDot = dot;
+            // TODO try alternatives
+            // - spherecast/capsulecast
+            //   - doesn't return intersections so watch out
+            //   - only if got collisions tho. if no collisions, no extra check needed
+            //   - direction rb.down
+            // - iteratively do raycasts
+            //   - start somewhere
+            //   - get normal
+            //   - now use that normal
+            //   - rinse repeat until got good normal match and distance?
+            SurfacePoint DetermineSurfacePoint () {
+                int flattestPoint = -1;
+                // float maxDot = 0;
+                float maxDot = 0.0175f;     // cos(89°), to exclude walls
+                for(int i=0; i<contactPoints.Count; i++){
+                    var dot = Vector3.Dot(contactPoints[i].normal, rb.transform.up);
+                    if(dot > maxDot){
+                        flattestPoint = i;
+                        maxDot = dot;
+                    }
+                }
+                return (flattestPoint != -1) ? new SurfacePoint(contactPoints[flattestPoint]) : null;
+            }
+
+            // potentially check for a trigger (such as in a moving train car...)
+            Vector3 DetermineLocalVelocity (SurfacePoint sp) {
+                if(sp == null || sp.otherCollider == null || sp.otherCollider.attachedRigidbody == null){
+                    return rb.velocity;
+                }else{
+                    return rb.velocity - sp.otherCollider.attachedRigidbody.velocity;   // kinematic rigidbodies moved with rb.movepos still get a velocity
                 }
             }
-            surfacePoint = (flattestPoint != -1) ? new SurfacePoint(contactPoints[flattestPoint]) : null;
-
-            // or go through the contacts
-            // raycast along "normal" with a bit more length than the capsule radius
-            // if hit, get that normal and rinse repeat
         }
 
-        void FinishMove () {
+        void FinishMove (State currentState) {
             contactPoints.Clear();
             lastMoveFrame = Time.frameCount;
             gotValidJumpCommandBetweenMoves = false;
+            lastState = currentState;
         }
 
-        void GroundedMovement (bool readInput, SurfacePoint surfacePoint) {
+        void ExecuteMove (bool readInput, State currentState) {
+            switch(currentState.moveType){
+                case MoveType.AIR:
+                    AerialMovement(readInput, currentState);
+                    break;
+                case MoveType.GROUND:
+                    GroundedMovement(readInput, currentState);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // TODO no input means auto-uncrouch (if possible)
+        void GroundedMovement (bool readInput, State currentState) {
+
+
             // doesn't take slope limit into account
             // so gravity still has to point into the slope, right?
             // and sliding down is projecting gravity onto the normal and using that as acceleration, right?
@@ -153,20 +222,22 @@ namespace PlayerController {
 
             rb.velocity += ClampedDeltaVAcceleration(rb.velocity, Vector3.zero, pcProps.GroundDrag) * Time.fixedDeltaTime;
             if(Bind.JUMP.GetKey()){
-                rb.velocity += rb.transform.up * JumpSpeed();       // NO += AND this triggers twice...
+                rb.velocity += rb.transform.up * JumpSpeed();       // NO += AND this triggers twice... needs to check if jumped on last physics tick OR "this" fixedUpdateCount
             }
             rb.velocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
-        void AerialMovement (bool readInput) {
+        void AerialMovement (bool readInput, State currentState) {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var hVelocity = HorizontalComponent(rb.velocity);   // TODO "local" velocity. get from current state. 
+            var hVelocity = HorizontalComponent(currentState.localVelocity);
             var hVelocityMag = hVelocity.magnitude;
             // first drag
             Vector3 dragDeceleration;
             // if(Input.GetKeyDown(KeyCode.Q)){     // TODO decide on this
-            //     dragDeceleration = ClampedDeltaVAcceleration(hVelocity, Vector3.zero, pcProps.AirDrag * (1f - rawInputMag));
+            // i like the idea but maybe it needs the dot product of drag dir and input too?
+            // what about lerping the drag also with respect to speed?
+            //     dragDeceleration = ClampedDeltaVAcceleration(hVelocity, Vector3.zero, pcProps.AirDrag * (1f - rawInputMag)); 
             // }else{
                 dragDeceleration = ClampedDeltaVAcceleration(hVelocity, Vector3.zero, pcProps.AirDrag);
             // }
@@ -200,6 +271,7 @@ namespace PlayerController {
             CacheContacts(collision);
         }
 
+        // only works if the contact points are unique options, which can be turned off in the project settings...
         void CacheContacts (Collision collision) {
             int cc = collision.contactCount;
             for(int i=0; i<cc; i++){

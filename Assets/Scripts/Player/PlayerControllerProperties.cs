@@ -3,22 +3,25 @@
 [CreateAssetMenu(menuName = "Player Config", fileName = "New Player Config")]
 public class PlayerControllerProperties : ScriptableObject {
 
-    [Header("General")]
+    [Header("Dimensions")]
     [SerializeField] float normalHeight = 1.8f;
     [SerializeField] float crouchHeight = 0.9f;
+    [SerializeField] float crouchUncrouchTime = 0.25f;
     [SerializeField] float eyeOffset = -0.15f;
     [SerializeField] float colliderRadius = 0.4f;
 
     public float NormalHeight => normalHeight;
     public float CrouchHeight => crouchHeight;
+    public float CrouchUncrouchTime => crouchUncrouchTime;
     public float EyeOffset => eyeOffset;
     public float ColliderRadius => colliderRadius;
 
     [Header("Phyics")]
     [SerializeField] float playerMass = 80f;
-    // [SerializeField] TODO phyiscs mat etc?
+    [SerializeField] CollisionDetectionMode standardCollisionDetection = CollisionDetectionMode.ContinuousDynamic;
 
     public float PlayerMass => playerMass;
+    public CollisionDetectionMode StandardCollisionDetection => standardCollisionDetection;
 
     [Header("Movement")]
     [SerializeField] float slopeLimit = 60f;
