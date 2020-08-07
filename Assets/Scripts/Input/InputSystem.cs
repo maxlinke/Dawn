@@ -12,7 +12,10 @@ namespace CustomInputSystem {
         private static InputSystem instance;
 
         int lastUpdatedFrame = -1;
+        int m_fixedUpdateCount = 0;
         List<AxisInput> axisInputs = new List<AxisInput>();
+
+        public static int fixedUpdateCount => instance.m_fixedUpdateCount;
 
         void Awake () {
             if(instance != null){
@@ -62,6 +65,7 @@ namespace CustomInputSystem {
 
         void FixedUpdate () {
             EnsureAllInputsUpToDate();
+            m_fixedUpdateCount++;
         }
 
         void EnsureAllInputsUpToDate () {

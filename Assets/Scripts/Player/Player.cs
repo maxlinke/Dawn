@@ -30,6 +30,8 @@ public class Player : MonoBehaviour {
 
     // TODO some way of managing the cameras. cameraregistry maybe? (CameraID enum)
 
+    Vector3 DEBUG_LAST_POS;
+
     void Start () {
         viewSystem.Initialize(pcProps, this, rb, head);
         viewSystem.SetHeadOrientation(
@@ -38,12 +40,16 @@ public class Player : MonoBehaviour {
             headRoll: 0f
         ); // should be deserialized or something later on
         movementSystem.Initialize(pcProps, this, rb, col);
+        DEBUG_LAST_POS = transform.position;
     }
 
     void Update () {
         #if UNITY_EDITOR
             if(Input.anyKeyDown){
                 CursorLockManager.UpdateLockState();
+            }
+            if(Input.GetKeyDown(KeyCode.Mouse1)){
+                rb.velocity += head.transform.forward * 50f;
             }
         #endif
         viewSystem.Look(readInput: CursorLockManager.CursorIsLocked());
@@ -53,6 +59,9 @@ public class Player : MonoBehaviour {
     void FixedUpdate () {
         viewSystem.MatchRBRotationToHead();
         movementSystem.Move(readInput: CursorLockManager.CursorIsLocked());
+        var DEBUG_CURRENT_POS = transform.position;
+        Debug.DrawLine(DEBUG_LAST_POS, DEBUG_CURRENT_POS, Color.red, 4f);
+        DEBUG_LAST_POS = DEBUG_CURRENT_POS;
     }
 	
 }

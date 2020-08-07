@@ -22,6 +22,9 @@ namespace CustomInputSystem {
             LOOK_RIGHT,
 
             JUMP,
+            CROUCH_HOLD,
+            CROUCH_TOGGLE,
+            DODGE,
 
             TOGGLE_DEBUG_LOG,
             TOGGLE_FRAMERATE_DISPLAY
@@ -38,7 +41,10 @@ namespace CustomInputSystem {
         public static readonly Bind LOOK_LEFT =  new Bind(ID.LOOK_LEFT, "Look Left");
         public static readonly Bind LOOK_RIGHT = new Bind(ID.LOOK_RIGHT, "Look Right");
         
-        public static readonly Bind JUMP =       new Bind(ID.JUMP, "Jump");
+        public static readonly Bind JUMP =          new Bind(ID.JUMP, "Jump");
+        public static readonly Bind CROUCH_HOLD =   new Bind(ID.CROUCH_HOLD, "Crouch (Hold)");
+        public static readonly Bind CROUCH_TOGGLE = new Bind(ID.CROUCH_TOGGLE, "Crouch (Toggle)");
+        public static readonly Bind DODGE         = new Bind(ID.DODGE, "Dodge");
 
         public static readonly Bind TOGGLE_DEBUG_LOG = new Bind(ID.TOGGLE_DEBUG_LOG, "Toggle Debug Log");
         public static readonly Bind TOGGLE_FRAMERATE_DISPLAY = new Bind(ID.TOGGLE_FRAMERATE_DISPLAY, "Toggle Framerate Display");
@@ -51,6 +57,7 @@ namespace CustomInputSystem {
         public static Bind GetBind (ID id) {
             switch(id){
                 case ID.PAUSE_CANCEL_ETC: return PAUSE_CANCEL_ETC;
+                
                 case ID.MOVE_FWD: return MOVE_FWD;
                 case ID.MOVE_BWD: return MOVE_BWD;
                 case ID.MOVE_LEFT: return MOVE_LEFT;
@@ -59,7 +66,12 @@ namespace CustomInputSystem {
                 case ID.LOOK_DOWN: return LOOK_DOWN;
                 case ID.LOOK_LEFT: return LOOK_LEFT;
                 case ID.LOOK_RIGHT: return LOOK_RIGHT;
+
                 case ID.JUMP: return JUMP;
+                case ID.CROUCH_HOLD: return CROUCH_HOLD;
+                case ID.CROUCH_TOGGLE: return CROUCH_TOGGLE;
+                case ID.DODGE: return DODGE;
+
                 case ID.TOGGLE_DEBUG_LOG: return TOGGLE_DEBUG_LOG;
                 case ID.TOGGLE_FRAMERATE_DISPLAY: return TOGGLE_FRAMERATE_DISPLAY;
                 default: 
@@ -113,7 +125,12 @@ namespace CustomInputSystem {
             ClearAndAddWithoutInputSystemNotification(LOOK_DOWN,  new AxisInput(Axis.ID.MOUSE_Y, false), new AxisInput(Axis.ID.RIGHT_STICK_Y, false));
             ClearAndAddWithoutInputSystemNotification(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
             ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
-            ClearAndAddWithoutInputSystemNotification(JUMP, new KeyCodeInput(KeyCode.Space), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
+
+            ClearAndAddWithoutInputSystemNotification(JUMP,          new KeyCodeInput(KeyCode.Space),     new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
+            ClearAndAddWithoutInputSystemNotification(CROUCH_HOLD,   new KeyCodeInput(KeyCode.LeftControl));
+            ClearAndAddWithoutInputSystemNotification(CROUCH_TOGGLE, new KeyCodeInput(KeyCode.C),         new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.LS));
+            ClearAndAddWithoutInputSystemNotification(DODGE,         new KeyCodeInput(KeyCode.LeftShift), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.X));
+
             ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_LOG, new KeyCodeInput(KeyCode.F1));
             ClearAndAddWithoutInputSystemNotification(TOGGLE_FRAMERATE_DISPLAY, new KeyCodeInput(KeyCode.F2));
 

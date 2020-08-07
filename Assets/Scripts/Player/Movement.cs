@@ -24,7 +24,16 @@ namespace PlayerController {
         public Vector3 Velocity { get; }
         public Vector3 WorldCenter => rb.transform.TransformPoint(col.center);
 
+        int lastMoveFrame;
+        bool gotValidJumpCommandBetweenMoves;
         List<ContactPoint> contactPoints;
+
+        // TODO dodge is separate from rest
+        // accelerate to dodge speed (or decelerate, but there is a maximum amount of time that acceleration can take. fuck it. it's a timed acceleration)
+        // then keep that speed (not actively tho)
+        // no gravity while dodge
+        // not even input
+        // at the end lerp speed to walk speed and done
 
         public void Initialize (PlayerControllerProperties pcProps, Player player, Rigidbody rb, CapsuleCollider col) {
             this.pcProps = pcProps;
@@ -71,12 +80,23 @@ namespace PlayerController {
             return (vector - (x * projectVector));
         }
 
+        float HeightRelatedSpeed () {
+            return Mathf.Lerp(pcProps.MoveSpeedCrouch, pcProps.MoveSpeed, Mathf.Clamp01((col.height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight)));
+        }
+
+        float JumpSpeed () {
+            return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
+        }
+
         public void ExecuteUpdate () {
-            // if current state is grounded and get jump input, cache it (unless we just jumped this frame, because update comes after fixedupdate)
+            if(Time.frameCount != lastMoveFrame){   // TODO and grounded (last state?)
+                gotValidJumpCommandBetweenMoves |= Bind.JUMP.GetKeyDown();
+            }
         }
 
         public void Move (bool readInput) {
             StartMove(out var surfacePoint);
+            // TODO dodge has priority
             if(surfacePoint == null){
                 AerialMovement(readInput);
             }else{
@@ -113,6 +133,8 @@ namespace PlayerController {
 
         void FinishMove () {
             contactPoints.Clear();
+            lastMoveFrame = Time.frameCount;
+            gotValidJumpCommandBetweenMoves = false;
         }
 
         void GroundedMovement (bool readInput, SurfacePoint surfacePoint) {
@@ -121,20 +143,38 @@ namespace PlayerController {
             // and sliding down is projecting gravity onto the normal and using that as acceleration, right?
             // *sigh* guess i'll look at my old code then...
             // also i kinda want braking to have more acceleration than regular accelerating...
-            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
-            var rawInputMag = rawInput.magnitude;
-            var targetVelocity = GroundMoveVector(rb.transform.TransformDirection(rawInput), surfacePoint.normal).normalized * rawInputMag * pcProps.MoveSpeedRun;
-            var targetAccel = pcProps.GroundAccel;
-            rb.velocity += ClampedDeltaVAcceleration(rb.velocity, targetVelocity, targetAccel) * Time.fixedDeltaTime;
+
+            // var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            // var rawInputMag = rawInput.magnitude;
+            // var targetVelocity = GroundMoveVector(rb.transform.TransformDirection(rawInput), surfacePoint.normal).normalized * rawInputMag * pcProps.MoveSpeed;
+            // var targetAccel = pcProps.GroundAccel;
+            // rb.velocity += ClampedDeltaVAcceleration(rb.velocity, targetVelocity, targetAccel) * Time.fixedDeltaTime;
+            // rb.velocity += Physics.gravity * Time.fixedDeltaTime;
+
+            rb.velocity += ClampedDeltaVAcceleration(rb.velocity, Vector3.zero, pcProps.GroundDrag) * Time.fixedDeltaTime;
+            if(Bind.JUMP.GetKey()){
+                rb.velocity += rb.transform.up * JumpSpeed();       // NO += AND this triggers twice...
+            }
             rb.velocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
         void AerialMovement (bool readInput) {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetVelocity = rb.transform.TransformDirection(rawInput) * rawInputMag * pcProps.MoveSpeedRun;
-            var targetAccel = rawInputMag * pcProps.AirAccel;
-            rb.velocity += ClampedDeltaVAcceleration(HorizontalComponent(rb.velocity), HorizontalComponent(targetVelocity), targetAccel) * Time.fixedDeltaTime;
+            var hVelocity = HorizontalComponent(rb.velocity);   // TODO "local" velocity. get from current state. 
+            var hVelocityMag = hVelocity.magnitude;
+            // first drag
+            Vector3 dragDeceleration;
+            // if(Input.GetKeyDown(KeyCode.Q)){     // TODO decide on this
+            //     dragDeceleration = ClampedDeltaVAcceleration(hVelocity, Vector3.zero, pcProps.AirDrag * (1f - rawInputMag));
+            // }else{
+                dragDeceleration = ClampedDeltaVAcceleration(hVelocity, Vector3.zero, pcProps.AirDrag);
+            // }
+            // then accel
+            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), hVelocityMag);
+            var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            var moveAcceleration = ClampedDeltaVAcceleration(hVelocity, targetVelocity, rawInputMag * pcProps.AirAccel);
+            rb.velocity += (dragDeceleration + moveAcceleration) * Time.fixedDeltaTime;
             rb.velocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
