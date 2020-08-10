@@ -30,15 +30,13 @@ namespace PlayerController {
 
         PlayerControllerProperties pcProps;
         Player player;
-        Rigidbody rb;
-        CapsuleCollider col;
+        CharacterController cc;
 
         private bool m_initialized = false;
         public bool initialized => m_initialized;
 
-        public float Height => col.height;
+        public float Height => cc.height;
         public Vector3 Velocity { get; }
-        public Vector3 WorldCenter => rb.transform.TransformPoint(col.center);
 
         public ControlMode controlMode;
 
@@ -55,11 +53,10 @@ namespace PlayerController {
         // not even input
         // at the end lerp speed to walk speed and done
 
-        public void Initialize (PlayerControllerProperties pcProps, Player player, Rigidbody rb, CapsuleCollider col) {
+        public void Initialize (PlayerControllerProperties pcProps, Player player, CharacterController cc) {
             this.pcProps = pcProps;
             this.player = player;
-            this.rb = rb;       // see if i notice a difference between the different collision detection modes. i shouldn't get THIS fast... but the capsule also isn't the biggest object... at 40 m/s i move the entire diameter of the capsule
-            this.col = col;
+            this.cc = cc;       // see if i notice a difference between the different collision detection modes. i shouldn't get THIS fast... but the capsule also isn't the biggest object... at 40 m/s i move the entire diameter of the capsule
             contactPoints = new List<ContactPoint>();
             m_initialized = true;
             // TODO init rigidbody
@@ -78,11 +75,11 @@ namespace PlayerController {
         }
 
         Vector3 HorizontalComponent (Vector3 vector) {
-            return Vector3.ProjectOnPlane(vector, rb.transform.up);
+            return Vector3.ProjectOnPlane(vector, cc.transform.up);
         }
 
         Vector3 VerticalComponent (Vector3 vector) {
-            return Vector3.Project(vector, rb.transform.up);
+            return Vector3.Project(vector, cc.transform.up);
         }
 
         Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration) {
@@ -95,7 +92,7 @@ namespace PlayerController {
         }
 
         Vector3 GroundMoveVector (Vector3 worldMoveInput, Vector3 groundNormal) {
-            return ProjectOnPlaneAlongVector(worldMoveInput, groundNormal, rb.transform.up);
+            return ProjectOnPlaneAlongVector(worldMoveInput, groundNormal, cc.transform.up);
         }
 
         Vector3 ProjectOnPlaneAlongVector (Vector3 vector, Vector3 normal, Vector3 projectVector) {
@@ -104,7 +101,7 @@ namespace PlayerController {
         }
 
         float HeightRelatedSpeed () {
-            return Mathf.Lerp(pcProps.MoveSpeedCrouch, pcProps.MoveSpeed, Mathf.Clamp01((col.height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight)));
+            return Mathf.Lerp(pcProps.MoveSpeedCrouch, pcProps.MoveSpeed, Mathf.Clamp01((cc.height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight)));
         }
 
         float JumpSpeed () {
@@ -128,7 +125,7 @@ namespace PlayerController {
                     ExecuteMove(false, currentState);
                     break;
                 case ControlMode.ANCHORED:
-                    rb.velocity = Vector3.zero;
+                    // rb.velocity = Vector3.zero;
                     break;
                     // anchored: important
                     // kinematic rb
@@ -137,7 +134,7 @@ namespace PlayerController {
                     // collision detection discrete or speculative
                 default:
                     Debug.LogError($"Unknown {nameof(ControlMode)} \"{controlMode}\"!");
-                    rb.velocity = Vector3.zero;
+                    // rb.velocity = Vector3.zero;
                     break;
             }
             FinishMove(currentState);
@@ -164,7 +161,7 @@ namespace PlayerController {
                 // float maxDot = 0;
                 float maxDot = 0.0175f;     // cos(89°), to exclude walls
                 for(int i=0; i<contactPoints.Count; i++){
-                    var dot = Vector3.Dot(contactPoints[i].normal, rb.transform.up);
+                    var dot = Vector3.Dot(contactPoints[i].normal, cc.transform.up);
                     if(dot > maxDot){
                         flattestPoint = i;
                         maxDot = dot;
@@ -176,9 +173,9 @@ namespace PlayerController {
             // potentially check for a trigger (such as in a moving train car...)
             Vector3 DetermineLocalVelocity (SurfacePoint sp) {
                 if(sp == null || sp.otherCollider == null || sp.otherCollider.attachedRigidbody == null){
-                    return rb.velocity;
+                    return cc.velocity;
                 }else{
-                    return rb.velocity - sp.otherCollider.attachedRigidbody.velocity;   // kinematic rigidbodies moved with rb.movepos still get a velocity
+                    return cc.velocity - sp.otherCollider.attachedRigidbody.velocity;   // kinematic rigidbodies moved with rb.movepos still get a velocity
                 }
             }
         }
@@ -220,11 +217,12 @@ namespace PlayerController {
             // rb.velocity += ClampedDeltaVAcceleration(rb.velocity, targetVelocity, targetAccel) * Time.fixedDeltaTime;
             // rb.velocity += Physics.gravity * Time.fixedDeltaTime;
 
-            rb.velocity += ClampedDeltaVAcceleration(rb.velocity, Vector3.zero, pcProps.GroundDrag) * Time.fixedDeltaTime;
+            var ASDFvelocity = cc.velocity;
+            ASDFvelocity += ClampedDeltaVAcceleration(cc.velocity, Vector3.zero, pcProps.GroundDrag) * Time.fixedDeltaTime;
             if(Bind.JUMP.GetKey()){
-                rb.velocity += rb.transform.up * JumpSpeed();       // NO += AND this triggers twice... needs to check if jumped on last physics tick OR "this" fixedUpdateCount
+                ASDFvelocity += cc.transform.up * JumpSpeed();       // NO += AND this triggers twice... needs to check if jumped on last physics tick OR "this" fixedUpdateCount
             }
-            rb.velocity += Physics.gravity * Time.fixedDeltaTime;
+            ASDFvelocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
         void AerialMovement (bool readInput, State currentState) {
@@ -243,10 +241,11 @@ namespace PlayerController {
             // }
             // then accel
             var targetSpeed = Mathf.Max(HeightRelatedSpeed(), hVelocityMag);
-            var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            var targetVelocity = cc.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(hVelocity, targetVelocity, rawInputMag * pcProps.AirAccel);
-            rb.velocity += (dragDeceleration + moveAcceleration) * Time.fixedDeltaTime;
-            rb.velocity += Physics.gravity * Time.fixedDeltaTime;
+            var ASDFvelocity = cc.velocity;
+            ASDFvelocity += (dragDeceleration + moveAcceleration) * Time.fixedDeltaTime;
+            ASDFvelocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
         // ladder = trigger

@@ -13,7 +13,7 @@ namespace PlayerController {
 
         PlayerControllerProperties pcProps;
         Player player;
-        Rigidbody rb;
+        CharacterController cc;
         Transform head;
 
         public float headTilt { get; private set; }
@@ -23,10 +23,10 @@ namespace PlayerController {
         public ControlMode controlMode;
         public Transform viewTarget;
 
-        public void Initialize (PlayerControllerProperties pcProps, Player player, Rigidbody rb, Transform head) {
+        public void Initialize (PlayerControllerProperties pcProps, Player player, CharacterController cc, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
-            this.rb = rb;
+            this.cc = cc;
             this.head = head;
         }
 
@@ -50,11 +50,11 @@ namespace PlayerController {
             head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
         }
 
-        public void MatchRBRotationToHead () {
+        public void RotateBodyInLookDirection () {
             var tiltCache = headTilt;
             headTilt = 0f;
             ApplyHeadEuler();
-            rb.rotation = Quaternion.LookRotation(head.forward, rb.transform.up);
+            cc.transform.rotation = Quaternion.LookRotation(head.forward, cc.transform.up);
             headTilt = tiltCache;
             headPan = 0f;
             ApplyHeadEuler();
@@ -80,15 +80,16 @@ namespace PlayerController {
         void DeltaLook (Vector2 viewDelta) {
             viewDelta *= 60f * Time.deltaTime;
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
-            headPan = Mathf.Repeat(headPan + viewDelta.x, 360f);
             ApplyHeadEuler();
+            cc.transform.Rotate(new Vector3(0f, viewDelta.x, 0f), Space.Self);
         }
 
         void TargetLook (Vector3 viewTargetPoint) {
-            var toTargetLocal = rb.transform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
-            headPan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
+            var toTargetLocal = cc.transform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
             headTilt = -1f * Mathf.Rad2Deg * Mathf.Asin(toTargetLocal.y);
             ApplyHeadEuler();
+            var pan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
+            cc.transform.Rotate(new Vector3(0f, pan, 0f), Space.Self);
         }
         
     }
