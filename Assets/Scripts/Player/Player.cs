@@ -20,6 +20,14 @@ public class Player : MonoBehaviour {
     public Vector3 FootPos => transform.position;
     public Vector3 CenterPos => movementSystem.WorldCenter;
 
+    // TODO revert back to charactercontroller
+    // - no fixedupdate/update bollocks
+    // - i know how to do good drag now (didn't use any drag or friction on the rigidbody anyways)
+    // - responsiveness yo
+    // - TODO test if collision info comes immediately after cc.Move or after update...
+    // - TODO search and replace all fixedDeltaTimes!
+    // - TODO does the capsule also collide with the ground when jumping, causing double the jump? implement jump via += first before going to y = value
+
     // important things:
     // - crouch jump
     // - non binary slope limit (slide a bit before sliding fully)
