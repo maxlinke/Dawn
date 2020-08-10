@@ -59,7 +59,9 @@ public class Player : MonoBehaviour {
             //     rb.velocity += head.transform.forward * 50f;
             // }
         #endif
-        viewSystem.Look(readInput: CursorLockManager.CursorIsLocked());
+        var cursorLocked = CursorLockManager.CursorIsLocked();
+        viewSystem.Look(readInput: cursorLocked);
+        movementSystem.Move(readInput: cursorLocked);
         viewSystem.UpdateHeadLocalPosition();
     }
 

@@ -7,6 +7,8 @@ namespace PlayerController {
         public readonly Vector3 point;
         public readonly Vector3 normal;
         public readonly Collider otherCollider;
+        public readonly Rigidbody otherRB;
+        public readonly Vector3 otherVelocity;
         public readonly bool isSolid;
         // public readonly bool isStatic;
 
@@ -14,13 +16,40 @@ namespace PlayerController {
             this.point = contactPoint.point;
             this.normal = contactPoint.normal;
             this.otherCollider = contactPoint.otherCollider;
-            isSolid = ColliderIsSolid(contactPoint.otherCollider);
+            if(otherCollider == null){
+                this.otherRB = null;
+                this.otherVelocity = Vector3.zero;
+            }else{
+                this.otherRB = otherCollider.attachedRigidbody;
+                this.otherVelocity = otherRB.velocity;
+            }
+            isSolid = ColliderIsSolid(otherCollider);
+        }
+
+        public SurfacePoint (ControllerColliderHit hit) {
+            this.point = hit.point;
+            this.normal = hit.normal;
+            this.otherCollider = hit.collider;
+            this.otherRB = hit.rigidbody;
+            if(otherRB == null){
+                this.otherVelocity = Vector3.zero;
+            }else{
+                this.otherVelocity = otherRB.velocity;
+            }
+            isSolid = ColliderIsSolid(otherCollider);
         }
 
         public SurfacePoint (Vector3 point, Vector3 normal, Collider otherCollider) {
             this.point = point;
             this.normal = normal;
             this.otherCollider = otherCollider;
+            if(otherCollider == null){
+                this.otherRB = null;
+                this.otherVelocity = Vector3.zero;
+            }else{
+                this.otherRB = otherCollider.attachedRigidbody;
+                this.otherVelocity = otherRB.velocity;
+            }
             isSolid = ColliderIsSolid(otherCollider);
         }
 
