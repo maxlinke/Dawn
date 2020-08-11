@@ -12,6 +12,29 @@ public class FramerateAndTimeScaleSetter : MonoBehaviour {
     [Header("Time Scale")]
     [SerializeField] float targetTimeScale = 1;
 
+    [Header("Lag Simulation")]
+    [SerializeField] bool simulateLag = false;
+    [SerializeField] int framerateSpread = 10;
+    [SerializeField] bool addFreezes = false;
+    [SerializeField] int freezeFrameRate = 2;
+    [SerializeField] float freezeProbability = 0.01f;
+
+    bool wasSimulatingLag = false;
+
+    void Update () {
+        if(simulateLag){
+            QualitySettings.vSyncCount = 0;
+            if(addFreezes && Random.value < freezeProbability){
+                Application.targetFrameRate = freezeFrameRate;
+            }else{
+                Application.targetFrameRate = targetFrameRate + Random.Range(-framerateSpread, framerateSpread);
+            }
+        }else if(wasSimulatingLag){
+            SetFrameRate();
+        }
+        wasSimulatingLag = simulateLag;
+    }
+
     [RuntimeMethodButton]
     public void SetFrameRate () {
         Application.targetFrameRate = Mathf.Max(1, targetFrameRate);
@@ -33,7 +56,8 @@ public class FramerateAndTimeScaleSetter : MonoBehaviour {
 
     [RuntimeMethodButton]
     public void NormalizeTimeScale () {
-        Time.timeScale = 1f;
+        targetTimeScale = 1f;
+        Time.timeScale = targetTimeScale;
     }
 
 }
