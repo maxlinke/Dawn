@@ -20,24 +20,25 @@ public class Player : MonoBehaviour {
     public Vector3 CenterPos => cc.transform.TransformPoint(cc.center);
 
     // TODO revert back to charactercontroller
-    // - no fixedupdate/update bollocks
-    // - i know how to do good drag now (didn't use any drag or friction on the rigidbody anyways)
-    // - responsiveness yo
     // - TODO test if collision info comes immediately after cc.Move or after update...
-    // - TODO search and replace all fixedDeltaTimes!
+    //   - immediately after move
     // - TODO does the capsule also collide with the ground when jumping, causing double the jump? implement jump via += first before going to y = value
+    //   - no, it doesn't thankfully.
 
     // important things:
     // - crouch jump
     // - non binary slope limit (slide a bit before sliding fully)
-    // - screw the mass-screwery. the player weighs what he weighs. if anything gets pushed too easily, adjust its mass.
-    // - i don't like the velocityComesFromMove stuff. try to not do that.
-
-    // TODO walk and run OR always "run" and dodge? the second sounds a lot more fun
 
     // TODO some way of managing the cameras. cameraregistry maybe? (CameraID enum)
 
-    // Vector3 DEBUG_LAST_POS;
+    // TODO player config
+    // - fov
+    // - velocity lean
+    // - weapon bob?
+    // - what other preferences? idk...
+    // not included
+    // - inverting controls, that's directly via the bidns
+    // - auto run, there is no run
 
     void Start () {
         viewSystem.Initialize(pcProps, this, cc, head);
@@ -47,7 +48,6 @@ public class Player : MonoBehaviour {
             headRoll: 0f
         ); // should be deserialized or something later on
         movementSystem.Initialize(pcProps, this, cc);
-        // DEBUG_LAST_POS = transform.position;
     }
 
     void Update () {
@@ -55,26 +55,12 @@ public class Player : MonoBehaviour {
             if(Input.anyKeyDown){
                 CursorLockManager.UpdateLockState();
             }
-            // if(Input.GetKeyDown(KeyCode.Mouse1)){
-            //     rb.velocity += head.transform.forward * 50f;
-            // }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
         viewSystem.Look(readInput: cursorLocked);
         movementSystem.Move(readInput: cursorLocked);
         viewSystem.UpdateHeadLocalPosition();
+        viewSystem.InteractCheck(readInput: cursorLocked);
     }
-
-    void OnTriggerEnter (Collider other) {
-        Debug.Log("oh hi mark");
-    }
-
-    // void FixedUpdate () {
-    //     viewSystem.MatchRBRotationToHead();
-    //     movementSystem.Move(readInput: CursorLockManager.CursorIsLocked());
-    //     var DEBUG_CURRENT_POS = transform.position;
-    //     Debug.DrawLine(DEBUG_LAST_POS, DEBUG_CURRENT_POS, Color.red, 4f);
-    //     DEBUG_LAST_POS = DEBUG_CURRENT_POS;
-    // }
 	
 }

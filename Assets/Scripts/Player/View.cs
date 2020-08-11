@@ -23,11 +23,15 @@ namespace PlayerController {
         public ControlMode controlMode;
         public Transform viewTarget;
 
+        int interactMask;
+
         public void Initialize (PlayerControllerProperties pcProps, Player player, CharacterController cc, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
             this.cc = cc;
             this.head = head;
+            interactMask = unchecked((int)0b11111111111111111111111111111111);  // TODO proper masking (doesn't need its own layer, just gets created here)
+            // TODO layers as enum
         }
 
         Vector2 GetViewInput () {
@@ -60,7 +64,7 @@ namespace PlayerController {
             ApplyHeadEuler();
         }
 
-        // TODO velocity based head rolling (in every case)
+        // TODO velocity based head rolling (in every case) ( --!!!!!!-> LOCAL VELOCITY <-!!!!!-- )
         public void Look (bool readInput) {
             switch(controlMode){
                 case ControlMode.FULL: 
@@ -90,6 +94,20 @@ namespace PlayerController {
             ApplyHeadEuler();
             var pan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
             cc.transform.Rotate(new Vector3(0f, pan, 0f), Space.Self);
+        }
+
+        public void InteractCheck (bool readInput) {
+            // disable all player colliders?
+            if(Physics.Raycast(head.transform.position, head.transform.forward, out var hit, pcProps.InteractRange, interactMask, QueryTriggerInteraction.Collide)){
+                var interactable = hit.collider.GetComponent<IInteractable>();
+                var description = string.Empty;
+                if(interactable != null){
+                    description = interactable.InteractionDescription;
+                    if(readInput && Bind.INTERACT.GetKeyDown()){
+                        interactable.Interact(player);  // TODO "canBeInteractedWith", specific for player, to avoid getcomponents etc
+                    }
+                }
+            }
         }
         
     }

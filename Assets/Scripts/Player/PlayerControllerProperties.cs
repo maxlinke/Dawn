@@ -48,4 +48,9 @@ public class PlayerControllerProperties : ScriptableObject {
     public float DodgeEndTime => dodgeEndTime;
     public float DodgeDuration => dodgeDuration;
 
+    [Header("Interaction")]
+    [SerializeField] float interactRange = 1.5f;
+
+    public float InteractRange => interactRange;
+
 }

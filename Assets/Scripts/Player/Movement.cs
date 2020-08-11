@@ -186,7 +186,6 @@ namespace PlayerController {
             if(Input.GetKey(KeyCode.Mouse0)){
                 Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeed;
                 if(Input.GetKey(KeyCode.Mouse1)){
-                    // Velocity *= 0.1f;
                     Velocity += cc.transform.up * 0.1f;
                 }
             }
@@ -195,18 +194,16 @@ namespace PlayerController {
 
         // TODO player debug screen (mostly line graphs)
         // -> move type (colored line? different heights as well?)
-        // -> speed/Velocity magnitude (as line graph)
+        // -> speed/Velocity magnitude (as line graph) and as number (without gravity?) (no, after move the gravity velocity won't be there if grounded anyways...)
         // -> acceleration (as line graph)
         // for the speed/acceleration stuff somehow make it work with the deltatime kinda?
         // either it doesn't have an update and gets executed BY the player, or it executes automatically after the player (script execution order and such)
         // player needs singleton? or the player registers to the debug thing...
 
-        // TODO implement interaction asap
-        // set up layers and layer masks i guess
-        
         // TODO make some in-world / in-game modifiable world things
-        // -> slopes
-        // -> steps
+        // -> slopes (manual and presets)
+        // -> steps  (manual and presets)
+        //    - as one mesh and as a lot of cubes?
         // -> terrain (just less-simple geometry to walk on...) (NOT UNITY TERRAIN THO!!!!)
         // make an area with sloped ground
 
@@ -219,13 +216,18 @@ namespace PlayerController {
         // because high framerate -> bounce off corners and move very slowly
         // low framerate -> butter smooth stepping
         // stepping works best when moving straight into the thing
-
         // ----> if moving into point and normal faces me, move forward*, otherwise, move along ground? <-----
+        // determine if it's a face or an edge first via raycast(s)
+        // it it's an edge AND IT'S BELOW THE STEP LIMIT then move forward
+        // otherwise, always do the velocity project stuff
+        // TODO
+        // TODO more stuff in OnControllerColliderHit
+        // TODO
         // what about the OnControllerColliderHit velocity projection?
 
         // TODO test movement with controller for jerkiness (0.5 input) because friction/drag etc
 
-        // TODO slope limit, custom gravity
+        // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
         void GroundedMovement (bool readInput, State currentState) {
             var localVelocity = currentState.localVelocity;
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag);
@@ -239,7 +241,7 @@ namespace PlayerController {
             var targetDirection = GroundMoveVector(cc.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
             var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel);
-            if(Bind.JUMP.GetKeyDown()){
+            if(readInput && Bind.JUMP.GetKeyDown()){
                 moveAccel = new Vector3(moveAccel.x, JumpSpeed() / Time.deltaTime, moveAccel.z);
             }
             Velocity += moveAccel * Time.deltaTime;
