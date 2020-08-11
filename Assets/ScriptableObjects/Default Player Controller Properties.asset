@@ -14,14 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   normalHeight: 1.8
   crouchHeight: 0.9
+  crouchUncrouchTime: 0.25
   eyeOffset: -0.15
   colliderRadius: 0.4
-  playerMass: 80
-  moveSpeedWalk: 8
-  moveSpeedRun: 12
-  moveSpeedCrouch: 4
-  groundAccel: 32
+  slopeLimit: 60
+  moveSpeed: 12
+  moveSpeedCrouch: 6
+  groundAccel: 64
+  groundDrag: 32
   airAccel: 24
+  airDrag: 8
   jumpHeight: 1.2
   jumpCalcGravity: 29.43
-  slopeLimit: 60
+  dodgeSpeed: 12
+  dodgeStartTime: 0.125
+  dodgeEndTime: 0.125
+  dodgeDuration: 0.5

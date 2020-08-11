@@ -126,7 +126,7 @@ namespace CustomInputSystem {
             ClearAndAddWithoutInputSystemNotification(LOOK_LEFT,  new AxisInput(Axis.ID.MOUSE_X, false), new AxisInput(Axis.ID.RIGHT_STICK_X, false));
             ClearAndAddWithoutInputSystemNotification(LOOK_RIGHT, new AxisInput(Axis.ID.MOUSE_X, true),  new AxisInput(Axis.ID.RIGHT_STICK_X, true));
 
-            ClearAndAddWithoutInputSystemNotification(JUMP,          new KeyCodeInput(KeyCode.Space),     new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A));
+            ClearAndAddWithoutInputSystemNotification(JUMP,          new KeyCodeInput(KeyCode.Space),     new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A), new AxisInput(Axis.ID.MOUSE_SCROLL, false));
             ClearAndAddWithoutInputSystemNotification(CROUCH_HOLD,   new KeyCodeInput(KeyCode.LeftControl));
             ClearAndAddWithoutInputSystemNotification(CROUCH_TOGGLE, new KeyCodeInput(KeyCode.C),         new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.LS));
             ClearAndAddWithoutInputSystemNotification(DODGE,         new KeyCodeInput(KeyCode.LeftShift), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.X));

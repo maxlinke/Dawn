@@ -211,6 +211,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   controlMode: 0
+  DEBUGOUTPUTSTRINGTHING: 
 --- !u!1 &6417389038590286916
 GameObject:
   m_ObjectHideFlags: 0
