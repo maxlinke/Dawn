@@ -65,6 +65,10 @@ public class Player : MonoBehaviour {
         viewSystem.UpdateHeadLocalPosition();
     }
 
+    void OnTriggerEnter (Collider other) {
+        Debug.Log("oh hi mark");
+    }
+
     // void FixedUpdate () {
     //     viewSystem.MatchRBRotationToHead();
     //     movementSystem.Move(readInput: CursorLockManager.CursorIsLocked());

@@ -141,6 +141,7 @@ namespace PlayerController {
             currentState.jumped = false;
             contactPoints.Clear();
 
+            // might need an alternative here...
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
                 float maxDot = 0.0175f;     // cos(89°), to exclude walls
@@ -170,17 +171,57 @@ namespace PlayerController {
                 default:
                     break;
             }
-            if(Input.GetKeyDown(KeyCode.R)){
-                cc.Move(Vector3.down);
-            }else if(Input.GetKey(KeyCode.E)){
-                cc.Move(cc.transform.forward * pcProps.MoveSpeed * Time.deltaTime);   
-            }else{
-                cc.Move(Velocity * Time.deltaTime); // only slides along walls, not the ground, so gravity sliding will have to be implemted explicitly
+            if(Input.GetKeyDown(KeyCode.Alpha1)){
+                Application.targetFrameRate = -1;
+                QualitySettings.vSyncCount = 0;
             }
+            if(Input.GetKeyDown(KeyCode.Alpha2)){
+                Application.targetFrameRate = 60;
+                QualitySettings.vSyncCount = 0;
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha3)){
+                Application.targetFrameRate = 20;
+                QualitySettings.vSyncCount = 0;
+            }
+            if(Input.GetKey(KeyCode.Mouse0)){
+                Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeed;
+                if(Input.GetKey(KeyCode.Mouse1)){
+                    // Velocity *= 0.1f;
+                    Velocity += cc.transform.up * 0.1f;
+                }
+            }
+            cc.Move(Velocity * Time.deltaTime); // only slides along walls, not the ground, so gravity sliding will have to be implemted explicitly
         }
+
+        // TODO player debug screen (mostly line graphs)
+        // -> move type (colored line? different heights as well?)
+        // -> speed/Velocity magnitude (as line graph)
+        // -> acceleration (as line graph)
+        // for the speed/acceleration stuff somehow make it work with the deltatime kinda?
+        // either it doesn't have an update and gets executed BY the player, or it executes automatically after the player (script execution order and such)
+        // player needs singleton? or the player registers to the debug thing...
+
+        // TODO implement interaction asap
+        // set up layers and layer masks i guess
+        
+        // TODO make some in-world / in-game modifiable world things
+        // -> slopes
+        // -> steps
+        // -> terrain (just less-simple geometry to walk on...) (NOT UNITY TERRAIN THO!!!!)
+        // make an area with sloped ground
 
         // TODO what exactly counts as a wall? slope limit? investigate!!!
         // and does the slope limit mean you cant walk straight into a slope and go up or what?
+        // slope limit zero means moving in the cc plane only will not get me up slopes
+        // BUT if i have even the SLIGHTEST amount of velocity upwards, i WILL go up slopes, no matter the limit
+
+        // TODO custom step offset implementation
+        // because high framerate -> bounce off corners and move very slowly
+        // low framerate -> butter smooth stepping
+        // stepping works best when moving straight into the thing
+
+        // ----> if moving into point and normal faces me, move forward*, otherwise, move along ground? <-----
+        // what about the OnControllerColliderHit velocity projection?
 
         // TODO test movement with controller for jerkiness (0.5 input) because friction/drag etc
 
@@ -228,13 +269,6 @@ namespace PlayerController {
         // ladder movement is basically free movement
         // transform input vector by head instead of body
         // what about jumping off?
-
-        // surface point instead of the flattest one maybe the "closest" one?
-        // and i don't mean strictly closest to the capsule's lower center
-        // i mean within a margin. flatness also matters.
-
-        // "target speed" lerp between walk and run depending on the VALUE of that key
-        // then lerp between that and the crouch speed using the normalized collider height
 
         void OnControllerColliderHit (ControllerColliderHit hit) {
             contactPoints.Add(hit);
