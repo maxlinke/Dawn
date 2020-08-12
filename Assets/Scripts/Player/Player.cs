@@ -19,6 +19,8 @@ public class Player : MonoBehaviour {
     public Vector3 FootPos => transform.position;
     public Vector3 CenterPos => cc.transform.TransformPoint(cc.center);
 
+    // TODO do kinematic rigidbodies only update their collision per fixedupdate?
+
     // TODO revert back to charactercontroller
     // - TODO test if collision info comes immediately after cc.Move or after update...
     //   - immediately after move
@@ -62,5 +64,13 @@ public class Player : MonoBehaviour {
         viewSystem.UpdateHeadLocalPosition();
         viewSystem.InteractCheck(readInput: cursorLocked);
     }
+
+    // bad move, this causes me to re-enter triggers i'm already in.
+    // public void DoWhileAllCollidersDisabled (System.Action actionToDo) {
+    //     var ccEnabled = cc.enabled;
+    //     cc.enabled = false;
+    //     actionToDo();
+    //     cc.enabled = ccEnabled;
+    // }
 	
 }

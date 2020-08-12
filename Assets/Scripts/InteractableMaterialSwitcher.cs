@@ -5,6 +5,7 @@ public class InteractableMaterialSwitcher : MonoBehaviour, IInteractable {
     [SerializeField] MeshRenderer mr = default;
     [SerializeField] Material[] materials = default;
 
+    public bool CanBeInteractedWith => true;
     public string InteractionDescription => "Change Color";
 
     public void Interact (object interactor) {

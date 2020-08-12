@@ -273,6 +273,11 @@ namespace PlayerController {
         // what about jumping off?
 
         void OnControllerColliderHit (ControllerColliderHit hit) {
+            // am i moving into it?
+            // collider raycast
+            // two raycasts?
+            // slightly offset using velocity
+            // if they don't match the normal (within a reasonable margin... test that!!!) it's a corner
             contactPoints.Add(hit);
             if(Vector3.Dot(hit.normal, Velocity) < 0){  // TODO RELATIVE VELOCITY!!!
                 Velocity = Vector3.ProjectOnPlane(Velocity, hit.normal);

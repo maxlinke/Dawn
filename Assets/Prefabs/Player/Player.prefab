@@ -126,7 +126,7 @@ GameObject:
   - component: {fileID: 6417389038352138160}
   - component: {fileID: 6417389038352138163}
   - component: {fileID: 6417389038352138172}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -196,6 +196,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eed722c36733ae2408bd1812f197490b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DEBUGTEXTFIELD: {fileID: 0}
   controlMode: 0
   viewTarget: {fileID: 0}
 --- !u!114 &6417389038352138172

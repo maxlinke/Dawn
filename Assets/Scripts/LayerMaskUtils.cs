@@ -2,6 +2,8 @@
 
 public static class LayerMaskUtils {
 
+    public static readonly int EverythingMask = unchecked((int)0b_1111_1111_1111_1111_1111_1111_1111_1111);
+
 	public static int CreateCollisionMask (int layer) {
 		string[] names = new string[32];
 		for(int i=0; i<32; i++){
@@ -16,6 +18,14 @@ public static class LayerMaskUtils {
 		int layer = LayerMask.NameToLayer(layerName);
 		return CreateCollisionMask(layer);
 	}
+
+    public static int CreateDirectMask (params int[] layerIndices) {
+        var output = 0;
+        foreach(var layerIndex in layerIndices){
+            output |= (1 << layerIndex);
+        }
+        return output;
+    }
 
 	public static string MaskToBinaryString (int mask, bool firstCharacterIsFirstLayer = true) {
 		string output = "";

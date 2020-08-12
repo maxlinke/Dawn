@@ -11,6 +11,8 @@ namespace PlayerController {
             TARGETED
         }
 
+        [SerializeField] UnityEngine.UI.Text DEBUGTEXTFIELD;
+
         PlayerControllerProperties pcProps;
         Player player;
         CharacterController cc;
@@ -30,8 +32,9 @@ namespace PlayerController {
             this.player = player;
             this.cc = cc;
             this.head = head;
-            interactMask = unchecked((int)0b11111111111111111111111111111111);  // TODO proper masking (doesn't need its own layer, just gets created here)
-            // TODO layers as enum
+            Debug.Log(LayerMaskUtils.MaskToBinaryString(LayerMaskUtils.EverythingMask));
+            interactMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
+            Debug.Log(LayerMaskUtils.MaskToBinaryString(interactMask));
         }
 
         Vector2 GetViewInput () {
@@ -96,18 +99,36 @@ namespace PlayerController {
             cc.transform.Rotate(new Vector3(0f, pan, 0f), Space.Self);
         }
 
+        // TODO lower interact range when crouching is implemented?
         public void InteractCheck (bool readInput) {
-            // disable all player colliders?
+            Color rayCol;
+            string debugLogA = string.Empty;
+            string debugLogB = string.Empty;
+            if(Bind.INTERACT.GetKeyDown()){
+                debugLogA = $"{Time.frameCount} | trying to interact";
+            }
+            var description = string.Empty;
             if(Physics.Raycast(head.transform.position, head.transform.forward, out var hit, pcProps.InteractRange, interactMask, QueryTriggerInteraction.Collide)){
                 var interactable = hit.collider.GetComponent<IInteractable>();
-                var description = string.Empty;
-                if(interactable != null){
+                if(interactable != null && interactable.CanBeInteractedWith){
                     description = interactable.InteractionDescription;
                     if(readInput && Bind.INTERACT.GetKeyDown()){
-                        interactable.Interact(player);  // TODO "canBeInteractedWith", specific for player, to avoid getcomponents etc
+                        Debug.Log($"{Time.frameCount} | interacting with \"{interactable.GetType()}\"");
+                        interactable.Interact(player);      // would be nice if i had player-specific interactions, as to avoid getcomponent-calls
+                    }
+                }else{
+                    if(interactable == null){
+                        description = $"no interactable (hit {hit.collider.name})";
+                    }else if(!interactable.CanBeInteractedWith){
+                        description = "cant be interacted with";
                     }
                 }
+                rayCol = Color.green;
+            }else{
+                rayCol = Color.red;
             }
+            DEBUGTEXTFIELD.text = description;
+            Debug.DrawRay(head.transform.position, head.transform.forward * pcProps.InteractRange, rayCol, 0f);
         }
         
     }
