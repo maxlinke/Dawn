@@ -42,6 +42,8 @@ public class Player : MonoBehaviour {
     // - inverting controls, that's directly via the bidns
     // - auto run, there is no run
 
+    // TODO gravity alignment
+
     void Start () {
         viewSystem.Initialize(pcProps, this, cc, head);
         viewSystem.SetHeadOrientation(

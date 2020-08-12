@@ -185,8 +185,14 @@ namespace PlayerController {
             }
             if(Input.GetKey(KeyCode.Mouse0)){
                 Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeed;
-                if(Input.GetKey(KeyCode.Mouse1)){
-                    Velocity += cc.transform.up * 0.1f;
+                // if(Input.GetKey(KeyCode.Mouse1)){
+                //     Velocity += cc.transform.up * 0.1f;
+                // }
+                if(Input.GetKey(KeyCode.Space)){
+                    Velocity += cc.transform.up;
+                }
+                if(Input.GetKey(KeyCode.LeftShift)){
+                    Velocity -= cc.transform.up;
                 }
             }
             cc.Move(Velocity * Time.deltaTime); // only slides along walls, not the ground, so gravity sliding will have to be implemted explicitly

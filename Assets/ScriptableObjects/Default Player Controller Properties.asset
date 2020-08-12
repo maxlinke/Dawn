@@ -30,4 +30,4 @@ MonoBehaviour:
   dodgeStartTime: 0.125
   dodgeEndTime: 0.125
   dodgeDuration: 0.5
-  interactRange: 2
+  interactRange: 10
