@@ -213,6 +213,11 @@ MonoBehaviour:
   targetFrameRate: 60
   vSync: 0
   targetTimeScale: 1
+  simulateLag: 0
+  framerateSpread: 10
+  addFreezes: 0
+  freezeFrameRate: 2
+  freezeProbability: 0.01
 --- !u!4 &797613497
 Transform:
   m_ObjectHideFlags: 0
