@@ -21,7 +21,7 @@ namespace PlayerController {
                 this.otherVelocity = Vector3.zero;
             }else{
                 this.otherRB = otherCollider.attachedRigidbody;
-                this.otherVelocity = otherRB.velocity;
+                this.otherVelocity = otherRB != null ? otherRB.velocity : Vector3.zero;
             }
             isSolid = ColliderIsSolid(otherCollider);
         }

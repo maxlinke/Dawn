@@ -38,7 +38,7 @@ public class RBPlayer : Player {
     void FixedUpdate () {
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.RotateBodyInLookDirection();
-        // rbMovement.
+        rbMovement.Move(readInput: cursorLocked);
     }
 	
 }
