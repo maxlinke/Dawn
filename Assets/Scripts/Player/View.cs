@@ -90,11 +90,6 @@ namespace PlayerController {
 
         public void InteractCheck (bool readInput) {
             Color rayCol;
-            string debugLogA = string.Empty;
-            string debugLogB = string.Empty;
-            if(Bind.INTERACT.GetKeyDown()){
-                debugLogA = $"{Time.frameCount} | trying to interact";
-            }
             var description = string.Empty;
             if(Physics.Raycast(head.transform.position, head.transform.forward, out var hit, pcProps.InteractRange, interactMask, QueryTriggerInteraction.Collide)){
                 var interactable = hit.collider.GetComponent<IInteractable>();

@@ -40,7 +40,7 @@ namespace CustomInputSystem {
                 output += $"{input}, ";
             }
             if(output.Length > 0){
-                output.Remove(output.Length - 2);
+                output = output.Remove(output.Length - 2);
             }else{
                 output = "NO INPUTS!";
             }

@@ -383,6 +383,8 @@ MonoBehaviour:
   scrollView: {fileID: 4984440592777864210}
   background: {fileID: 4984440592333231589}
   colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
+  leftLogMargin: 2
+  topLogMargin: 2
 --- !u!1 &4984440591362190459
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,6 +22,10 @@ namespace DebugTools {
         [Header("Colors")]
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
+        [Header("Other Settings")]
+        [SerializeField] float leftLogMargin = default;
+        [SerializeField] float topLogMargin = default;
+
         bool visible {
             get {
                 return canvas.enabled;
@@ -42,6 +46,7 @@ namespace DebugTools {
         Queue<string> queuedLogs;
         List<Text> clonedTextFields;
         Text activeLogTextField;
+        RectTransform verticalScrollBarRT;
 
         string currentLog;
         int totalLogCount;
@@ -68,6 +73,7 @@ namespace DebugTools {
             queuedLogs = new Queue<string>();
             clonedTextFields = new List<Text>();
             activeLogTextField = logTextFieldTemplate;
+            verticalScrollBarRT = (RectTransform)(scrollView.verticalScrollbar.transform);
             hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
             hexErrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
@@ -164,7 +170,7 @@ namespace DebugTools {
                     queuedLogs.Enqueue(currentLog);
                     currentLog = logAppend;     // no newline at start because that would result in a two-newline gap between the texts
                 }else{
-                    currentLog += $"\n{logAppend}";
+                    currentLog += (currentLog.Length > 0 ? $"\n{logAppend}" : logAppend);
                 }
             }
         }
@@ -190,7 +196,7 @@ namespace DebugTools {
                 var preferredHeight = activeLogTextField.preferredHeight;
                 var preferredWidth = activeLogTextField.preferredWidth;
                 activeLogTextField.rectTransform.sizeDelta = new Vector2(preferredWidth, preferredHeight);
-                scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(preferredWidth, scrollView.content.rect.width));
+                scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(preferredWidth + leftLogMargin + verticalScrollBarRT.rect.width, scrollView.content.rect.width));
                 var textPos = activeLogTextField.rectTransform.anchoredPosition.y;
                 var lowerTextBorder = textPos - preferredHeight;
                 scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(-lowerTextBorder, scrollView.viewport.rect.height));
@@ -257,7 +263,7 @@ namespace DebugTools {
                 }
                 clonedTextFields.Clear();
                 activeLogTextField = logTextFieldTemplate;
-                activeLogTextField.rectTransform.anchoredPosition = Vector2.zero;
+                activeLogTextField.rectTransform.anchoredPosition = new Vector2(leftLogMargin, -topLogMargin);
                 activeLogTextField.rectTransform.sizeDelta = Vector2.zero;
                 scrollView.content.sizeDelta = Vector2.zero;
             }
