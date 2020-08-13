@@ -98,10 +98,10 @@ namespace PlayerController {
             StartMove(out var currentState);
             switch(controlMode){
                 case ControlMode.FULL:
-                    ExecuteMove(readInput, currentState);
+                    ExecuteMove(readInput, ref currentState);
                     break;
                 case ControlMode.BLOCK_INPUT:
-                    ExecuteMove(false, currentState);
+                    ExecuteMove(false, ref currentState);
                     break;
                 case ControlMode.ANCHORED:
                     Velocity = Vector3.zero;
@@ -115,7 +115,12 @@ namespace PlayerController {
         }
 
         void StartMove (out State currentState) {
-            var sp = DetermineSurfacePoint();
+            SurfacePoint sp;
+            if(!lastState.jumped){
+                sp = DetermineSurfacePoint();
+            }else{
+                sp = null;
+            }
             currentState.surfacePoint = sp;
             if(sp == null){
                 currentState.moveType = MoveType.AIR;
@@ -146,20 +151,20 @@ namespace PlayerController {
             lastState = currentState;
         }
         
-        void ExecuteMove (bool readInput, State currentState) {
+        void ExecuteMove (bool readInput, ref State currentState) {
             switch(currentState.moveType){
                 case MoveType.AIR:
-                    AerialMovement(readInput, currentState);
+                    AerialMovement(readInput, ref currentState);
                     break;
                 case MoveType.GROUND:
-                    GroundedMovement(readInput, currentState);
+                    GroundedMovement(readInput, ref currentState);
                     break;
                 default:
                     break;
             }
         }
 
-        void GroundedMovement (bool readInput, State currentState) {
+        void GroundedMovement (bool readInput, ref State currentState) {
             var localVelocity = currentState.localVelocity;
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.fixedDeltaTime);
             localVelocity += groundFriction * Time.fixedDeltaTime;
@@ -172,11 +177,12 @@ namespace PlayerController {
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.deltaTime);
             if(readInput && Bind.JUMP.GetKey()){    // TODO cache jump wish and such...
                 moveAccel = new Vector3(moveAccel.x, JumpSpeed() / Time.fixedDeltaTime, moveAccel.z);
+                currentState.jumped = true;
             }
             Velocity += (groundFriction + moveAccel + Physics.gravity) * Time.fixedDeltaTime;
         }
 
-        void AerialMovement (bool readInput, State currentState) {
+        void AerialMovement (bool readInput, ref State currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
             // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.fixedDeltaTime);
