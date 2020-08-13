@@ -17,6 +17,8 @@ MonoBehaviour:
   crouchUncrouchTime: 0.25
   eyeOffset: -0.15
   colliderRadius: 0.4
+  playerMass: 80
+  collisionDetection: 2
   slopeLimit: 60
   moveSpeed: 12
   moveSpeedCrouch: 6
