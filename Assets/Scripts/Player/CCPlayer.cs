@@ -1,23 +1,13 @@
 ﻿using UnityEngine;
 using PlayerController;
 
-public class CCPlayer : MonoBehaviour {
+public class CCPlayer : Player {
 
-    [Header("Scripty bits")]
-    [SerializeField] PlayerControllerProperties pcProps = default;
-    [SerializeField] CCMovement movementSystem = default;
-    [SerializeField] CCView viewSystem = default;
+    [Header("Specific Scripty bits")]
+    [SerializeField] CCMovement ccMovement = default;
+    [SerializeField] CCView ccView = default;
 
-    [Header("GameObject Parts")]
-    [SerializeField] CharacterController cc = default;
-    [SerializeField] Transform head = default;
-
-    public float Height => movementSystem.Height;
-    public Vector3 Velocity => movementSystem.Velocity;
-
-    public Vector3 HeadPos => head.transform.position;
-    public Vector3 FootPos => transform.position;
-    public Vector3 CenterPos => cc.transform.TransformPoint(cc.center);
+    protected override Movement MovementSystem => ccMovement;
 
     // TODO do kinematic rigidbodies only update their collision per fixedupdate?
 
@@ -45,13 +35,13 @@ public class CCPlayer : MonoBehaviour {
     // TODO gravity alignment
 
     void Start () {
-        viewSystem.Initialize(pcProps, this, this.transform, head);
-        viewSystem.SetHeadOrientation(
+        ccView.Initialize(pcProps, this, head);
+        ccView.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        movementSystem.Initialize(pcProps, this, cc);
+        ccMovement.Initialize(pcProps);
     }
 
     void Update () {
@@ -61,10 +51,10 @@ public class CCPlayer : MonoBehaviour {
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        viewSystem.Look(readInput: cursorLocked);
-        movementSystem.Move(readInput: cursorLocked);
-        viewSystem.UpdateHeadLocalPosition();
-        viewSystem.InteractCheck(readInput: cursorLocked);
+        ccView.Look(readInput: cursorLocked);
+        ccMovement.Move(readInput: cursorLocked);
+        ccView.UpdateHeadLocalPosition();
+        ccView.InteractCheck(readInput: cursorLocked);
     }
 
     // bad move, this causes me to re-enter triggers i'm already in.

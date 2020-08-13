@@ -14,9 +14,9 @@ namespace PlayerController {
         [SerializeField] UnityEngine.UI.Text DEBUGTEXTFIELD = default;
 
         protected PlayerControllerProperties pcProps;
-        protected CCPlayer player;
-        protected Transform playerTransform;
+        protected Player player;
         protected Transform head;
+        protected Transform playerTransform => player.transform;
 
         public float headTilt { get; protected set; }
         public float headPan { get; protected set; }
@@ -27,10 +27,9 @@ namespace PlayerController {
 
         int interactMask;
 
-        public void Initialize (PlayerControllerProperties pcProps, CCPlayer player, Transform playerTransform, Transform head) {
+        public void Initialize (PlayerControllerProperties pcProps, Player player, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
-            this.playerTransform = playerTransform;
             this.head = head;
             SetupInteractMask();
         }
