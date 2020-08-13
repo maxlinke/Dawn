@@ -4,7 +4,7 @@ using CustomInputSystem;
 
 namespace PlayerController {
 
-    public class Movement : MonoBehaviour {
+    public class CCMovement : MonoBehaviour {
 
         public enum ControlMode {
             FULL,
@@ -29,7 +29,7 @@ namespace PlayerController {
         }
 
         PlayerControllerProperties pcProps;
-        Player player;
+        CCPlayer player;
         CharacterController cc;
 
         private bool m_initialized = false;
@@ -56,7 +56,7 @@ namespace PlayerController {
 
         // TODO a charactercontroller can enter triggers, right?
 
-        public void Initialize (PlayerControllerProperties pcProps, Player player, CharacterController cc) {
+        public void Initialize (PlayerControllerProperties pcProps, CCPlayer player, CharacterController cc) {
             this.pcProps = pcProps;
             this.player = player;
             this.cc = cc;

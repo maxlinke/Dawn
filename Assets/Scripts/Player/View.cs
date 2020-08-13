@@ -3,7 +3,7 @@ using CustomInputSystem;
 
 namespace PlayerController {
 
-    public class View : MonoBehaviour {
+    public abstract class View : MonoBehaviour {
 
         public enum ControlMode {
             FULL,
@@ -11,33 +11,35 @@ namespace PlayerController {
             TARGETED
         }
 
-        [SerializeField] UnityEngine.UI.Text DEBUGTEXTFIELD;
+        [SerializeField] UnityEngine.UI.Text DEBUGTEXTFIELD = default;
 
-        PlayerControllerProperties pcProps;
-        Player player;
-        CharacterController cc;
-        Transform head;
+        protected PlayerControllerProperties pcProps;
+        protected CCPlayer player;
+        protected Transform playerTransform;
+        protected Transform head;
 
-        public float headTilt { get; private set; }
-        public float headPan { get; private set; }
-        public float headRoll { get; private set; }
+        public float headTilt { get; protected set; }
+        public float headPan { get; protected set; }
+        public float headRoll { get; protected set; }
 
         public ControlMode controlMode;
         public Transform viewTarget;
 
         int interactMask;
 
-        public void Initialize (PlayerControllerProperties pcProps, Player player, CharacterController cc, Transform head) {
+        public void Initialize (PlayerControllerProperties pcProps, CCPlayer player, Transform playerTransform, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
-            this.cc = cc;
+            this.playerTransform = playerTransform;
             this.head = head;
-            Debug.Log(LayerMaskUtils.MaskToBinaryString(LayerMaskUtils.EverythingMask));
-            interactMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
-            Debug.Log(LayerMaskUtils.MaskToBinaryString(interactMask));
+            SetupInteractMask();
         }
 
-        Vector2 GetViewInput () {
+        protected virtual void SetupInteractMask () {
+            interactMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
+        }
+
+        protected Vector2 GetViewInput () {
             var dx = Bind.LOOK_RIGHT.GetValue() - Bind.LOOK_LEFT.GetValue();
             var dy = Bind.LOOK_DOWN.GetValue() - Bind.LOOK_UP.GetValue();
             return new Vector2(dx, dy);
@@ -49,29 +51,28 @@ namespace PlayerController {
             this.headRoll = headRoll;
         }
 
-        void ApplyHeadEuler () {
-            head.localEulerAngles = new Vector3(headTilt, headPan, headRoll);
-        }
-
         public void UpdateHeadLocalPosition () {
             head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
+        }
+
+        protected void ApplyHeadEuler () {
+            head.localEulerAngles = new Vector3(headTilt, headPan, headRoll);
         }
 
         public void RotateBodyInLookDirection () {
             var tiltCache = headTilt;
             headTilt = 0f;
             ApplyHeadEuler();
-            cc.transform.rotation = Quaternion.LookRotation(head.forward, cc.transform.up);
+            playerTransform.rotation = Quaternion.LookRotation(head.forward, playerTransform.up);
             headTilt = tiltCache;
             headPan = 0f;
             ApplyHeadEuler();
         }
 
-        // TODO velocity based head rolling (in every case) ( --!!!!!!-> LOCAL VELOCITY <-!!!!!-- )
         public void Look (bool readInput) {
             switch(controlMode){
                 case ControlMode.FULL: 
-                    DeltaLook(readInput ? GetViewInput() : Vector2.zero);
+                    DeltaLook(readInput ? GetViewInput() * 60f * Time.deltaTime : Vector2.zero);
                     break;
                 case ControlMode.TARGETED:
                     TargetLook(viewTarget.position);
@@ -84,22 +85,9 @@ namespace PlayerController {
             }
         }
 
-        void DeltaLook (Vector2 viewDelta) {
-            viewDelta *= 60f * Time.deltaTime;
-            headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
-            ApplyHeadEuler();
-            cc.transform.Rotate(new Vector3(0f, viewDelta.x, 0f), Space.Self);
-        }
+        protected abstract void DeltaLook (Vector2 viewDelta);
+        protected abstract void TargetLook (Vector3 targetPoint);
 
-        void TargetLook (Vector3 viewTargetPoint) {
-            var toTargetLocal = cc.transform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
-            headTilt = -1f * Mathf.Rad2Deg * Mathf.Asin(toTargetLocal.y);
-            ApplyHeadEuler();
-            var pan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
-            cc.transform.Rotate(new Vector3(0f, pan, 0f), Space.Self);
-        }
-
-        // TODO lower interact range when crouching is implemented?
         public void InteractCheck (bool readInput) {
             Color rayCol;
             string debugLogA = string.Empty;

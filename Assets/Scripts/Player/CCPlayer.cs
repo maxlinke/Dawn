@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using PlayerController;
 
-public class Player : MonoBehaviour {
+public class CCPlayer : MonoBehaviour {
 
     [Header("Scripty bits")]
     [SerializeField] PlayerControllerProperties pcProps = default;
-    [SerializeField] Movement movementSystem = default;
-    [SerializeField] View viewSystem = default;
+    [SerializeField] CCMovement movementSystem = default;
+    [SerializeField] CCView viewSystem = default;
 
     [Header("GameObject Parts")]
     [SerializeField] CharacterController cc = default;
@@ -45,7 +45,7 @@ public class Player : MonoBehaviour {
     // TODO gravity alignment
 
     void Start () {
-        viewSystem.Initialize(pcProps, this, cc, head);
+        viewSystem.Initialize(pcProps, this, this.transform, head);
         viewSystem.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
