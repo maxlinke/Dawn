@@ -5,8 +5,9 @@ namespace SceneLoading {
     public enum SceneID {
 
         NONE = 0,   // synonymous with just the main scene
-        MOVEMENT_TESTING = 1,
-        TEST_1 = 2,
+        MOVEMENT_TESTING_CC = 1,
+        MOVEMENT_TESTING_RB = 2,
+        TEST_1 = 3,
         // MAIN_MENU,
         // E1M1,
         

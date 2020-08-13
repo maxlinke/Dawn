@@ -33,6 +33,7 @@ namespace PlayerController {
         public abstract Vector3 WorldCenterPos { get; }
         public abstract Vector3 WorldFootPos { get; }
         public abstract Vector3 Velocity { get; set; }
+        public abstract ControlMode controlMode { get; set; }
 
         protected abstract Transform PlayerTransform { get; }
 

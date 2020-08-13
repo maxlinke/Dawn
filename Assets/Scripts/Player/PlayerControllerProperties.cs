@@ -16,6 +16,13 @@ public class PlayerControllerProperties : ScriptableObject {
     public float EyeOffset => eyeOffset;
     public float ColliderRadius => colliderRadius;
 
+    [Header("Phyics")]
+    [SerializeField] float playerMass = 80f;
+    [SerializeField] CollisionDetectionMode collisionDetection = CollisionDetectionMode.ContinuousDynamic;
+
+    public float PlayerMass => playerMass;
+    public CollisionDetectionMode CollisionDetection => collisionDetection;
+
     [Header("Movement")]
     [SerializeField] float slopeLimit = 60f;
     [SerializeField] float moveSpeed = 8f;

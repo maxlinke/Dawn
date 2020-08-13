@@ -109,7 +109,9 @@ namespace PlayerController {
             }else{
                 rayCol = Color.red;
             }
-            DEBUGTEXTFIELD.text = description;
+            if(DEBUGTEXTFIELD != null){
+                DEBUGTEXTFIELD.text = description;
+            }
             Debug.DrawRay(head.transform.position, head.transform.forward * pcProps.InteractRange, rayCol, 0f);
         }
         

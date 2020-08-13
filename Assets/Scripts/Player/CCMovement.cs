@@ -19,9 +19,14 @@ namespace PlayerController {
             set { m_velocity = value; }
         }
 
-        public ControlMode controlMode;
+        public override ControlMode controlMode {
+            get { return m_controlMode; }
+            set { m_controlMode = value; }
+        }
 
         bool initialized = false;
+        ControlMode m_controlMode = ControlMode.FULL;
+        
         List<ControllerColliderHit> contactPoints;
         State lastState;
         Vector3 m_velocity;

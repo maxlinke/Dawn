@@ -469,6 +469,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Scene Loader
       objectReference: {fileID: 0}
+    - target: {fileID: 1901324286402175417, guid: f59152151d3e2b84da8b837b1cb5b17a,
+        type: 3}
+      propertyPath: initialScene
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 1901324286402175421, guid: f59152151d3e2b84da8b837b1cb5b17a,
         type: 3}
       propertyPath: m_LocalPosition.x
