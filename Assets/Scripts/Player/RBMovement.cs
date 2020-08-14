@@ -175,8 +175,19 @@ namespace PlayerController {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(HeightRelatedSpeed(), localSpeed);
-            var targetDirection = GroundMoveVector(rb.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
-            var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
+            var targetDirection = rb.transform.TransformDirection(rawInput);
+            Vector3 targetVelocity;
+            if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
+                targetVelocity = targetDirection * targetSpeed;     // directions contains input magnitude
+                // TODO almost
+                // this will be projected and the "direction" will be slightly different
+                // so find the proper vector. with math.
+                // but only if the ground is solid
+                // because said vector will be LARGE
+            }else{
+                targetVelocity = GroundMoveVector(rb.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
+                targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
+            }
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
                 // var jumpSpeed = Mathf.Max(localVelocity.y, 0) + JumpSpeed();
