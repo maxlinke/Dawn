@@ -97,6 +97,11 @@ namespace PlayerController {
                 output.localVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
             }else{
                 var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);
+                // TODO validate ground
+                // example: sphere
+                // surface angle can be below limit even though i SHOULD totally fall off
+                // solution: raycast/small-ish spherecast down to where said ground should BE
+                // if it isn't there, then i am floating and should probably slide down
                 output.moveType = ((surfaceAngle < pcProps.SlopeLimit) ? MoveType.GROUND : MoveType.SLOPE);
                 output.localVelocity = this.Velocity - output.surfacePoint.otherVelocity;
             }
