@@ -112,6 +112,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pcProps: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
   head: {fileID: 8913080615580733567}
+  fpCamera: {fileID: 8913080616304595080}
   rbMovement: {fileID: 8913080616178811583}
   rbView: {fileID: 8913080616178811552}
 --- !u!114 &8913080616178811583

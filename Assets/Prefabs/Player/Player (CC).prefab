@@ -181,6 +181,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pcProps: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
   head: {fileID: 6417389037101626177}
+  fpCamera: {fileID: 6417389037183686742}
   ccMovement: {fileID: 6417389038352138172}
   ccView: {fileID: 6417389038352138163}
 --- !u!114 &6417389038352138163
@@ -211,7 +212,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cc: {fileID: 3814160513160293693}
-  controlMode: 0
   DEBUGOUTPUTSTRINGTHING: 
 --- !u!1 &6417389038590286916
 GameObject:

@@ -8,6 +8,7 @@ public abstract class Player : MonoBehaviour {
 
     [Header("GameObject Parts")]
     [SerializeField] protected Transform head = default;
+    [SerializeField] protected Camera fpCamera = default;
 
     public float Height => MovementSystem.Height;
     public Vector3 Velocity => MovementSystem.Velocity;
@@ -17,5 +18,11 @@ public abstract class Player : MonoBehaviour {
     public Vector3 CenterPos => MovementSystem.WorldCenterPos;
 
     protected abstract Movement MovementSystem { get; }
+
+    protected void InitCamera () {
+        fpCamera.orthographic = false;
+        fpCamera.nearClipPlane = pcProps.NearClipDist;
+        fpCamera.farClipPlane = pcProps.FarClipDist;
+    }
 	
 }

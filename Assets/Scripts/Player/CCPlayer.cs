@@ -9,14 +9,6 @@ public class CCPlayer : Player {
 
     protected override Movement MovementSystem => ccMovement;
 
-    // TODO do kinematic rigidbodies only update their collision per fixedupdate?
-
-    // TODO revert back to charactercontroller
-    // - TODO test if collision info comes immediately after cc.Move or after update...
-    //   - immediately after move
-    // - TODO does the capsule also collide with the ground when jumping, causing double the jump? implement jump via += first before going to y = value
-    //   - no, it doesn't thankfully.
-
     // important things:
     // - crouch jump
     // - non binary slope limit (slide a bit before sliding fully)
@@ -42,6 +34,7 @@ public class CCPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         ccMovement.Initialize(pcProps);
+        InitCamera();
     }
 
     void Update () {

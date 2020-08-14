@@ -5,6 +5,8 @@ namespace PlayerController {
 
     public abstract class Movement : MonoBehaviour {
 
+        [SerializeField] protected UnityEngine.UI.Text DEBUGTEXTFIELD = default;
+
         public enum ControlMode {
             FULL,
             BLOCK_INPUT,
@@ -13,6 +15,7 @@ namespace PlayerController {
 
         public enum MoveType {
             GROUND,
+            SLOPE,
             AIR,
             DODGE
         }
@@ -24,6 +27,7 @@ namespace PlayerController {
             // public Vector3 worldVelocity;
             public Vector3 localVelocity;
             public bool jumped;
+            public int frame;
             // local velocity
             // in- and outgoing velocity?
             // jumped?
@@ -80,6 +84,25 @@ namespace PlayerController {
                 return dV.normalized * maxAcceleration;
             }
             return dVAccel;
+        }
+
+        protected State GetCurrentState (SurfacePoint sp, State lastState) {
+            State output;
+            if(lastState.jumped){
+                sp = null;
+            }
+            output.surfacePoint = sp;
+            if(sp == null){
+                output.moveType = MoveType.AIR;
+                output.localVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
+            }else{
+                var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);
+                output.moveType = ((surfaceAngle < pcProps.SlopeLimit) ? MoveType.GROUND : MoveType.SLOPE);
+                output.localVelocity = this.Velocity - output.surfacePoint.otherVelocity;
+            }
+            output.frame = Time.frameCount;
+            output.jumped = false;                      // needs to be initialized
+            return output;
         }
         
     }

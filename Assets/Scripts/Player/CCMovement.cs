@@ -73,19 +73,10 @@ namespace PlayerController {
         }
 
         void StartMove (out State currentState) {
-            var sp = DetermineSurfacePoint();
-            currentState.surfacePoint = sp;
-            if(sp == null){
-                currentState.moveType = MoveType.AIR;
-                currentState.localVelocity = this.Velocity; // TODO potentially check for a trigger (such as in a moving train car...)
-            }else{
-                currentState.moveType = MoveType.GROUND;
-                currentState.localVelocity = this.Velocity - currentState.surfacePoint.otherVelocity;
-            }
-            currentState.jumped = false;
+            var surfacePoint = DetermineSurfacePoint();
+            currentState = GetCurrentState(surfacePoint, lastState);
             contactPoints.Clear();
 
-            // might need an alternative here...
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
                 float maxDot = 0.0175f;     // cos(89°), to exclude walls
@@ -109,10 +100,12 @@ namespace PlayerController {
                 case MoveType.AIR:
                     AerialMovement(readInput, currentState);
                     break;
-                case MoveType.GROUND:
+                case MoveType.GROUND:                      // TODO ground slide
                     GroundedMovement(readInput, currentState);
                     break;
                 default:
+                    Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
+                    Velocity += Physics.gravity * Time.deltaTime;
                     break;
             }
             if(Input.GetKeyDown(KeyCode.Alpha1)){
@@ -180,7 +173,7 @@ namespace PlayerController {
         // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
         void GroundedMovement (bool readInput, State currentState) {
             var localVelocity = currentState.localVelocity;
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.deltaTime);
+            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.deltaTime);
             groundFriction *= Time.deltaTime;
             Velocity += groundFriction;
             localVelocity += groundFriction;

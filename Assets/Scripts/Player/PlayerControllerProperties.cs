@@ -23,22 +23,33 @@ public class PlayerControllerProperties : ScriptableObject {
     public float PlayerMass => playerMass;
     public CollisionDetectionMode CollisionDetection => collisionDetection;
 
+    [Header("Camera")]
+    [SerializeField] float nearClipDist = 0.15f;
+    [SerializeField] float farClipDist = 1000f;
+
+    public float NearClipDist => nearClipDist;
+    public float FarClipDist => farClipDist;
+
     [Header("Movement")]
     [SerializeField] float slopeLimit = 60f;
-    [SerializeField] float moveSpeed = 8f;
-    [SerializeField] float moveSpeedCrouch = 4f;
-    [SerializeField] float groundAccel = 32f;
-    [SerializeField] float groundDrag = 16f;
-    [SerializeField] float airAccel = 32f;
+    [SerializeField] float moveSpeed = 12f;
+    [SerializeField] float moveSpeedCrouch = 6f;
+    [SerializeField] float groundAccel = 64f;
+    [SerializeField] float groundFriction = 32f;
+    [SerializeField] float slopeAccel = 32f;
+    [SerializeField] float slopeFriction = 12f;
+    [SerializeField] float airAccel = 24f;
     [SerializeField] float airDrag = 8f;
-    [SerializeField] float jumpHeight = 1f;
+    [SerializeField] float jumpHeight = 1.2f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 	
     public float SlopeLimit => slopeLimit;
     public float MoveSpeed => moveSpeed;
     public float MoveSpeedCrouch => moveSpeedCrouch;
     public float GroundAccel => groundAccel;
-    public float GroundDrag => groundDrag;
+    public float GroundFriction => groundFriction;
+    public float SlopeAccel => slopeAccel;
+    public float SlopeFriction => slopeFriction;
     public float AirAccel => airAccel;
     public float AirDrag => airDrag;
     public float JumpHeight => jumpHeight;

@@ -19,11 +19,15 @@ MonoBehaviour:
   colliderRadius: 0.4
   playerMass: 80
   collisionDetection: 2
+  nearClipDist: 0.15
+  farClipDist: 1000
   slopeLimit: 60
   moveSpeed: 12
   moveSpeedCrouch: 6
   groundAccel: 64
-  groundDrag: 32
+  groundFriction: 32
+  slopeAccel: 32
+  slopeFriction: 12
   airAccel: 24
   airDrag: 8
   jumpHeight: 1.2

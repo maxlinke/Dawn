@@ -36,6 +36,7 @@ namespace PlayerController {
         }
 
         bool initialized = false;
+        bool jumpInputCached = false;
         ControlMode m_controlMode = ControlMode.FULL;
 
         List<ContactPoint> contactPoints;
@@ -114,25 +115,12 @@ namespace PlayerController {
             FinishMove(currentState);
         }
 
+        // TODO needs velocity comes from move
         void StartMove (out State currentState) {
-            SurfacePoint sp;
-            if(!lastState.jumped){
-                sp = DetermineSurfacePoint();
-            }else{
-                sp = null;
-            }
-            currentState.surfacePoint = sp;
-            if(sp == null){
-                currentState.moveType = MoveType.AIR;
-                currentState.localVelocity = this.Velocity; // TODO potentially check for a trigger (such as in a moving train car...)
-            }else{
-                currentState.moveType = MoveType.GROUND;
-                currentState.localVelocity = this.Velocity - currentState.surfacePoint.otherVelocity;
-            }
-            currentState.jumped = false;
+            var surfacePoint = DetermineSurfacePoint();
+            currentState = GetCurrentState(surfacePoint, lastState);
             contactPoints.Clear();
 
-            // might need an alternative here...
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
                 float maxDot = 0.0175f;     // cos(89°), to exclude walls
@@ -148,7 +136,9 @@ namespace PlayerController {
         }
 
         void FinishMove (State currentState) {
+            DEBUGTEXTFIELD.text = currentState.moveType.ToString();
             lastState = currentState;
+            jumpInputCached = false;
         }
         
         void ExecuteMove (bool readInput, ref State currentState) {
@@ -159,41 +149,83 @@ namespace PlayerController {
                 case MoveType.GROUND:
                     GroundedMovement(readInput, ref currentState);
                     break;
-                default:
+                case MoveType.SLOPE:
+                    SlopeMovement(readInput, ref currentState);
                     break;
+                default:
+                    Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
+                    Velocity += Physics.gravity * Time.fixedDeltaTime;
+                    break;
+            }
+        }
+
+        public void ExecuteUpdate () {
+            if(!lastState.jumped && lastState.frame < Time.frameCount && lastState.moveType == MoveType.GROUND){
+                jumpInputCached |= Bind.JUMP.GetKeyDown();
             }
         }
 
         void GroundedMovement (bool readInput, ref State currentState) {
             var localVelocity = currentState.localVelocity;
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.fixedDeltaTime);
-            localVelocity += groundFriction * Time.fixedDeltaTime;
+            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.fixedDeltaTime);
+            groundFriction *= Time.fixedDeltaTime;
+            Velocity += groundFriction;
+            localVelocity += groundFriction;
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(HeightRelatedSpeed(), localSpeed);
             var targetDirection = GroundMoveVector(rb.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
             var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
-            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.deltaTime);
-            if(readInput && Bind.JUMP.GetKey()){    // TODO cache jump wish and such...
-                moveAccel = new Vector3(moveAccel.x, JumpSpeed() / Time.fixedDeltaTime, moveAccel.z);
+            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.fixedDeltaTime);
+            if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
+                // var jumpSpeed = Mathf.Max(localVelocity.y, 0) + JumpSpeed();
+                moveAccel += PlayerTransform.up * JumpSpeed() / Time.fixedDeltaTime;  // TODO this. make it what i mean.
                 currentState.jumped = true;
             }
-            Velocity += (groundFriction + moveAccel + Physics.gravity) * Time.fixedDeltaTime;
+            Vector3 gravity;
+            // if(currentState.ju   // no gravity if jumped? test!!! the peak height should be what i set!
+            if(currentState.surfacePoint.isSolid){
+                gravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
+            }else{
+                gravity = Physics.gravity;
+            }
+            Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
+        }
+
+        void SlopeMovement (bool readInput, ref State currentState) {
+            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
+            var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.SlopeFriction, Time.fixedDeltaTime);
+            slopeFriction *= Time.fixedDeltaTime;
+            Velocity += slopeFriction;
+            horizontalLocalVelocity += slopeFriction;
+            var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
+            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            var rawInputMag = rawInput.magnitude;
+            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), horizontalLocalSpeed);
+            var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
+                var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
+                targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
+            }
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.SlopeAccel, Time.fixedDeltaTime);  // or air accel? or extra accel?
+            Velocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
         void AerialMovement (bool readInput, ref State currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
             // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.fixedDeltaTime);
-            horizontalLocalVelocity += dragDeceleration * Time.fixedDeltaTime;
+            dragDeceleration *= Time.fixedDeltaTime;
+            Velocity += dragDeceleration;
+            horizontalLocalVelocity += dragDeceleration;
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(HeightRelatedSpeed(), horizontalLocalSpeed);
             var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.deltaTime);
-            Velocity += (dragDeceleration + moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
+            Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
     }

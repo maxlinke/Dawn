@@ -9,9 +9,11 @@ public class RBPlayer : Player {
 
     protected override Movement MovementSystem => rbMovement;
 
-    // TODO view init should also init camera
-    // clipping distances, layers etc
+    // TODO more camera init 
+    // layers etc
     // for that i need the player config (fov)
+    // also some kind of subscription or something to playerconfig
+    // because if the fov gets changed or velocity lean disabled, that should actually happen...
 
     void Start () {
         rbView.Initialize(pcProps, this, head);
@@ -21,6 +23,7 @@ public class RBPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         rbMovement.Initialize(pcProps);
+        InitCamera();
     }
 
     void Update () {
@@ -33,6 +36,7 @@ public class RBPlayer : Player {
         rbView.Look(readInput: cursorLocked);
         rbView.UpdateHeadLocalPosition();
         rbView.InteractCheck(readInput: cursorLocked);
+        rbMovement.ExecuteUpdate();
     }
 
     void FixedUpdate () {
