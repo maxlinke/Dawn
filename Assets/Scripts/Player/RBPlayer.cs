@@ -31,6 +31,15 @@ public class RBPlayer : Player {
             if(Input.anyKeyDown){
                 CursorLockManager.UpdateLockState();
             }
+            if(Input.GetKeyDown(KeyCode.Mouse1)){
+                rbMovement.Velocity += head.transform.forward * 50f;
+            }
+            if(Input.GetKeyDown(KeyCode.Q)){
+                Time.timeScale = 0.05f;
+            }
+            if(Input.GetKeyUp(KeyCode.Q)){
+                Time.timeScale = 1f;
+            }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(readInput: cursorLocked);

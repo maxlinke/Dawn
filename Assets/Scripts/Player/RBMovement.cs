@@ -238,7 +238,7 @@ namespace PlayerController {
                 targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
             }
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.SlopeAccel, Time.fixedDeltaTime);
-            Velocity += Physics.gravity * Time.fixedDeltaTime;
+            Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
         void AerialMovement (bool readInput, ref State currentState) {
