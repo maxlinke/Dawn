@@ -13,6 +13,7 @@ namespace ShaderEditors {
         const string gridColorName = "_GridTint";
         const string gridTexName = "_GridTex";
         const string gridScaleName = "_GridTexScale";
+        const string gridVectorScaleName = "_GridTexVectorScale";
 
         const string overlayColorName = "_OverlayTint";
         const string overlayTexName = "_OverlayTex";
@@ -56,24 +57,29 @@ namespace ShaderEditors {
             void GridProperties () {
                 GUILayout.Label("Grid", EditorStyles.boldLabel);
                 bool showScaleOffset;
+                bool showVectorScale;
                 if(!isOverlayVersion){
-                    DefaultGridCoords(out showScaleOffset);
+                    DefaultGridCoords(out showVectorScale, out showScaleOffset);
                 }else{
                     OverlayGridCoords(out showScaleOffset);
+                    showVectorScale = false;
                 }
                 var gridTex = FindProperty(gridTexName, properties);
                 var gridCol = FindProperty(gridColorName, properties);
-                var gridScale = FindProperty(gridScaleName, properties);
                 editor.TexturePropertySingleLine(new GUIContent(gridTex.displayName), gridTex, gridCol);
                 EditorGUI.indentLevel += 2;
                 if(showScaleOffset){
                     editor.TextureScaleOffsetProperty(gridTex);
+                }else if(showVectorScale){
+                    var gridVectorScale = FindProperty(gridVectorScaleName, properties);
+                    editor.ShaderProperty(gridVectorScale, gridVectorScale.displayName);
                 }else{
+                    var gridScale = FindProperty(gridScaleName, properties);
                     editor.ShaderProperty(gridScale, gridScale.displayName);
                 }
                 EditorGUI.indentLevel -= 2;
 
-                void DefaultGridCoords (out bool isUV) {
+                void DefaultGridCoords (out bool isObject, out bool isUV) {
                     GridCoords gridCoords;
                     if(GetKeyword(kw_gridWorld)){
                         gridCoords = GridCoords.WORLD;
@@ -89,6 +95,7 @@ namespace ShaderEditors {
                         SetKeyword(kw_gridObject, gridCoords == GridCoords.OBJECT);
                         SetKeyword(kw_gridWorld, gridCoords == GridCoords.WORLD);
                     }
+                    isObject = (gridCoords == GridCoords.OBJECT);
                     isUV = (gridCoords == GridCoords.UV);
                 }
 

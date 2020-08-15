@@ -4,6 +4,7 @@
         _GridTint ("Grid Tint", Color) = (1,1,1,1)
         _GridTex ("Grid Texture", 2D) = "black" {}
         _GridTexScale ("Grid Scale", Range(0, 10)) = 1.0
+        _GridTexVectorScale ("Grid Scale", Vector) = (1,1,1,1)
     }
 
     CustomEditor "ShaderEditors.OrangeShaderEditor"
@@ -25,6 +26,7 @@
         fixed4 _GridTint;
         sampler2D _GridTex;
         float _GridTexScale;
+        float4 _GridTexVectorScale;
 
         struct Input {
             float2 uv_GridTex;
@@ -51,8 +53,11 @@
             #else
                 fixed4 c = fixed4(0.5, 0.5, 0.5, 1);
             #endif
-            #if defined (GRIDCOORDS_TRIPLANAR_WORLD) || defined (GRIDCOORDS_TRIPLANAR_OBJECT)
+            #if defined (GRIDCOORDS_TRIPLANAR_WORLD)
                 fixed4 grid = _GridTint * TriplanarSoftCutoff(_GridTex, IN.gridNormal, IN.gridPos, _GridTexScale, float3(0,0,0));
+            #elif defined (GRIDCOORDS_TRIPLANAR_OBJECT)
+                float3 vScale = float3(_GridTexVectorScale.x, _GridTexVectorScale.y, _GridTexVectorScale.z) * _GridTexVectorScale.w;
+                fixed4 grid = _GridTint * TriplanarSoftCutoff(_GridTex, IN.gridNormal, IN.gridPos, vScale, float3(0,0,0));
             #else
                 fixed4 grid = _GridTint * tex2D(_GridTex, IN.uv_GridTex);
             #endif
