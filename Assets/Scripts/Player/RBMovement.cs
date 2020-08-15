@@ -12,7 +12,10 @@ namespace PlayerController {
         public override float Height => col.height;
         public override Vector3 WorldCenterPos => rb.transform.TransformPoint(col.center);
         public override Vector3 WorldFootPos => rb.transform.TransformPoint(col.center + 0.5f * col.height * Vector3.down);
+        
         protected override Transform PlayerTransform => rb.transform;
+        protected override Vector3 WorldLowerCapsuleSphereCenter => rb.transform.TransformPoint(col.center + (Vector3.down * ((col.height / 2f) - col.radius)));
+        protected override float CapsuleRadius => col.radius * rb.transform.localScale.Average();
 
         public override Vector3 Velocity { 
             get { return rb.velocity; }
@@ -120,6 +123,7 @@ namespace PlayerController {
             var surfacePoint = DetermineSurfacePoint();
             currentState = GetCurrentState(surfacePoint, lastState);
             contactPoints.Clear();
+            DEBUGTEXTFIELD.text = string.Empty;
 
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
@@ -135,8 +139,23 @@ namespace PlayerController {
             }
         }
 
-        void FinishMove (State currentState) {
-            DEBUGTEXTFIELD.text = currentState.moveType.ToString();
+        void FinishMove (State currentState) {Color lineColor;
+            switch(currentState.moveType){
+                case MoveType.AIR:
+                    lineColor = Color.red;
+                    break;
+                case MoveType.GROUND: 
+                    lineColor = Color.green;
+                    break;
+                case MoveType.SLOPE:
+                    lineColor = Color.yellow;
+                    break;
+                default:
+                    lineColor = Color.magenta;
+                    break;
+            }
+            Debug.DrawLine(lastState.worldPosition, currentState.worldPosition, lineColor, 10f);
+            DEBUGTEXTFIELD.text += currentState.moveType.ToString();
             lastState = currentState;
             jumpInputCached = false;
         }
@@ -166,7 +185,7 @@ namespace PlayerController {
         }
 
         void GroundedMovement (bool readInput, ref State currentState) {
-            var localVelocity = currentState.localVelocity;
+            var localVelocity = currentState.incomingLocalVelocity;
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.fixedDeltaTime);
             groundFriction *= Time.fixedDeltaTime;
             Velocity += groundFriction;
@@ -176,17 +195,15 @@ namespace PlayerController {
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(HeightRelatedSpeed(), localSpeed);
             var targetDirection = rb.transform.TransformDirection(rawInput);
-            Vector3 targetVelocity;
+            Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
+            targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                targetVelocity = targetDirection * targetSpeed;     // directions contains input magnitude
-                // TODO almost
-                // this will be projected and the "direction" will be slightly different
-                // so find the proper vector. with math.
-                // but only if the ground is solid
-                // because said vector will be LARGE
-            }else{
-                targetVelocity = GroundMoveVector(rb.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
-                targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
+                if(currentState.surfacePoint.isSolid){
+                    targetVelocity = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
+                }else{
+                    // targetVelocity = targetVelocity * Vector3.Dot(
+                    // TODO simulate the slowdown
+                }
             }
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
@@ -195,8 +212,9 @@ namespace PlayerController {
                 currentState.jumped = true;
             }
             Vector3 gravity;
-            // if(currentState.ju   // no gravity if jumped? test!!! the peak height should be what i set!
-            if(currentState.surfacePoint.isSolid){
+            if(currentState.jumped){
+                gravity = Physics.gravity * 0.5f;
+            }else if(currentState.surfacePoint.isSolid){
                 gravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
             }else{
                 gravity = Physics.gravity;
@@ -205,7 +223,7 @@ namespace PlayerController {
         }
 
         void SlopeMovement (bool readInput, ref State currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.SlopeFriction, Time.fixedDeltaTime);
             slopeFriction *= Time.fixedDeltaTime;
             Velocity += slopeFriction;
@@ -219,13 +237,12 @@ namespace PlayerController {
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
             }
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.SlopeAccel, Time.fixedDeltaTime);  // or air accel? or extra accel?
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.SlopeAccel, Time.fixedDeltaTime);
             Velocity += Physics.gravity * Time.fixedDeltaTime;
         }
 
         void AerialMovement (bool readInput, ref State currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
-            // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.fixedDeltaTime);
             dragDeceleration *= Time.fixedDeltaTime;
             Velocity += dragDeceleration;

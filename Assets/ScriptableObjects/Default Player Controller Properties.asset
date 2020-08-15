@@ -21,7 +21,8 @@ MonoBehaviour:
   collisionDetection: 2
   nearClipDist: 0.15
   farClipDist: 1000
-  slopeLimit: 60
+  hardSlopeLimit: 60
+  softSlopeLimit: 45
   moveSpeed: 12
   moveSpeedCrouch: 6
   groundAccel: 64
@@ -30,7 +31,7 @@ MonoBehaviour:
   slopeFriction: 12
   airAccel: 24
   airDrag: 8
-  jumpHeight: 1.2
+  jumpHeight: 1
   jumpCalcGravity: 29.43
   dodgeSpeed: 12
   dodgeStartTime: 0.125

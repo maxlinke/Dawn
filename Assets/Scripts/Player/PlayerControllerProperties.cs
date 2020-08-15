@@ -31,7 +31,8 @@ public class PlayerControllerProperties : ScriptableObject {
     public float FarClipDist => farClipDist;
 
     [Header("Movement")]
-    [SerializeField] float slopeLimit = 60f;
+    [SerializeField] float hardSlopeLimit = 60f;
+    [SerializeField] float softSlopeLimit = 45f;
     [SerializeField] float moveSpeed = 12f;
     [SerializeField] float moveSpeedCrouch = 6f;
     [SerializeField] float groundAccel = 64f;
@@ -43,7 +44,8 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float jumpHeight = 1.2f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 	
-    public float SlopeLimit => slopeLimit;
+    public float HardSlopeLimit => hardSlopeLimit;
+    public float SoftSlopeLimit => softSlopeLimit;
     public float MoveSpeed => moveSpeed;
     public float MoveSpeedCrouch => moveSpeedCrouch;
     public float GroundAccel => groundAccel;

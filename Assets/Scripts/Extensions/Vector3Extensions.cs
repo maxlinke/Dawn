@@ -15,6 +15,10 @@ public static class Vector3Extensions {
         return (vector - (x * projectVector));
     }
 
+    public static float Average (this Vector3 vector) {
+        return (vector.x + vector.y + vector.z) / 3f;
+    }
+
     public static Vector2 XY (this Vector3 vector) {
         return new Vector2(vector.x, vector.y);
     }

@@ -12,7 +12,10 @@ namespace PlayerController {
         public override float Height => cc.height;
         public override Vector3 WorldCenterPos => cc.transform.TransformPoint(cc.center);
         public override Vector3 WorldFootPos => cc.transform.TransformPoint(cc.center + 0.5f * cc.height * Vector3.down);
+        
         protected override Transform PlayerTransform => cc.transform;
+        protected override Vector3 WorldLowerCapsuleSphereCenter => cc.transform.TransformPoint(cc.center + (Vector3.down * ((cc.height / 2f) - cc.radius)));
+        protected override float CapsuleRadius => cc.radius * cc.transform.localScale.Average();
 
         public override Vector3 Velocity {
             get { return m_velocity; }
@@ -172,7 +175,7 @@ namespace PlayerController {
 
         // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
         void GroundedMovement (bool readInput, State currentState) {
-            var localVelocity = currentState.localVelocity;
+            var localVelocity = currentState.incomingLocalVelocity;
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.deltaTime);
             groundFriction *= Time.deltaTime;
             Velocity += groundFriction;
@@ -193,7 +196,7 @@ namespace PlayerController {
 
         // TODO limit fall velocity? only in aerial or everywhere?
         void AerialMovement (bool readInput, State currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.deltaTime);
             dragDeceleration *= Time.deltaTime;
