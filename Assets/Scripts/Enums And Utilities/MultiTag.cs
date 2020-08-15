@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class MultiTag : MonoBehaviour{
 
-	[SerializeField] string[] tags;
+	[SerializeField] string[] tags = default;
 
     void Awake () {
         if(gameObject.tag != Tag.MultiTag){
