@@ -204,7 +204,8 @@ namespace PlayerController {
             var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.GroundAccel, currentState.clampedNormedSurfaceFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
-                moveAccel += PlayerTransform.up * JumpSpeed() / Time.fixedDeltaTime;
+                var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, currentState.clampedNormedSurfaceFriction);
+                moveAccel += PlayerTransform.up * JumpSpeed() * jumpMultiplier / Time.fixedDeltaTime;
                 currentState.jumped = true;
             }
             Vector3 gravity;
