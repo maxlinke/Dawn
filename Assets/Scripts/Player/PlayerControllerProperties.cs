@@ -19,9 +19,13 @@ public class PlayerControllerProperties : ScriptableObject {
     [Header("Phyics")]
     [SerializeField] float playerMass = 80f;
     [SerializeField] CollisionDetectionMode collisionDetection = CollisionDetectionMode.ContinuousDynamic;
+    [SerializeField] float footRBNonSolidMass = 160f;
+    [SerializeField] float footRBSolidMass = 400f;
 
     public float PlayerMass => playerMass;
     public CollisionDetectionMode CollisionDetection => collisionDetection;
+    public float FootRBNonSolidMass => footRBNonSolidMass;
+    public float FootRBSolidMass => footRBSolidMass;
 
     [Header("Camera")]
     [SerializeField] float nearClipDist = 0.15f;

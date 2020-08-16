@@ -124,6 +124,13 @@ namespace PlayerController {
             currentState = GetCurrentState(surfacePoint, lastState);
             contactPoints.Clear();
             DEBUGTEXTFIELD.text = string.Empty;
+            DEBUGTEXTFIELD.text += $"{currentState.surfaceAngle.ToString()}°\n";
+            DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
+            DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
+            // if(currentState.surfacePoint != null && currentState.surfacePoint.otherCollider != null){
+            //     DEBUGTEXTFIELD.text += $"{currentState.surfacePoint.otherCollider.sharedMaterial.staticFriction.ToString()}\n";
+            //     DEBUGTEXTFIELD.text += $"{currentState.surfacePoint.otherCollider.sharedMaterial.dynamicFriction.ToString()}\n";
+            // }
 
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
@@ -155,7 +162,6 @@ namespace PlayerController {
                     break;
             }
             Debug.DrawLine(lastState.worldPosition, currentState.worldPosition, lineColor, 10f);
-            DEBUGTEXTFIELD.text += currentState.moveType.ToString();
             lastState = currentState;
             jumpInputCached = false;
         }
@@ -198,26 +204,20 @@ namespace PlayerController {
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                if(currentState.surfacePoint.isSolid){
-                    targetVelocity = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
-                }else{
-                    // targetVelocity = targetVelocity * Vector3.Dot(
-                    // TODO simulate the slowdown
-                }
+                var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
+                var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
+                targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
             }
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
-                // var jumpSpeed = Mathf.Max(localVelocity.y, 0) + JumpSpeed();
-                moveAccel += PlayerTransform.up * JumpSpeed() / Time.fixedDeltaTime;  // TODO this. make it what i mean.
+                moveAccel += PlayerTransform.up * JumpSpeed() / Time.fixedDeltaTime;
                 currentState.jumped = true;
             }
             Vector3 gravity;
             if(currentState.jumped){
                 gravity = Physics.gravity * 0.5f;
-            }else if(currentState.surfacePoint.isSolid){
-                gravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
             }else{
-                gravity = Physics.gravity;
+                gravity = Vector3.Slerp(Physics.gravity, -currentState.surfacePoint.normal * Physics.gravity.magnitude, currentState.surfaceSolidness);
             }
             Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
         }

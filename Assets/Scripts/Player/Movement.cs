@@ -24,6 +24,7 @@ namespace PlayerController {
             public SurfacePoint surfacePoint;
             public float surfaceAngle;
             public float surfaceDot;
+            public float surfaceSolidness;
             public MoveType moveType;
             public Vector3 worldPosition;
             public Vector3 incomingWorldVelocity;
@@ -99,25 +100,27 @@ namespace PlayerController {
             if(sp == null){
                 output.surfaceDot = float.NaN;
                 output.surfaceAngle = float.NaN;
+                output.surfaceSolidness = float.NaN;
                 output.moveType = MoveType.AIR;
                 output.incomingLocalVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
             }else{
                 output.incomingLocalVelocity = this.Velocity - output.surfacePoint.otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
-                var surfaceAngle = Mathf.Rad2Deg * Mathf.Acos(surfaceDot);  // the dot uses normalized vectors, so no dividing by product of magnitudes necessary
+                var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);    // just using acos (and rad2deg) on the surfacedot sometimes results in NaN errors...
                 output.surfaceDot = surfaceDot;
                 output.surfaceAngle = surfaceAngle;
+                if(sp.isSolid){
+                    output.surfaceSolidness = 1f;    
+                }else if(sp.otherRB != null){
+                    output.surfaceSolidness = Mathf.Clamp01((sp.otherRB.mass - pcProps.FootRBNonSolidMass) / (pcProps.FootRBSolidMass - pcProps.FootRBNonSolidMass));
+                }else{
+                    output.surfaceSolidness = 0f;
+                }
                 if(surfaceAngle < pcProps.HardSlopeLimit){
                     output.moveType = MoveType.GROUND;
                 }else{
                     output.moveType = MoveType.SLOPE;
                 }
-
-                // TODO validate ground
-                // example: sphere
-                // surface angle can be below limit even though i SHOULD totally fall off
-                // solution: raycast/small-ish spherecast down to where said ground should BE
-                // if it isn't there, then i am floating and should probably slide down
             }
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
