@@ -90,10 +90,6 @@ namespace PlayerController {
             }
         }
 
-        // move. if moving into normal on ground (local velocity n shit), flatten local velocity and move there)
-        // result: if already airborne, move forward instead of "up" again with slope vector. 
-        // also needs velocitycomesfrommove. only if velocity comes from move.
-
         public void Move (bool readInput) {
             if(!initialized){
                 Debug.LogWarning($"{nameof(RBMovement)} isn't initialized yet!");
@@ -118,7 +114,6 @@ namespace PlayerController {
             FinishMove(currentState);
         }
 
-        // TODO needs velocity comes from move
         void StartMove (out State currentState) {
             var surfacePoint = DetermineSurfacePoint();
             currentState = GetCurrentState(surfacePoint, lastState);
@@ -127,10 +122,7 @@ namespace PlayerController {
             DEBUGTEXTFIELD.text += $"{currentState.surfaceAngle.ToString()}°\n";
             DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
-            // if(currentState.surfacePoint != null && currentState.surfacePoint.otherCollider != null){
-            //     DEBUGTEXTFIELD.text += $"{currentState.surfacePoint.otherCollider.sharedMaterial.staticFriction.ToString()}\n";
-            //     DEBUGTEXTFIELD.text += $"{currentState.surfacePoint.otherCollider.sharedMaterial.dynamicFriction.ToString()}\n";
-            // }
+            DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
 
             SurfacePoint DetermineSurfacePoint () {
                 int flattestPoint = -1;
@@ -192,7 +184,8 @@ namespace PlayerController {
 
         void GroundedMovement (bool readInput, ref State currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.fixedDeltaTime);
+            var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.GroundDrag, currentState.clampedNormedSurfaceFriction);
+            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
             groundFriction *= Time.fixedDeltaTime;
             Velocity += groundFriction;
             localVelocity += groundFriction;
@@ -208,7 +201,8 @@ namespace PlayerController {
                 var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
                 targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
             }
-            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.fixedDeltaTime);
+            var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.GroundAccel, currentState.clampedNormedSurfaceFriction);
+            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
                 moveAccel += PlayerTransform.up * JumpSpeed() / Time.fixedDeltaTime;
                 currentState.jumped = true;
@@ -217,14 +211,15 @@ namespace PlayerController {
             if(currentState.jumped){
                 gravity = Physics.gravity * 0.5f;
             }else{
-                gravity = Vector3.Slerp(Physics.gravity, -currentState.surfacePoint.normal * Physics.gravity.magnitude, currentState.surfaceSolidness);
+                gravity = Vector3.Slerp(Physics.gravity, -currentState.surfacePoint.normal * Physics.gravity.magnitude, currentState.surfaceSolidness * currentState.clampedNormedSurfaceFriction);
             }
             Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
         }
 
         void SlopeMovement (bool readInput, ref State currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
-            var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.SlopeFriction, Time.fixedDeltaTime);
+            var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.SlopeDrag, currentState.clampedNormedSurfaceFriction);
+            var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
             slopeFriction *= Time.fixedDeltaTime;
             Velocity += slopeFriction;
             horizontalLocalVelocity += slopeFriction;
@@ -237,7 +232,8 @@ namespace PlayerController {
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
             }
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.SlopeAccel, Time.fixedDeltaTime);
+            var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.SlopeAccel, currentState.clampedNormedSurfaceFriction);
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 

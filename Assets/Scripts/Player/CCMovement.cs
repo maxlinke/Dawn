@@ -176,7 +176,7 @@ namespace PlayerController {
         // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
         void GroundedMovement (bool readInput, State currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundFriction, Time.deltaTime);
+            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.deltaTime);
             groundFriction *= Time.deltaTime;
             Velocity += groundFriction;
             localVelocity += groundFriction;

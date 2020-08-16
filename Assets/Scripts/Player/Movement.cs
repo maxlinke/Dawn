@@ -25,6 +25,9 @@ namespace PlayerController {
             public float surfaceAngle;
             public float surfaceDot;
             public float surfaceSolidness;
+            public float normedSurfaceFriction;
+            public float clampedNormedSurfaceFriction;
+            public PhysicMaterial surfacePhysicMaterial;
             public MoveType moveType;
             public Vector3 worldPosition;
             public Vector3 incomingWorldVelocity;
@@ -47,9 +50,12 @@ namespace PlayerController {
 
         protected PlayerControllerProperties pcProps;
 
+        private PhysicMaterial defaultPM;
+
         public virtual void Initialize (PlayerControllerProperties pcProps) {
             this.pcProps = pcProps;
             groundCastMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
+            defaultPM = new PhysicMaterial();
         }
 
         protected Vector3 HorizontalComponent (Vector3 vector) {
@@ -101,6 +107,9 @@ namespace PlayerController {
                 output.surfaceDot = float.NaN;
                 output.surfaceAngle = float.NaN;
                 output.surfaceSolidness = float.NaN;
+                output.normedSurfaceFriction = float.NaN;
+                output.clampedNormedSurfaceFriction = float.NaN;
+                output.surfacePhysicMaterial = null;
                 output.moveType = MoveType.AIR;
                 output.incomingLocalVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
             }else{
@@ -116,11 +125,17 @@ namespace PlayerController {
                 }else{
                     output.surfaceSolidness = 0f;
                 }
-                if(surfaceAngle < pcProps.HardSlopeLimit){
-                    output.moveType = MoveType.GROUND;
+                if(sp.otherCollider != null && sp.otherCollider.sharedMaterial != null){
+                    var otherPM = sp.otherCollider.sharedMaterial;
+                    output.normedSurfaceFriction = (otherPM.staticFriction + otherPM.dynamicFriction) / (defaultPM.staticFriction + defaultPM.dynamicFriction);
+                    output.clampedNormedSurfaceFriction = Mathf.Clamp01(output.normedSurfaceFriction);;
+                    output.surfacePhysicMaterial = otherPM;
                 }else{
-                    output.moveType = MoveType.SLOPE;
+                    output.normedSurfaceFriction = 1f;
+                    output.clampedNormedSurfaceFriction = 1f;
+                    output.surfacePhysicMaterial = null;
                 }
+                output.moveType = (surfaceAngle < pcProps.HardSlopeLimit) ? MoveType.GROUND : MoveType.SLOPE;
             }
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;

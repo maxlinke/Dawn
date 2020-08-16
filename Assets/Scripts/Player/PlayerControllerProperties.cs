@@ -40,11 +40,11 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float moveSpeed = 12f;
     [SerializeField] float moveSpeedCrouch = 6f;
     [SerializeField] float groundAccel = 64f;
-    [SerializeField] float groundFriction = 32f;
+    [SerializeField] float groundDrag = 32f;
     [SerializeField] float slopeAccel = 32f;
-    [SerializeField] float slopeFriction = 12f;
+    [SerializeField] float slopeDrag = 12f;
     [SerializeField] float airAccel = 24f;
-    [SerializeField] float airDrag = 8f;
+    [SerializeField] float airDrag = 4f;
     [SerializeField] float jumpHeight = 1.2f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 	
@@ -53,13 +53,16 @@ public class PlayerControllerProperties : ScriptableObject {
     public float MoveSpeed => moveSpeed;
     public float MoveSpeedCrouch => moveSpeedCrouch;
     public float GroundAccel => groundAccel;
-    public float GroundFriction => groundFriction;
+    public float GroundDrag => groundDrag;
     public float SlopeAccel => slopeAccel;
-    public float SlopeFriction => slopeFriction;
+    public float SlopeDrag => slopeDrag;
     public float AirAccel => airAccel;
     public float AirDrag => airDrag;
     public float JumpHeight => jumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;
+
+    public float MinAccel => Mathf.Min(groundAccel, Mathf.Min(slopeAccel, airAccel));
+    public float MinDrag => Mathf.Min(groundDrag, Mathf.Min(slopeDrag, airDrag));
 
     [Header("Dodge Move")]
     [SerializeField] float dodgeSpeed = 12f;

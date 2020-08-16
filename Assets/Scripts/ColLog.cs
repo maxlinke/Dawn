@@ -34,16 +34,20 @@ public class ColLog : MonoBehaviour {
     }
 
     void OnCollisionEnter (Collision collision) {
-        Debug.Log($"ENTER | {Time.frameCount}");
+        Debug.Log(collision.collider.attachedRigidbody);
     }
 
-    void OnCollisionStay (Collision collision) {
-        Debug.Log($"STAY | {Time.frameCount}");
-    }
+    // void OnCollisionEnter (Collision collision) {
+    //     Debug.Log($"ENTER | {Time.frameCount}");
+    // }
 
-    void OnCollisionExit (Collision collision) {
-        Debug.Log($"EXIT | {Time.frameCount}");
-    }
+    // void OnCollisionStay (Collision collision) {
+    //     Debug.Log($"STAY | {Time.frameCount}");
+    // }
+
+    // void OnCollisionExit (Collision collision) {
+    //     Debug.Log($"EXIT | {Time.frameCount}");
+    // }
 	
     // void OnTriggerEnter (Collider other) {
     //     Debug.Log($"ENTER | {Time.frameCount}");
