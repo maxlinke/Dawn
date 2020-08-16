@@ -37,7 +37,8 @@ public class PlayerControllerProperties : ScriptableObject {
     [Header("Movement")]
     [SerializeField] float hardSlopeLimit = 60f;
     [SerializeField] float softSlopeLimit = 45f;
-    [SerializeField] float moveSpeed = 12f;
+    [SerializeField] float moveSpeedRun = 12f;
+    [SerializeField] float moveSpeedWalk = 6f;
     [SerializeField] float moveSpeedCrouch = 6f;
     [SerializeField] float groundAccel = 64f;
     [SerializeField] float groundDrag = 32f;
@@ -50,7 +51,8 @@ public class PlayerControllerProperties : ScriptableObject {
 	
     public float HardSlopeLimit => hardSlopeLimit;
     public float SoftSlopeLimit => softSlopeLimit;
-    public float MoveSpeed => moveSpeed;
+    public float MoveSpeedRun => moveSpeedRun;
+    public float MoveSpeedWalk => moveSpeedWalk;
     public float MoveSpeedCrouch => moveSpeedCrouch;
     public float GroundAccel => groundAccel;
     public float GroundDrag => groundDrag;

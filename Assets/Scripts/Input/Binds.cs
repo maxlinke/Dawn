@@ -24,7 +24,7 @@ namespace CustomInputSystem {
             JUMP,
             CROUCH_HOLD,
             CROUCH_TOGGLE,
-            DODGE,
+            WALK_OR_RUN,
 
             INTERACT,
 
@@ -46,7 +46,7 @@ namespace CustomInputSystem {
         public static readonly Bind JUMP =          new Bind(ID.JUMP, "Jump");
         public static readonly Bind CROUCH_HOLD =   new Bind(ID.CROUCH_HOLD, "Crouch (Hold)");
         public static readonly Bind CROUCH_TOGGLE = new Bind(ID.CROUCH_TOGGLE, "Crouch (Toggle)");
-        public static readonly Bind DODGE         = new Bind(ID.DODGE, "Dodge");
+        public static readonly Bind WALK_OR_RUN   = new Bind(ID.WALK_OR_RUN, "Walk/Run");
 
         public static readonly Bind INTERACT = new Bind(ID.INTERACT, "Interact");
 
@@ -73,7 +73,7 @@ namespace CustomInputSystem {
                 case ID.JUMP: return JUMP;
                 case ID.CROUCH_HOLD: return CROUCH_HOLD;
                 case ID.CROUCH_TOGGLE: return CROUCH_TOGGLE;
-                case ID.DODGE: return DODGE;
+                case ID.WALK_OR_RUN: return WALK_OR_RUN;
 
                 case ID.INTERACT: return INTERACT;
 
@@ -134,7 +134,7 @@ namespace CustomInputSystem {
             ClearAndAddWithoutInputSystemNotification(JUMP,          new KeyCodeInput(KeyCode.Space),     new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.A), new AxisInput(Axis.ID.MOUSE_SCROLL, false));
             ClearAndAddWithoutInputSystemNotification(CROUCH_HOLD,   new KeyCodeInput(KeyCode.LeftControl));
             ClearAndAddWithoutInputSystemNotification(CROUCH_TOGGLE, new KeyCodeInput(KeyCode.C),         new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.LS));
-            ClearAndAddWithoutInputSystemNotification(DODGE,         new KeyCodeInput(KeyCode.LeftShift), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.X));
+            ClearAndAddWithoutInputSystemNotification(WALK_OR_RUN,   new KeyCodeInput(KeyCode.LeftShift), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.X));
 
             ClearAndAddWithoutInputSystemNotification(INTERACT, new KeyCodeInput(KeyCode.E), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.B));
 

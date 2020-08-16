@@ -124,7 +124,7 @@ namespace PlayerController {
                 QualitySettings.vSyncCount = 0;
             }
             if(Input.GetKey(KeyCode.Mouse0)){
-                Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeed;
+                Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeedRun;
                 // if(Input.GetKey(KeyCode.Mouse1)){
                 //     Velocity += cc.transform.up * 0.1f;
                 // }
@@ -183,7 +183,7 @@ namespace PlayerController {
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), localSpeed);
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
             var targetDirection = GroundMoveVector(cc.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
             var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.deltaTime);
@@ -206,7 +206,7 @@ namespace PlayerController {
             DEBUGOUTPUTSTRINGTHING = $"{horizontalLocalSpeed.ToString():F2}";
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
             var targetVelocity = cc.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.deltaTime);
             Velocity += (dragDeceleration + moveAcceleration) * Time.deltaTime;

@@ -70,8 +70,13 @@ namespace PlayerController {
             return vector.ProjectOnPlaneAlongVector(groundNormal, PlayerTransform.up);
         }
 
-        protected float HeightRelatedSpeed () {
-            return Mathf.Lerp(pcProps.MoveSpeedCrouch, pcProps.MoveSpeed, Mathf.Clamp01((Height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight)));
+        protected float RawTargetSpeed (bool readInput) {
+            float runWalkLerp = readInput ? Bind.WALK_OR_RUN.GetValue() : 0f;
+            // TODO if always run is off : runWalkLerp = 1f - runWalkLerp;
+            var standingSpeed = Mathf.Lerp(pcProps.MoveSpeedRun, pcProps.MoveSpeedWalk, Mathf.Clamp01(runWalkLerp));
+            var crouchSpeed = pcProps.MoveSpeedCrouch;
+            var crouchFactor = Mathf.Clamp01((Height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
+            return Mathf.Lerp(crouchSpeed, standingSpeed, crouchFactor);
         }
 
         protected float JumpSpeed () {

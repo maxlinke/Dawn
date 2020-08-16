@@ -25,7 +25,8 @@ MonoBehaviour:
   farClipDist: 1000
   hardSlopeLimit: 60
   softSlopeLimit: 45
-  moveSpeed: 12
+  moveSpeedRun: 12
+  moveSpeedWalk: 6
   moveSpeedCrouch: 6
   groundAccel: 64
   groundDrag: 32

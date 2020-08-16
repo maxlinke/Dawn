@@ -192,7 +192,7 @@ namespace PlayerController {
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), localSpeed);
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
             var targetDirection = rb.transform.TransformDirection(rawInput);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
@@ -226,7 +226,7 @@ namespace PlayerController {
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
             var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
@@ -246,7 +246,7 @@ namespace PlayerController {
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(HeightRelatedSpeed(), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
             var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
