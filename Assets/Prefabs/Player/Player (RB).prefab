@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 8913080616178811582}
   - component: {fileID: 8913080616178811583}
   - component: {fileID: 8913080616178811552}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player (RB)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -127,6 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24b50a4f38630d04782c4343605d6309, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  DEBUGTEXTFIELD: {fileID: 0}
   col: {fileID: 8913080616178811554}
   rb: {fileID: 8913080616178811555}
 --- !u!114 &8913080616178811552

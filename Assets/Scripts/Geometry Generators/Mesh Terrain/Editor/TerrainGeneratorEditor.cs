@@ -48,7 +48,7 @@ namespace GeometryGenerators {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationDirection"), new GUIContent("Deformation Direction"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationStrength"), new GUIContent("Deformation Strength"), true);
             SerializedProperty noiseSourceProp = serializedObject.FindProperty("noiseSourceType");
-            EditorGUILayout.PropertyField(noiseSourceProp, new GUIContent("UV Scale"), true);
+            EditorGUILayout.PropertyField(noiseSourceProp, new GUIContent("Noise Source Type"), true);
             if(noiseSourceProp.enumValueIndex == (int)TerrainGenerator.NoiseSourceType.PERLIN){
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("perlinNoiseSources"), new GUIContent("Noise Sources"), true);
             }else if(noiseSourceProp.enumValueIndex == (int)TerrainGenerator.NoiseSourceType.TEXTURE){
