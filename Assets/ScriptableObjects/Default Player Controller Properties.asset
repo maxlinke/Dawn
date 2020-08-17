@@ -19,6 +19,7 @@ MonoBehaviour:
   colliderRadius: 0.4
   playerMass: 80
   collisionDetection: 2
+  physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
   footRBNonSolidMass: 160
   footRBSolidMass: 400
   nearClipDist: 0.15

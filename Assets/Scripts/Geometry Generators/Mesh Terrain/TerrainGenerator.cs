@@ -16,10 +16,6 @@ namespace GeometryGenerators {
             TEXTURE
         }
 
-        [Header("Components")]
-        [SerializeField] MeshFilter mf = default;
-        [SerializeField] MeshCollider mc = default;
-
         [Header("General Settings")]
         public string seed;
         [SerializeField] [Range(1, 254)] int xTiles = default;
@@ -36,9 +32,6 @@ namespace GeometryGenerators {
         [SerializeField] TextureNoiseSource[] textureNoiseSources = default;
 
         void Reset () {
-            mf = GetComponent<MeshFilter>();
-            mc = GetComponent<MeshCollider>();
-
             seed = "";
             xTiles = 32;
             zTiles = 32;
@@ -53,8 +46,9 @@ namespace GeometryGenerators {
         }
 
         public void Generate () {
+            var mf = GetComponent<MeshFilter>();
             if(mf == null){
-                Debug.LogError($"{nameof(MeshFilter)} is not assigned!");
+                Debug.LogError($"No {nameof(MeshFilter)} on gameobject!");
                 return;
             }
 
@@ -121,6 +115,7 @@ namespace GeometryGenerators {
             terrain.RecalculateNormals();
             terrain.RecalculateTangents();
             mf.sharedMesh = terrain;
+            var mc = GetComponent<MeshCollider>();
             if(mc != null){
                 mc.sharedMesh = terrain;
             }

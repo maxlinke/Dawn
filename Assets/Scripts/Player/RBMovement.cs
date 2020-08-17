@@ -53,12 +53,16 @@ namespace PlayerController {
             initialized = true;
 
             void InitCol () {
-                var pm = new PhysicMaterial();
-                pm.bounceCombine = PhysicMaterialCombine.Multiply;
-                pm.bounciness = 0;
-                pm.frictionCombine = PhysicMaterialCombine.Multiply;
-                pm.staticFriction = 0;
-                pm.dynamicFriction = 0;
+                PhysicMaterial pm = pcProps.PhysicMaterial;
+                if(pm == null){
+                    Debug.LogWarning("No default physic material for player assigned!");
+                    pm = new PhysicMaterial();
+                    pm.bounceCombine = PhysicMaterialCombine.Multiply;
+                    pm.bounciness = 0;
+                    pm.frictionCombine = PhysicMaterialCombine.Multiply;
+                    pm.staticFriction = 0;
+                    pm.dynamicFriction = 0;
+                }
                 col.sharedMaterial = pm;
             }
 
