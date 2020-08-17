@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea910f09c6513284a961d3f9f57e8021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pcProps: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
+  pcProps: {fileID: 11400000, guid: 0b59828d1c4871041993f2e8a637a299, type: 2}
   head: {fileID: 8913080615580733567}
   fpCamera: {fileID: 8913080616304595080}
   rbMovement: {fileID: 8913080616178811583}
