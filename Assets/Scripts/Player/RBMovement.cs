@@ -14,8 +14,8 @@ namespace PlayerController {
         public override Vector3 WorldFootPos => rb.transform.TransformPoint(col.center + 0.5f * col.height * Vector3.down);
         
         protected override Transform PlayerTransform => rb.transform;
-        protected override Vector3 WorldLowerCapsuleSphereCenter => rb.transform.TransformPoint(col.center + (Vector3.down * ((col.height / 2f) - col.radius)));
-        protected override float CapsuleRadius => col.radius * rb.transform.localScale.Average();
+        // protected override Vector3 WorldLowerCapsuleSphereCenter => rb.transform.TransformPoint(col.center + (Vector3.down * ((col.height / 2f) - col.radius)));
+        // protected override float CapsuleRadius => col.radius * rb.transform.localScale.Average();
 
         public override Vector3 Velocity { 
             get { return rb.velocity; }
@@ -43,11 +43,13 @@ namespace PlayerController {
         ControlMode m_controlMode = ControlMode.FULL;
 
         List<ContactPoint> contactPoints;
+        List<Collider> triggerStays;
         State lastState;
 
-        public override void Initialize (PlayerControllerProperties pcProps) {
-            base.Initialize(pcProps);
+        public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
+            base.Initialize(pcProps, head);
             contactPoints = new List<ContactPoint>();
+            triggerStays = new List<Collider>();
             InitCol();
             InitRB();
             initialized = true;
@@ -82,6 +84,15 @@ namespace PlayerController {
 
         void OnCollisionStay (Collision collision) {
             CacheContacts(collision);
+        }
+
+        void OnTriggerStay (Collider otherCollider) {
+            if(!initialized){
+                return;
+            }
+            if(!triggerStays.Contains(otherCollider)){
+                triggerStays.Add(otherCollider);
+            }
         }
 
         void CacheContacts (Collision collision) {
@@ -120,8 +131,9 @@ namespace PlayerController {
 
         void StartMove (out State currentState) {
             var surfacePoint = DetermineSurfacePoint();
-            currentState = GetCurrentState(surfacePoint, lastState);
+            currentState = GetCurrentState(surfacePoint, lastState, triggerStays);
             contactPoints.Clear();
+            triggerStays.Clear();
             DEBUGTEXTFIELD.text = string.Empty;
             DEBUGTEXTFIELD.text += $"{currentState.surfaceAngle.ToString()}°\n";
             DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
@@ -153,6 +165,9 @@ namespace PlayerController {
                 case MoveType.SLOPE:
                     lineColor = Color.yellow;
                     break;
+                case MoveType.WATER:
+                    lineColor = Color.cyan;
+                    break;
                 default:
                     lineColor = Color.magenta;
                     break;
@@ -172,6 +187,9 @@ namespace PlayerController {
                     break;
                 case MoveType.SLOPE:
                     SlopeMovement(readInput, ref currentState);
+                    break;
+                case MoveType.WATER:
+                    WaterMovement(readInput, ref currentState);
                     break;
                 default:
                     Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
@@ -255,6 +273,29 @@ namespace PlayerController {
             var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
+        }
+
+        void WaterMovement (bool readInput, ref State currentState) {
+            var localVelocity = currentState.incomingLocalVelocity;
+            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.WaterDrag, Time.fixedDeltaTime);
+            dragDeceleration *= Time.fixedDeltaTime;
+            Velocity += dragDeceleration;
+            localVelocity += dragDeceleration;
+            var localSpeed = localVelocity.magnitude;
+            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            if(readInput){
+                var localUp = head.InverseTransformDirection(PlayerTransform.up);
+                rawInput += localUp * Bind.JUMP.GetValue();
+                rawInput -= localUp * (Bind.CROUCH_HOLD.GetValue() + Bind.CROUCH_TOGGLE.GetValue());
+                if(rawInput.sqrMagnitude > 1f){
+                    rawInput = rawInput.normalized;
+                }
+            }
+            var rawInputMag = rawInput.magnitude;
+            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
+            var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
+            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.WaterAccel, Time.fixedDeltaTime);
+            Velocity += moveAcceleration * Time.fixedDeltaTime; // no gravity in water.
         }
 
     }

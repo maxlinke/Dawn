@@ -14,8 +14,8 @@ namespace PlayerController {
         public override Vector3 WorldFootPos => cc.transform.TransformPoint(cc.center + 0.5f * cc.height * Vector3.down);
         
         protected override Transform PlayerTransform => cc.transform;
-        protected override Vector3 WorldLowerCapsuleSphereCenter => cc.transform.TransformPoint(cc.center + (Vector3.down * ((cc.height / 2f) - cc.radius)));
-        protected override float CapsuleRadius => cc.radius * cc.transform.localScale.Average();
+        // protected override Vector3 WorldLowerCapsuleSphereCenter => cc.transform.TransformPoint(cc.center + (Vector3.down * ((cc.height / 2f) - cc.radius)));
+        // protected override float CapsuleRadius => cc.radius * cc.transform.localScale.Average();
 
         public override Vector3 Velocity {
             get { return m_velocity; }
@@ -36,8 +36,8 @@ namespace PlayerController {
 
         [Multiline] public string DEBUGOUTPUTSTRINGTHING;
 
-        public override void Initialize (PlayerControllerProperties pcProps) {
-            base.Initialize(pcProps);
+        public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
+            base.Initialize(pcProps, head);
             contactPoints = new List<ControllerColliderHit>();
             initialized = true;
         }
@@ -77,7 +77,8 @@ namespace PlayerController {
 
         void StartMove (out State currentState) {
             var surfacePoint = DetermineSurfacePoint();
-            currentState = GetCurrentState(surfacePoint, lastState);
+            var EMPTYCOLLIDERLIST = new List<Collider>();
+            currentState = GetCurrentState(surfacePoint, lastState, EMPTYCOLLIDERLIST);
             contactPoints.Clear();
 
             SurfacePoint DetermineSurfacePoint () {

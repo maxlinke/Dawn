@@ -10,8 +10,8 @@ namespace Testing {
             public ForceMode fm;
         }
 
-        [SerializeField] Thing[] things;
-        [SerializeField] Vector3 vector;
+        [SerializeField] Thing[] things = default;
+        [SerializeField] Vector3 vector = default;
 
         void Start () {
             foreach(var thing in things){

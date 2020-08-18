@@ -4,8 +4,8 @@ namespace Testing {
 
     public class DragTest : MonoBehaviour {
 
-        [SerializeField] Rigidbody[] rbs;
-        [SerializeField] Vector3 startVelocity;
+        [SerializeField] Rigidbody[] rbs = default;
+        [SerializeField] Vector3 startVelocity = default;
 
         void Start () {
             foreach(var rb in rbs){

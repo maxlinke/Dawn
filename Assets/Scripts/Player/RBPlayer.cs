@@ -22,7 +22,7 @@ public class RBPlayer : Player {
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        rbMovement.Initialize(pcProps);
+        rbMovement.Initialize(pcProps, head);
         InitCamera();
     }
 

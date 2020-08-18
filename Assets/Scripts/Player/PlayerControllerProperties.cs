@@ -48,6 +48,8 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float slopeDrag = 12f;
     [SerializeField] float airAccel = 24f;
     [SerializeField] float airDrag = 4f;
+    [SerializeField] float waterAccel = 32f;
+    [SerializeField] float waterDrag = 16f;
     [SerializeField] float jumpHeight = 1.2f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 	
@@ -62,6 +64,8 @@ public class PlayerControllerProperties : ScriptableObject {
     public float SlopeDrag => slopeDrag;
     public float AirAccel => airAccel;
     public float AirDrag => airDrag;
+    public float WaterAccel => waterAccel;
+    public float WaterDrag => waterDrag;
     public float JumpHeight => jumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;
 

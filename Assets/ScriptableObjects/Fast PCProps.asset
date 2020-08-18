@@ -35,6 +35,8 @@ MonoBehaviour:
   slopeDrag: 12
   airAccel: 24
   airDrag: 4
+  waterAccel: 24
+  waterDrag: 12
   jumpHeight: 1
   jumpCalcGravity: 29.43
   dodgeSpeed: 12

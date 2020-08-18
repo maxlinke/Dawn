@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using CustomInputSystem;
+using System.Collections.Generic;
 
 namespace PlayerController {
 
@@ -17,7 +18,7 @@ namespace PlayerController {
             GROUND,
             SLOPE,
             AIR,
-            DODGE
+            WATER
         }
 
         public struct State {
@@ -43,18 +44,15 @@ namespace PlayerController {
         public abstract ControlMode controlMode { get; set; }
 
         protected abstract Transform PlayerTransform { get; }
-        protected abstract Vector3 WorldLowerCapsuleSphereCenter { get; }
-        protected abstract float CapsuleRadius { get; }
 
-        protected int groundCastMask;
-
-        protected PlayerControllerProperties pcProps;
+        protected PlayerControllerProperties pcProps { get; private set; }
+        protected Transform head  { get; private set; }
 
         private PhysicMaterial defaultPM;
 
-        public virtual void Initialize (PlayerControllerProperties pcProps) {
+        public virtual void Initialize (PlayerControllerProperties pcProps, Transform head) {
             this.pcProps = pcProps;
-            groundCastMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
+            this.head = head;
             defaultPM = new PhysicMaterial();
         }
 
@@ -68,6 +66,20 @@ namespace PlayerController {
 
         protected Vector3 GroundMoveVector (Vector3 vector, Vector3 groundNormal) {
             return vector.ProjectOnPlaneAlongVector(groundNormal, PlayerTransform.up);
+        }
+
+        // TODO maybe a two point check? below the eyeline and the inverse point?
+        protected bool CanSwimInTrigger (Collider otherCollider) {
+            if(otherCollider.gameObject.layer == Layer.Water.index){
+                if(otherCollider is MeshCollider mc){
+                    if(!mc.convex){
+                        return false;
+                    }
+                }
+                var origin = WorldCenterPos;
+                return (otherCollider.ClosestPoint(origin) - origin).sqrMagnitude < 0.01f; 
+            }
+            return false;
         }
 
         protected float RawTargetSpeed (bool readInput) {
@@ -102,20 +114,24 @@ namespace PlayerController {
             return dVAccel;
         }
 
-        protected State GetCurrentState (SurfacePoint sp, State lastState) {
+        protected State GetCurrentState (SurfacePoint sp, State lastState, IEnumerable<Collider> triggerStays) {
             State output;
             if(lastState.jumped){
                 sp = null;
             }
             output.surfacePoint = sp;
-            if(sp == null){
+            var swim = false;
+            foreach(var trigger in triggerStays){
+                swim |= CanSwimInTrigger(trigger);
+            }
+            if(sp == null || swim){
                 output.surfaceDot = float.NaN;
                 output.surfaceAngle = float.NaN;
                 output.surfaceSolidness = float.NaN;
                 output.normedSurfaceFriction = float.NaN;
                 output.clampedNormedSurfaceFriction = float.NaN;
                 output.surfacePhysicMaterial = null;
-                output.moveType = MoveType.AIR;
+                output.moveType = (swim ? MoveType.WATER : MoveType.AIR);
                 output.incomingLocalVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
             }else{
                 output.incomingLocalVelocity = this.Velocity - output.surfacePoint.otherVelocity;
