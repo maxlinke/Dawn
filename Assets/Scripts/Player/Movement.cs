@@ -23,7 +23,7 @@ namespace PlayerController {
         }
 
         public struct State {
-            public SurfacePoint surfacePoint;
+            public CollisionPoint surfacePoint;
             public float surfaceAngle;
             public float surfaceDot;
             public float surfaceSolidness;
@@ -70,9 +70,20 @@ namespace PlayerController {
             return vector.ProjectOnPlaneAlongVector(groundNormal, PlayerTransform.up);
         }
 
-        // TODO maybe a two point check? below the eyeline and the inverse point?
-        protected bool CanSwimInTrigger (Collider otherCollider, out float depth) {
-            depth = float.NaN;
+        protected virtual CollisionPoint DetermineSurfacePoint (IEnumerable<CollisionPoint> points) {
+            CollisionPoint flattestPoint = null;
+            float maxDot = 0.0175f;     // cos(89°), to exclude walls
+            foreach(var point in points){
+                var dot = Vector3.Dot(point.normal, PlayerTransform.up);
+                if(dot > maxDot){
+                    flattestPoint = point;
+                    maxDot = dot;
+                }
+            }
+            return flattestPoint;
+        }
+
+        protected bool CanSwimInTrigger (Collider otherCollider) {
             if(otherCollider.gameObject.layer == Layer.Water.index){
                 if(otherCollider is MeshCollider mc){
                     if(!mc.convex){
@@ -85,8 +96,16 @@ namespace PlayerController {
             return false;
         }
 
-        protected bool IsLadder (Collider otherCollider) {
+        protected bool ColliderIsLadder (Collider otherCollider) {
+            if(otherCollider == null) return false;
             return TagManager.CompareTag(Tag.Ladder, otherCollider.gameObject);
+        }
+
+        protected bool ColliderIsSolid (Collider otherCollider) {
+            if(otherCollider == null) return false;
+            var otherRB = otherCollider.attachedRigidbody;
+            if(otherRB == null) return true;
+            return otherRB.isKinematic;
         }
 
         protected float RawTargetSpeed (bool readInput) {
@@ -127,11 +146,22 @@ namespace PlayerController {
         // if on ground and move into ladder, do ladder movement
         // if on ground and not ladder movement, don't do ladder movement
         // TODO touching wall. basically do the determine surface point here i guess... includes ladders.
-        // TODO probably also remove surfacepoint
-        // and replace it with a generic collision point
-        // most stuff can be gotten from the state anyways
-        protected State GetCurrentState (SurfacePoint sp, State lastState, IEnumerable<Collider> triggerStays) {
+        //
+        // TODO jump out of water
+        // a) if laststate.movetype == movetype.water and this isn't (it's air or slope) allow jump? would be in movement itself
+        // b) something about wallpoints. wall is anything above the limit in determinesurfacepoint
+        // c) make ladders first!!!
+        //    -> GENERATE LADDERS
+        //    -> GENERATE STEPS
+        // TODO pull the sp == null default assignments and movetype assignment apart
+        //      do all the sp processing first
+        //      movetype last
+        // TODO also crouching. what if uncrouch in water? because it's basically in the air, so the bottom of the cc gets modified -> DO NOTHING FIRST, SEE IF IT'S SMOOTH ANYWAYS
+        // canuncrouch should use spherecast and explicitly not collide with water. use the layermaskutils for physics collision and !AND the water mask
+        // canuncrouch should also know whether to cast up or down
+        protected virtual State GetCurrentState (State lastState, IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             State output;
+            CollisionPoint sp = DetermineSurfacePoint(collisionPoints);
             if(lastState.jumped){
                 sp = null;
             }
@@ -139,8 +169,7 @@ namespace PlayerController {
             output.swimmingDepth = float.NaN;
             var swim = false;
             foreach(var trigger in triggerStays){
-                if(CanSwimInTrigger(trigger, out var swimDepth)){
-                    output.swimmingDepth = swimDepth;
+                if(CanSwimInTrigger(trigger)){
                     swim = true;
                     break;
                 }
@@ -155,15 +184,17 @@ namespace PlayerController {
                 output.moveType = (swim ? MoveType.WATER : MoveType.AIR);
                 output.incomingLocalVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
             }else{
-                output.incomingLocalVelocity = this.Velocity - output.surfacePoint.otherVelocity;
+                var otherRB = (sp.otherCollider == null ? null : sp.otherCollider.attachedRigidbody);
+                var otherVelocity = (otherRB == null ? Vector3.zero : otherRB.velocity);
+                output.incomingLocalVelocity = this.Velocity - otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
                 var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);    // just using acos (and rad2deg) on the surfacedot sometimes results in NaN errors...
                 output.surfaceDot = surfaceDot;
                 output.surfaceAngle = surfaceAngle;
-                if(sp.isSolid){
+                if(ColliderIsSolid(sp.otherCollider)){
                     output.surfaceSolidness = 1f;    
-                }else if(sp.otherRB != null){
-                    output.surfaceSolidness = Mathf.Clamp01((sp.otherRB.mass - pcProps.FootRBNonSolidMass) / (pcProps.FootRBSolidMass - pcProps.FootRBNonSolidMass));
+                }else if(otherRB != null){
+                    output.surfaceSolidness = Mathf.Clamp01((otherRB.mass - pcProps.FootRBNonSolidMass) / (pcProps.FootRBSolidMass - pcProps.FootRBNonSolidMass));
                 }else{
                     output.surfaceSolidness = 0f;
                 }

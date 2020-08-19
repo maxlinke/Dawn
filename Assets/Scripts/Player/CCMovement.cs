@@ -30,7 +30,7 @@ namespace PlayerController {
         bool initialized = false;
         ControlMode m_controlMode = ControlMode.FULL;
         
-        List<ControllerColliderHit> contactPoints;
+        List<CollisionPoint> contactPoints;
         State lastState;
         Vector3 m_velocity;
 
@@ -38,7 +38,7 @@ namespace PlayerController {
 
         public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
             base.Initialize(pcProps, head);
-            contactPoints = new List<ControllerColliderHit>();
+            contactPoints = new List<CollisionPoint>();
             initialized = true;
         }
 
@@ -76,23 +76,9 @@ namespace PlayerController {
         }
 
         void StartMove (out State currentState) {
-            var surfacePoint = DetermineSurfacePoint();
-            var EMPTYCOLLIDERLIST = new List<Collider>();
-            currentState = GetCurrentState(surfacePoint, lastState, EMPTYCOLLIDERLIST);
+            var EMPTYTRIGGERLIST = new List<Collider>();
+            currentState = GetCurrentState(lastState, contactPoints, EMPTYTRIGGERLIST);
             contactPoints.Clear();
-
-            SurfacePoint DetermineSurfacePoint () {
-                int flattestPoint = -1;
-                float maxDot = 0.0175f;     // cos(89°), to exclude walls
-                for(int i=0; i<contactPoints.Count; i++){
-                    var dot = Vector3.Dot(contactPoints[i].normal, cc.transform.up);
-                    if(dot > maxDot){
-                        flattestPoint = i;
-                        maxDot = dot;
-                    }
-                }
-                return (flattestPoint != -1) ? new SurfacePoint(contactPoints[flattestPoint]) : null;
-            }
         }
 
         void FinishMove (State currentState) {
@@ -229,7 +215,7 @@ namespace PlayerController {
             // two raycasts?
             // slightly offset using velocity
             // if they don't match the normal (within a reasonable margin... test that!!!) it's a corner
-            contactPoints.Add(hit);
+            contactPoints.Add(new CollisionPoint(hit));
             if(Vector3.Dot(hit.normal, Velocity) < 0){  // TODO RELATIVE VELOCITY!!!
                 Velocity = Vector3.ProjectOnPlane(Velocity, hit.normal);
             }

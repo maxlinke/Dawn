@@ -42,13 +42,13 @@ namespace PlayerController {
         bool jumpInputCached = false;
         ControlMode m_controlMode = ControlMode.FULL;
 
-        List<ContactPoint> contactPoints;
+        List<CollisionPoint> contactPoints;
         List<Collider> triggerStays;
         State lastState;
 
         public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
             base.Initialize(pcProps, head);
-            contactPoints = new List<ContactPoint>();
+            contactPoints = new List<CollisionPoint>();
             triggerStays = new List<Collider>();
             InitCol();
             InitRB();
@@ -101,7 +101,7 @@ namespace PlayerController {
             }
             int cc = collision.contactCount;
             for(int i=0; i<cc; i++){
-                contactPoints.Add(collision.GetContact(i));
+                contactPoints.Add(new CollisionPoint(collision.GetContact(i)));
             }
         }
 
@@ -130,8 +130,7 @@ namespace PlayerController {
         }
 
         void StartMove (out State currentState) {
-            var surfacePoint = DetermineSurfacePoint();
-            currentState = GetCurrentState(surfacePoint, lastState, triggerStays);
+            currentState = GetCurrentState(lastState, contactPoints, triggerStays);
             contactPoints.Clear();
             triggerStays.Clear();
             DEBUGTEXTFIELD.text = string.Empty;
@@ -140,18 +139,7 @@ namespace PlayerController {
             DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
 
-            SurfacePoint DetermineSurfacePoint () {
-                int flattestPoint = -1;
-                float maxDot = 0.0175f;     // cos(89°), to exclude walls
-                for(int i=0; i<contactPoints.Count; i++){
-                    var dot = Vector3.Dot(contactPoints[i].normal, PlayerTransform.up);
-                    if(dot > maxDot){
-                        flattestPoint = i;
-                        maxDot = dot;
-                    }
-                }
-                return (flattestPoint != -1) ? new SurfacePoint(contactPoints[flattestPoint]) : null;
-            }
+            
         }
 
         void FinishMove (State currentState) {Color lineColor;
