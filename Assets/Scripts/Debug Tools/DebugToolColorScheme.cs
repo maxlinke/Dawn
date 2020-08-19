@@ -2,7 +2,7 @@
 
 namespace DebugTools {
 
-    [CreateAssetMenu(menuName = "Debug Tools", fileName = "New DebugToolColorScheme")]
+    [CreateAssetMenu(menuName = "Debug Tool Color Scheme", fileName = "New DebugToolColorScheme")]
     public class DebugToolColorScheme : ScriptableObject {
 
         [Header("Generic UI Element Colors")]

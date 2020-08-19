@@ -2,7 +2,7 @@
 
 namespace Testing {
 
-    public class DragTest : MonoBehaviour {
+    public class RigidbodyCollectionVelocitySetter : MonoBehaviour {
 
         [SerializeField] Rigidbody[] rbs = default;
         [SerializeField] Vector3 startVelocity = default;

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "Player Config", fileName = "New Player Config")]
+[CreateAssetMenu(menuName = "Player Controller Properties", fileName = "New PlayerControllerProperties")]
 public class PlayerControllerProperties : ScriptableObject {
 
     [Header("Dimensions")]

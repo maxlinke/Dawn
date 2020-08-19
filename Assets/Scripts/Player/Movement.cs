@@ -18,7 +18,8 @@ namespace PlayerController {
             GROUND,
             SLOPE,
             AIR,
-            WATER
+            WATER,
+            LADDER
         }
 
         public struct State {
@@ -28,11 +29,12 @@ namespace PlayerController {
             public float surfaceSolidness;
             public float normedSurfaceFriction;
             public float clampedNormedSurfaceFriction;
+            public float swimmingDepth;
             public PhysicMaterial surfacePhysicMaterial;
             public MoveType moveType;
             public Vector3 worldPosition;
             public Vector3 incomingWorldVelocity;
-            public Vector3 incomingLocalVelocity;       // technically only the incoming local velocity, unless i assign the updated value in the end
+            public Vector3 incomingLocalVelocity;
             public bool jumped;
             public int frame;
         }
@@ -69,7 +71,8 @@ namespace PlayerController {
         }
 
         // TODO maybe a two point check? below the eyeline and the inverse point?
-        protected bool CanSwimInTrigger (Collider otherCollider) {
+        protected bool CanSwimInTrigger (Collider otherCollider, out float depth) {
+            depth = float.NaN;
             if(otherCollider.gameObject.layer == Layer.Water.index){
                 if(otherCollider is MeshCollider mc){
                     if(!mc.convex){
@@ -80,6 +83,10 @@ namespace PlayerController {
                 return (otherCollider.ClosestPoint(origin) - origin).sqrMagnitude < 0.01f; 
             }
             return false;
+        }
+
+        protected bool IsLadder (Collider otherCollider) {
+            return TagManager.CompareTag(Tag.Ladder, otherCollider.gameObject);
         }
 
         protected float RawTargetSpeed (bool readInput) {
@@ -114,15 +121,29 @@ namespace PlayerController {
             return dVAccel;
         }
 
+        // TODO ladder point
+        // ladder movement decided in actual movement
+        // unless we're airborne or whatever
+        // if on ground and move into ladder, do ladder movement
+        // if on ground and not ladder movement, don't do ladder movement
+        // TODO touching wall. basically do the determine surface point here i guess... includes ladders.
+        // TODO probably also remove surfacepoint
+        // and replace it with a generic collision point
+        // most stuff can be gotten from the state anyways
         protected State GetCurrentState (SurfacePoint sp, State lastState, IEnumerable<Collider> triggerStays) {
             State output;
             if(lastState.jumped){
                 sp = null;
             }
             output.surfacePoint = sp;
+            output.swimmingDepth = float.NaN;
             var swim = false;
             foreach(var trigger in triggerStays){
-                swim |= CanSwimInTrigger(trigger);
+                if(CanSwimInTrigger(trigger, out var swimDepth)){
+                    output.swimmingDepth = swimDepth;
+                    swim = true;
+                    break;
+                }
             }
             if(sp == null || swim){
                 output.surfaceDot = float.NaN;

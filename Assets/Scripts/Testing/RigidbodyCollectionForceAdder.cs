@@ -2,7 +2,7 @@
 
 namespace Testing {
 
-    public class ForceModeTest : MonoBehaviour {
+    public class RigidbodyCollectionForceAdder : MonoBehaviour {
 
         [System.Serializable]
         public struct Thing {
