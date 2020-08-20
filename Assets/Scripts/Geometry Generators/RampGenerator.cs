@@ -7,7 +7,7 @@ using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
-    public class RampGenerator : MonoBehaviour {
+    public class RampGenerator : GeometryGenerator {
 
         public const float MIN_FRONT_ANGLE = 1f;
         public const float MAX_FRONT_ANGLE = 90f;
@@ -33,21 +33,7 @@ namespace GeometryGenerators {
         [Range(MIN_LENGTH, MAX_LENGTH)] public float rearLength = 5f;
         [Range(MIN_WIDTH, MAX_WIDTH)] public float width = 2f;
 
-        public void Generate () {
-            var mf = GetComponent<MeshFilter>();
-            if(mf == null){
-                Debug.LogError("No mesh filter assigned!");
-                return;
-            }
-            var mesh = CreateMesh();
-            mf.sharedMesh = mesh;
-            var mc = GetComponent<MeshCollider>();
-            if(mc != null){
-                mc.sharedMesh = mesh;
-            }
-        }
-
-        Mesh CreateMesh () {
+        protected override Mesh CreateMesh () {
             var points = Get2DPoints();
             var protoVerts = Make3DPoints(points);
             var vl = protoVerts.Length;
@@ -91,7 +77,6 @@ namespace GeometryGenerators {
             output.RecalculateBounds();
             output.RecalculateNormals();
             output.RecalculateTangents();
-            // output.subMeshCount
             return output;
 
             void AddSide (int protoVertOffset, bool flip) {

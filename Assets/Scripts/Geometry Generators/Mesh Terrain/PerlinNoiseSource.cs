@@ -11,7 +11,7 @@ namespace GeometryGenerators {
         public override float Evaluate (float x, float y) {
             TransformCoords(ref x, ref y);
             float sample = Mathf.PerlinNoise(x, y);
-            return settings.strength * ((2f * sample) - 1f);
+            return strength * ((2f * sample) - 1f);
         }
 
     }

@@ -4,17 +4,12 @@ namespace GeometryGenerators {
 
     public abstract class NoiseSource {
 
-        [System.Serializable]
-        public struct NoiseSettings {
-            public float scale;
-            [Range(0f, 1f)] public float strength;
-        }
-
-        public NoiseSettings settings;
-        public bool randomOffset;
-        public bool randomRotation;
-        [HideInInspector] public Vector2 offset;
-        [HideInInspector] public float rotation;
+        [SerializeField] public float scale;
+        [SerializeField, Range(0f, 1f)] public float strength;
+        [SerializeField] public bool randomOffset;
+        [SerializeField] public bool randomRotation;
+        [System.NonSerialized] public Vector2 offset;
+        [System.NonSerialized] public float rotation;
 
         public abstract float Evaluate (float x, float y);
 
@@ -31,8 +26,8 @@ namespace GeometryGenerators {
                 x = (cos * ox) + (sin * oy);
                 y = (cos * oy) - (sin * ox);
             }
-            x = x / settings.scale;
-            y = y / settings.scale;
+            x = x / scale;
+            y = y / scale;
         }
 
     }

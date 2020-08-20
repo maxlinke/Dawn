@@ -27,10 +27,9 @@ namespace GeometryGenerators {
         void DrawCustomInspector (TerrainGenerator tg) {
             serializedObject.Update();
             DrawScriptReference(tg);
-            //components
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("mf"), new GUIContent("MeshFilter"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("mc"), new GUIContent("MeshCollider"), true);
-            //general settings
+            // targets
+            GeometryGenerator.DrawInspectorTargets(serializedObject);
+            // general settings
             EditorGUILayout.PropertyField(serializedObject.FindProperty("seed"), new GUIContent("Seed"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("xTiles"), new GUIContent("Number of tiles in X"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("zTiles"), new GUIContent("Number of tiles in Z"), true);
@@ -44,7 +43,7 @@ namespace GeometryGenerators {
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("uvScale"), new GUIContent("UV Scale"), true);
                 GUI.enabled = true;
             }
-            //deformation settings
+            // deformation settings
             EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationDirection"), new GUIContent("Deformation Direction"), true);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationStrength"), new GUIContent("Deformation Strength"), true);
             SerializedProperty noiseSourceProp = serializedObject.FindProperty("noiseSourceType");

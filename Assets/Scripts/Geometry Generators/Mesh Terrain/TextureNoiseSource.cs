@@ -16,7 +16,7 @@ namespace GeometryGenerators {
             y = Mathf.Repeat(y, 1f);
             Color col = texture.GetPixelBilinear(x, y);
             float lum = 0.299f * col.r + 0.587f * col.g + 0.115f * col.b;
-            return settings.strength * ((2f * lum) - 1f);
+            return strength * ((2f * lum) - 1f);
         }
 
     }

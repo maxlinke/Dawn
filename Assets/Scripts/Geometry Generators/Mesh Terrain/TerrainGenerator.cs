@@ -2,7 +2,7 @@
 
 namespace GeometryGenerators {
 
-    public class TerrainGenerator : MonoBehaviour {
+    public class TerrainGenerator : GeometryGenerator {
 
         private const int MAX_RNG_OFFSET = 1024;
 
@@ -45,18 +45,22 @@ namespace GeometryGenerators {
             textureNoiseSources = new TextureNoiseSource[0];
         }
 
-        public void Generate () {
-            var mf = GetComponent<MeshFilter>();
-            if(mf == null){
-                Debug.LogError($"No {nameof(MeshFilter)} on gameobject!");
-                return;
-            }
-
+        protected override Mesh CreateMesh () {
             NoiseSource[] noiseSources;
             switch(noiseSourceType){
-                case NoiseSourceType.PERLIN: noiseSources = perlinNoiseSources; break;
-                case NoiseSourceType.TEXTURE: noiseSources = textureNoiseSources; break;
-                default: throw new UnityException("unsupported noise source type \"" + noiseSourceType.ToString() + "\"");
+                case NoiseSourceType.PERLIN: 
+                    noiseSources = perlinNoiseSources; 
+                    break;
+                case NoiseSourceType.TEXTURE: 
+                    noiseSources = textureNoiseSources; 
+                    break;
+                default: 
+                    Debug.LogError($"Unsupported {nameof(NoiseSourceType)} \"{noiseSourceType}\"!");
+                    noiseSources = null;
+                    break;
+            }
+            if(noiseSources == null){
+                noiseSources = new NoiseSource[0];
             }
             InitNoiseSources(ref noiseSources, GetRandomNumberGenerator(seed)); 
 
@@ -114,11 +118,7 @@ namespace GeometryGenerators {
             terrain.RecalculateBounds();
             terrain.RecalculateNormals();
             terrain.RecalculateTangents();
-            mf.sharedMesh = terrain;
-            var mc = GetComponent<MeshCollider>();
-            if(mc != null){
-                mc.sharedMesh = terrain;
-            }
+            return terrain;
         }
 
         System.Random GetRandomNumberGenerator (string seed) {
