@@ -227,6 +227,15 @@ namespace PlayerController {
             Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
         }
 
+        Vector3 WaterExitAcceleration (ref State currentState) {
+            var verticalLocalVelocity = VerticalComponent(currentState.incomingLocalVelocity);
+            if(verticalLocalVelocity.y > 0){
+                var jumpVelocity = PlayerTransform.up * JumpSpeed();
+                return (jumpVelocity - verticalLocalVelocity) / Time.fixedDeltaTime;
+            }
+            return Vector3.zero;
+        }
+
         void SlopeMovement (bool readInput, ref State currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.SlopeDrag, currentState.clampedNormedSurfaceFriction);
@@ -245,6 +254,9 @@ namespace PlayerController {
             }
             var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.SlopeAccel, currentState.clampedNormedSurfaceFriction);
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
+            if(Bind.JUMP.GetKey() && currentState.isInWater){
+                moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
+            }
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
@@ -260,6 +272,9 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
             var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
+            if(Bind.JUMP.GetKey() && currentState.isInWater && currentState.touchingWall){
+                moveAcceleration += WaterExitAcceleration(ref currentState);
+            }
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
