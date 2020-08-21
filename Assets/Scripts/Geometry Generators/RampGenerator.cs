@@ -9,17 +9,17 @@ namespace GeometryGenerators {
 
     public class RampGenerator : GeometryGenerator {
 
-        public const float MIN_FRONT_ANGLE = 1f;
-        public const float MAX_FRONT_ANGLE = 90f;
+        const float MIN_FRONT_ANGLE = 1f;
+        const float MAX_FRONT_ANGLE = 90f;
 
-        public const float MIN_REAR_ANGLE = -90f;
-        public const float MAX_REAR_ANGLE = 90f;
+        const float MIN_REAR_ANGLE = -90f;
+        const float MAX_REAR_ANGLE = 90f;
 
-        public const float MIN_LENGTH = 0f;
-        public const float MAX_LENGTH = 10f;
+        const float MIN_LENGTH = 0f;
+        const float MAX_LENGTH = 10f;
 
-        public const float MIN_WIDTH = 0f;
-        public const float MAX_WIDTH = 4f;
+        const float MIN_WIDTH = 0f;
+        const float MAX_WIDTH = 10f;
 
         [Header("Gizmos")]
         [SerializeField] bool drawGizmos = true;
@@ -27,11 +27,11 @@ namespace GeometryGenerators {
 
         [Header("Settings")]
         [SerializeField] bool multiMaterial = false;
-        [Range(MIN_FRONT_ANGLE, MAX_FRONT_ANGLE)] public float frontAngle = 45f;
-        [Range(MIN_REAR_ANGLE, MAX_REAR_ANGLE)] public float rearAngle = 0f;
-        [Range(MIN_LENGTH, MAX_LENGTH)] public float frontLength = 5f;
-        [Range(MIN_LENGTH, MAX_LENGTH)] public float rearLength = 5f;
-        [Range(MIN_WIDTH, MAX_WIDTH)] public float width = 2f;
+        [SerializeField, Range(MIN_FRONT_ANGLE, MAX_FRONT_ANGLE)] float frontAngle = 45f;
+        [SerializeField, Range(MIN_REAR_ANGLE, MAX_REAR_ANGLE)] float rearAngle = 0f;
+        [SerializeField, Range(MIN_LENGTH, MAX_LENGTH)] float frontLength = 5f;
+        [SerializeField, Range(MIN_LENGTH, MAX_LENGTH)] float rearLength = 5f;
+        [SerializeField, Range(MIN_WIDTH, MAX_WIDTH)] float width = 2f;
 
         protected override Mesh CreateMesh () {
             var points = Get2DPoints();
