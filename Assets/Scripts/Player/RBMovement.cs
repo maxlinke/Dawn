@@ -138,8 +138,7 @@ namespace PlayerController {
             DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
-
-            
+            DEBUGTEXTFIELD.text += $"{currentState.incomingLocalVelocity.magnitude:F3} m/s\n";            
         }
 
         void FinishMove (State currentState) {Color lineColor;

@@ -25,7 +25,6 @@ MonoBehaviour:
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60
-  softSlopeLimit: 45
   moveSpeedRun: 5.5
   moveSpeedWalk: 2.5
   moveSpeedCrouch: 1
@@ -35,7 +34,9 @@ MonoBehaviour:
   slopeDrag: 6
   airAccel: 12
   airDrag: 4
-  jumpHeight: 1
+  waterAccel: 12
+  waterDrag: 0
+  jumpHeight: 0.75
   jumpCalcGravity: 29.43
   dodgeSpeed: 12
   dodgeStartTime: 0.125
