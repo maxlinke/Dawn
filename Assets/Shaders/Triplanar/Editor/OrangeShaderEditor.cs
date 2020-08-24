@@ -18,6 +18,10 @@ namespace ShaderEditors {
         const string overlayColorName = "_OverlayTint";
         const string overlayTexName = "_OverlayTex";
 
+        const string tintColorName = "_TintColor";
+        const string specColorName = "_SpecColor";
+        const string specHardnessName = "_SpecHardness";
+
         enum BackgroundColor {
             ORANGE,
             GREY
@@ -36,9 +40,13 @@ namespace ShaderEditors {
 
         // don't have to check if all targets are the same version, unity already does that.
         public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties) {
-            var isOverlayVersion = IsOverlayVersion(editor.target as Material);
+            var targetMat = editor.target as Material;
+            var isOverlayVersion = IsOverlayVersion(targetMat);
             MainColorSelection();
             GridProperties();
+            if(IsTintedVersion(targetMat)){
+                TintProperties();
+            }
             if(isOverlayVersion){
                 OverlayProperties();
             }
@@ -127,8 +135,22 @@ namespace ShaderEditors {
                 EditorGUI.indentLevel -= 2;
             }
 
+            void TintProperties () {
+                GUILayout.Label("Tint and Reflection", EditorStyles.boldLabel);
+                var tintCol = FindProperty(tintColorName, properties);
+                var specCol = FindProperty(specColorName, properties);
+                var specHardness = FindProperty(specHardnessName, properties);
+                editor.ShaderProperty(tintCol, tintCol.displayName);
+                editor.ShaderProperty(specCol, specCol.displayName);
+                editor.ShaderProperty(specHardness, specHardness.displayName);
+            }
+
             bool IsOverlayVersion (Material mat) {
                 return mat.HasProperty(overlayTexName);
+            }
+
+            bool IsTintedVersion (Material mat) {
+                return mat.HasProperty(tintColorName);
             }
             
             bool GetKeyword (string keyword) {
