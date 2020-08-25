@@ -22,12 +22,14 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] PhysicMaterial physicMaterial = null;
     [SerializeField] float footRBNonSolidMass = 160f;
     [SerializeField] float footRBSolidMass = 400f;
+    [SerializeField] float gravityTurnDegreesPerSecond = 360f;
 
     public float PlayerMass => playerMass;
     public CollisionDetectionMode CollisionDetection => collisionDetection;
     public PhysicMaterial PhysicMaterial => physicMaterial;
     public float FootRBNonSolidMass => footRBNonSolidMass;
     public float FootRBSolidMass => footRBSolidMass;
+    public float GravityTurnDegreesPerSecond => gravityTurnDegreesPerSecond;
 
     [Header("Camera")]
     [SerializeField] float nearClipDist = 0.15f;

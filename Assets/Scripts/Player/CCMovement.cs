@@ -7,15 +7,12 @@ namespace PlayerController {
     public class CCMovement : Movement {
         
         [SerializeField] CharacterController cc = default;
-
-        public CharacterController controller => cc;
-        public override float Height => cc.height;
-        public override Vector3 WorldCenterPos => cc.transform.TransformPoint(cc.center);
-        public override Vector3 WorldFootPos => cc.transform.TransformPoint(cc.center + 0.5f * cc.height * Vector3.down);
         
         protected override Transform PlayerTransform => cc.transform;
-        // protected override Vector3 WorldLowerCapsuleSphereCenter => cc.transform.TransformPoint(cc.center + (Vector3.down * ((cc.height / 2f) - cc.radius)));
-        // protected override float CapsuleRadius => cc.radius * cc.transform.localScale.Average();
+
+        public override float Height => cc.height;
+        protected override Vector3 LocalCenterPos => (cc.center);
+        protected override Vector3 LocalFootPos => (cc.center + 0.5f * cc.height * Vector3.down);
 
         public override Vector3 Velocity {
             get { return m_velocity; }

@@ -42,15 +42,18 @@ namespace PlayerController {
         }
 
         public abstract float Height { get; }
-        public abstract Vector3 WorldCenterPos { get; }
-        public abstract Vector3 WorldFootPos { get; }
         public abstract Vector3 Velocity { get; set; }
         public abstract ControlMode controlMode { get; set; }
 
         protected abstract Transform PlayerTransform { get; }
+        protected abstract Vector3 LocalCenterPos { get; }
+        protected abstract Vector3 LocalFootPos { get; }
 
         protected PlayerControllerProperties pcProps { get; private set; }
         protected Transform head  { get; private set; }
+
+        public Vector3 WorldCenterPos => PlayerTransform.TransformPoint(LocalCenterPos);
+        public Vector3 WorldFootPos => PlayerTransform.TransformPoint(LocalFootPos);
 
         private PhysicMaterial defaultPM;
 
@@ -147,6 +150,19 @@ namespace PlayerController {
                 return dV.normalized * maxAcceleration;
             }
             return dVAccel;
+        }
+
+        protected Quaternion GetGravityRotation () {
+            if(Physics.gravity.sqrMagnitude <= 0f){
+                return PlayerTransform.rotation;
+            }
+            var newUp = -Physics.gravity;
+            var newFwd = PlayerTransform.forward;
+            if(Mathf.Abs(Vector3.Dot(newFwd, newUp)) > 0.999f){
+                newFwd = PlayerTransform.forward + PlayerTransform.up;
+            }
+            newFwd = newFwd.ProjectOnPlane(newUp);
+            return Quaternion.LookRotation(newFwd, newUp);
         }
 
         // TODO ladder point

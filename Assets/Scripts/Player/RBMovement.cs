@@ -9,13 +9,11 @@ namespace PlayerController {
         [SerializeField] CapsuleCollider col = default;
         [SerializeField] Rigidbody rb = default;
 
-        public override float Height => col.height;
-        public override Vector3 WorldCenterPos => rb.transform.TransformPoint(col.center);
-        public override Vector3 WorldFootPos => rb.transform.TransformPoint(col.center + 0.5f * col.height * Vector3.down);
-        
         protected override Transform PlayerTransform => rb.transform;
-        // protected override Vector3 WorldLowerCapsuleSphereCenter => rb.transform.TransformPoint(col.center + (Vector3.down * ((col.height / 2f) - col.radius)));
-        // protected override float CapsuleRadius => col.radius * rb.transform.localScale.Average();
+
+        public override float Height => col.height;
+        protected override Vector3 LocalCenterPos => (col.center);
+        protected override Vector3 LocalFootPos => (col.center + 0.5f * col.height * Vector3.down);
 
         public override Vector3 Velocity { 
             get { return rb.velocity; }
@@ -183,6 +181,10 @@ namespace PlayerController {
                     Velocity += Physics.gravity * Time.fixedDeltaTime;
                     break;
             }
+            var gravityRotation = GetGravityRotation();
+            var newRotation = Quaternion.RotateTowards(PlayerTransform.rotation, gravityRotation, Time.fixedDeltaTime * pcProps.GravityTurnDegreesPerSecond);
+            // rb.MoveRotation(newRotation);            // doesn't work. or it does, but not very well and only when i disable the view-rb-rotation-update
+            PlayerTransform.rotation = newRotation;     // << laggy (because fixedupdate) but works
         }
 
         public void ExecuteUpdate () {
@@ -202,7 +204,7 @@ namespace PlayerController {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
-            var targetDirection = rb.transform.TransformDirection(rawInput);
+            var targetDirection = PlayerTransform.TransformDirection(rawInput);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
@@ -221,7 +223,10 @@ namespace PlayerController {
             if(currentState.jumped){
                 gravity = Physics.gravity * 0.5f;
             }else{
-                gravity = Vector3.Slerp(Physics.gravity, -currentState.surfacePoint.normal * Physics.gravity.magnitude, currentState.surfaceSolidness * currentState.clampedNormedSurfaceFriction);
+                var stickGravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
+                var lerpFactor = currentState.surfaceSolidness * currentState.clampedNormedSurfaceFriction;
+                lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
+                gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
             }
             Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
         }
@@ -246,7 +251,7 @@ namespace PlayerController {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
-            var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
@@ -269,7 +274,7 @@ namespace PlayerController {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
-            var targetVelocity = rb.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
             if(Bind.JUMP.GetKey() && currentState.isInWater && currentState.touchingWall){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
