@@ -52,8 +52,25 @@ namespace PlayerController {
         protected PlayerControllerProperties pcProps { get; private set; }
         protected Transform head  { get; private set; }
 
-        public Vector3 WorldCenterPos => PlayerTransform.TransformPoint(LocalCenterPos);
-        public Vector3 WorldFootPos => PlayerTransform.TransformPoint(LocalFootPos);
+        public Vector3 WorldCenterPos {
+            get {
+                return PlayerTransform.TransformPoint(LocalCenterPos);
+            } set {
+                var current = WorldCenterPos;
+                var delta = value - current;
+                PlayerTransform.position += delta;
+            }
+        }
+
+        public Vector3 WorldFootPos {
+            get {
+                return PlayerTransform.TransformPoint(LocalFootPos);
+            } set {
+                var current = WorldFootPos;
+                var delta = value - current;
+                PlayerTransform.position += delta;
+            }
+        }
 
         private PhysicMaterial defaultPM;
 

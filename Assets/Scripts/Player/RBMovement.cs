@@ -183,8 +183,10 @@ namespace PlayerController {
             }
             var gravityRotation = GetGravityRotation();
             var newRotation = Quaternion.RotateTowards(PlayerTransform.rotation, gravityRotation, Time.fixedDeltaTime * pcProps.GravityTurnDegreesPerSecond);
+            var wcPosCache = WorldCenterPos;
             // rb.MoveRotation(newRotation);            // doesn't work. or it does, but not very well and only when i disable the view-rb-rotation-update
             PlayerTransform.rotation = newRotation;     // << laggy (because fixedupdate) but works
+            WorldCenterPos = wcPosCache;
         }
 
         public void ExecuteUpdate () {

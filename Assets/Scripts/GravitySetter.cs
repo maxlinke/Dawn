@@ -19,6 +19,11 @@ public class GravitySetter : MonoBehaviour {
     public void UpdateGravity () {
         Physics.gravity = targetGravityDirection * targetGravityStrength;
     }
+
+    public void FlipGravity () {
+        targetGravityDirection = -targetGravityDirection;
+        UpdateGravity();
+    }
 	
 }
 
@@ -38,6 +43,9 @@ public class GravitySetterEditor : Editor {
             GUILayout.Label($"current: {Physics.gravity}");
             if(GUILayout.Button("Update Gravity")){
                 gs.UpdateGravity();
+            }
+            if(GUILayout.Button("Flip Gravity")){
+                gs.FlipGravity();
             }
         }
     }

@@ -7,6 +7,11 @@ public class RBPlayer : Player {
     [SerializeField] RBMovement rbMovement = default;
     [SerializeField] RBView rbView = default;
 
+    [Header("Debug")]
+    [SerializeField] KeyCode boostKey = KeyCode.Mouse1;
+    [SerializeField] KeyCode slowMoKey = KeyCode.Q;
+    [SerializeField] KeyCode gravityFlipKey = KeyCode.G;
+
     protected override Movement MovementSystem => rbMovement;
 
     // TODO more camera init 
@@ -31,14 +36,17 @@ public class RBPlayer : Player {
             if(Input.anyKeyDown){
                 CursorLockManager.UpdateLockState();
             }
-            if(Input.GetKeyDown(KeyCode.Mouse1)){
+            if(Input.GetKeyDown(boostKey)){
                 rbMovement.Velocity += head.transform.forward * 50f;
             }
-            if(Input.GetKeyDown(KeyCode.Q)){
+            if(Input.GetKeyDown(slowMoKey)){
                 Time.timeScale = 0.05f;
             }
-            if(Input.GetKeyUp(KeyCode.Q)){
+            if(Input.GetKeyUp(slowMoKey)){
                 Time.timeScale = 1f;
+            }
+            if(Input.GetKeyDown(gravityFlipKey)){
+                Physics.gravity = -Physics.gravity;
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
