@@ -204,12 +204,12 @@ namespace PlayerController {
                 rayStart = PlayerTransform.TransformPoint(LocalColliderTopSphere);
                 rayDir = PlayerTransform.up;
             }
-            var offset = -0.05f;
+            var offset = 0.05f;
             var scale = PlayerTransform.lossyScale.Average();
             var rayRadius = (LocalColliderRadius * scale) - offset;
             var rayLength = ((pcProps.NormalHeight - LocalColliderHeight) * scale) + offset;
             if(Physics.SphereCast(rayStart, rayRadius, rayDir, out var hit, rayLength, collisionCastMask)){
-                // could do a mass check here
+                // could do a mass check here if hit is a rigidbody
                 return false;
             }
             return true;
