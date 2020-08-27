@@ -22,7 +22,7 @@ namespace PlayerController {
             LADDER
         }
 
-        public struct State {
+        public struct MoveState {
             public CollisionPoint surfacePoint;
             public float surfaceAngle;
             public float surfaceDot;
@@ -195,14 +195,27 @@ namespace PlayerController {
             return Quaternion.LookRotation(newFwd, newUp);
         }
 
-        protected bool CanUncrouch (State inputState) {
+        // crouch stuff is managed somewhere
+        // update camera position in update
+        // update collider BEFORE movement in fixedupdate
+        // both use some property-ish number as a resource that is not linked to either one
+        // do a raycast each fixed frame while uncrouching until fully uncrouched
+        // that way if something does come up, go back to crouch.
+
+        // crouch state
+        // should crouch
+        // normed crouch
+        // start time?
+        // public void update
+
+        protected bool CanUncrouch (bool checkUpward) {
             Vector3 rayStart, rayDir;
-            if(inputState.surfacePoint == null){
-                rayStart = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
-                rayDir = -PlayerTransform.up;
-            }else{
+            if(checkUpward){
                 rayStart = PlayerTransform.TransformPoint(LocalColliderTopSphere);
                 rayDir = PlayerTransform.up;
+            }else{
+                rayStart = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+                rayDir = -PlayerTransform.up;
             }
             var offset = 0.05f;
             var scale = PlayerTransform.lossyScale.Average();
@@ -228,8 +241,8 @@ namespace PlayerController {
         // TODO also crouching. what if uncrouch in water? because it's basically in the air, so the bottom of the cc gets modified -> DO NOTHING FIRST, SEE IF IT'S SMOOTH ANYWAYS
         // canuncrouch should use spherecast and explicitly not collide with water. use the layermaskutils for physics collision and !AND the water mask
         // canuncrouch should also know whether to cast up or down
-        protected virtual State GetCurrentState (State lastState, IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
-            State output;
+        protected virtual MoveState GetCurrentState (MoveState lastState, IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
+            MoveState output;
             CollisionPoint sp = DetermineSurfacePoint(collisionPoints, out var touchingWall);
             if(lastState.jumped){
                 sp = null;

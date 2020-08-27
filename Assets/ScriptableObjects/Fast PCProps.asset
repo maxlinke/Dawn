@@ -22,10 +22,10 @@ MonoBehaviour:
   physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
   footRBNonSolidMass: 160
   footRBSolidMass: 400
+  gravityTurnDegreesPerSecond: 360
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60
-  softSlopeLimit: 45
   moveSpeedRun: 12
   moveSpeedWalk: 6
   moveSpeedCrouch: 6
@@ -43,4 +43,4 @@ MonoBehaviour:
   dodgeStartTime: 0.125
   dodgeEndTime: 0.125
   dodgeDuration: 0.5
-  interactRange: 1.5
+  interactRange: 2

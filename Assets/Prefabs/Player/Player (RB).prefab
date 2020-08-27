@@ -23,7 +23,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8913080615580733536}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.65, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -115,6 +115,9 @@ MonoBehaviour:
   fpCamera: {fileID: 8913080616304595080}
   rbMovement: {fileID: 8913080616178811583}
   rbView: {fileID: 8913080616178811552}
+  boostKey: 324
+  slowMoKey: 113
+  gravityFlipKey: 103
 --- !u!114 &8913080616178811583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,6 +148,7 @@ MonoBehaviour:
   DEBUGTEXTFIELD: {fileID: 0}
   controlMode: 0
   viewTarget: {fileID: 0}
+  debugOutput: 0
 --- !u!1 &8913080616304595082
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +254,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8913080616386587640}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []

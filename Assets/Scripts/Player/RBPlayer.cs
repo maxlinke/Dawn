@@ -28,6 +28,9 @@ public class RBPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         rbMovement.Initialize(pcProps, head);
+        // load the states 
+        // set collider height
+        rbView.UpdateHeadLocalPosition(instantly: true);
         InitCamera();
     }
 
@@ -51,9 +54,11 @@ public class RBPlayer : Player {
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(readInput: cursorLocked);
-        // rbView.UpdateHeadLocalPosition();    // <- move responsibility to movement
+        rbView.UpdateHeadLocalPosition(instantly: rbMovement.SnapHeadPosition);
         rbView.InteractCheck(readInput: cursorLocked);
-        rbMovement.CacheJumpInputIfNeeded();
+        rbMovement.UpdateCrouchState(readInput: cursorLocked);
+        rbMovement.CacheSingleFrameInputs();
+        // rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
     }
 
     void FixedUpdate () {
@@ -61,7 +66,9 @@ public class RBPlayer : Player {
         rbView.RotateBodyInLookDirection();
         // update collider height
         // -> does NOT update head position. that happens in update
+        // rbMovement.UpdateCrouchState(readInput: cursorLocked);
         // rbMovement.SetPositionToColliderBottom();
+        // rbMovement.ApplySubRotation();
         rbMovement.Move(readInput: cursorLocked);
     }
 	

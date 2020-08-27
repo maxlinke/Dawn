@@ -16,6 +16,8 @@ public class PlayerControllerProperties : ScriptableObject {
     public float EyeOffset => eyeOffset;
     public float ColliderRadius => colliderRadius;
 
+    public float HeightChangeSpeed => (normalHeight - crouchHeight) / crouchUncrouchTime;
+
     [Header("Phyics")]
     [SerializeField] float playerMass = 80f;
     [SerializeField] CollisionDetectionMode collisionDetection = CollisionDetectionMode.ContinuousDynamic;

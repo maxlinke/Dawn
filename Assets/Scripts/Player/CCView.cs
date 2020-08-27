@@ -4,6 +4,10 @@ namespace PlayerController {
 
     public class CCView : View {
 
+        public void UpdateHeadLocalPosition () {
+            head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
+        }
+
         protected override void DeltaLook (Vector2 viewDelta) {
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
             ApplyHeadEuler();

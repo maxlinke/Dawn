@@ -46,7 +46,7 @@ public class CCPlayer : Player {
         var cursorLocked = CursorLockManager.CursorIsLocked();
         ccView.Look(readInput: cursorLocked);
         ccMovement.Move(readInput: cursorLocked);
-        // ccView.UpdateHeadLocalPosition();
+        ccView.UpdateHeadLocalPosition();
         ccView.InteractCheck(readInput: cursorLocked);
     }
 

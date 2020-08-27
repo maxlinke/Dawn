@@ -6,6 +6,7 @@ namespace PlayerController {
 
     public class RBMovement : Movement {
 
+        // [SerializeField] Transform smoothRotationParent = default;
         [SerializeField] CapsuleCollider col = default;
         [SerializeField] Rigidbody rb = default;
 
@@ -36,13 +37,16 @@ namespace PlayerController {
             }
         }
 
+        public bool SnapHeadPosition => lastState.jumped || lastState.surfacePoint == null;
+
         bool initialized = false;
-        bool jumpInputCached = false;
+        bool cachedJumpKeyDown = false;
+        bool shouldCrouch = false;
         ControlMode m_controlMode = ControlMode.FULL;
 
         List<CollisionPoint> contactPoints;
         List<Collider> triggerStays;
-        State lastState;
+        MoveState lastState;
 
         public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
             base.Initialize(pcProps, head);
@@ -109,6 +113,7 @@ namespace PlayerController {
                 return;
             }
             StartMove(out var currentState);
+            UpdateColliderSizeIfNeeded(currentState, Time.fixedDeltaTime);
             switch(controlMode){
                 case ControlMode.FULL:
                     ExecuteMove(readInput, ref currentState);
@@ -127,7 +132,7 @@ namespace PlayerController {
             FinishMove(currentState);
         }
 
-        void StartMove (out State currentState) {
+        void StartMove (out MoveState currentState) {
             currentState = GetCurrentState(lastState, contactPoints, triggerStays);
             contactPoints.Clear();
             triggerStays.Clear();
@@ -137,9 +142,11 @@ namespace PlayerController {
             DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.incomingLocalVelocity.magnitude:F3} m/s\n";            
+            DEBUGTEXTFIELD.text += $"crouch: {shouldCrouch}\n";
+            DEBUGTEXTFIELD.text += $"height: {col.height}\n";
         }
 
-        void FinishMove (State currentState) {Color lineColor;
+        void FinishMove (MoveState currentState) {Color lineColor;
             switch(currentState.moveType){
                 case MoveType.AIR:
                     lineColor = Color.red;
@@ -159,10 +166,10 @@ namespace PlayerController {
             }
             Debug.DrawLine(lastState.worldPosition, currentState.worldPosition, lineColor, 10f);
             lastState = currentState;
-            jumpInputCached = false;
+            cachedJumpKeyDown = false;
         }
         
-        void ExecuteMove (bool readInput, ref State currentState) {
+        void ExecuteMove (bool readInput, ref MoveState currentState) {
             switch(currentState.moveType){
                 case MoveType.AIR:
                     AerialMovement(readInput, ref currentState);
@@ -174,6 +181,7 @@ namespace PlayerController {
                     SlopeMovement(readInput, ref currentState);
                     break;
                 case MoveType.WATER:
+                    SetTryCrouch(false);
                     WaterMovement(readInput, ref currentState);
                     break;
                 default:
@@ -190,20 +198,52 @@ namespace PlayerController {
         }
 
         public void SetTryCrouch (bool value) {
-
+            shouldCrouch = value;
         }
 
-        public void ManageHeight (bool readInput) {
-            // TODO binary crouch. yes or no. input.getkeydown and such. no getvalue
-            // crouch target
-            var currentNormedCrouch = (col.height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight);
-            if(readInput && controlMode == ControlMode.FULL){
-                
+        public void UpdateCrouchState (bool readInput) {
+            if(!readInput || controlMode != ControlMode.FULL){
+                return;
             }
-            if(lastState.surfacePoint != null){
-                // down
+            if(lastState.isInWater){    // TODO check depth to know if i'm so deep that i can't do the crouch without oscillating
+                shouldCrouch = false;
+                return;
+            }
+            if(Bind.CROUCH_TOGGLE.GetKeyDown()){
+                shouldCrouch = !shouldCrouch;
+            }
+            if(Bind.CROUCH_HOLD.GetKey()){
+                shouldCrouch = true;
+            }
+            if(Bind.CROUCH_HOLD.GetKeyUp()){
+                shouldCrouch = false;
+            }
+        }
+
+        // might be best to do the whole head position updating in here too?
+        public void UpdateColliderSizeIfNeeded (MoveState currentState, float timeStep) {
+            bool noHeightUpdateNeeded = false;
+            noHeightUpdateNeeded |= (shouldCrouch && col.height == pcProps.CrouchHeight);
+            noHeightUpdateNeeded |= (!shouldCrouch && col.height == pcProps.NormalHeight);
+            if(noHeightUpdateNeeded){
+                return;
+            }
+            float targetHeight;
+            if(shouldCrouch || !CanUncrouch(checkUpward: currentState.surfacePoint != null)){
+                targetHeight = pcProps.CrouchHeight;
             }else{
-                // up
+                targetHeight = pcProps.NormalHeight;
+            }
+            float deltaHeight = targetHeight - col.height;
+            float maxDelta = pcProps.HeightChangeSpeed * timeStep;
+            if(Mathf.Abs(deltaHeight) > maxDelta){
+                deltaHeight = Mathf.Sign(deltaHeight) * maxDelta;
+            }
+            col.height += deltaHeight;
+            col.center = new Vector3(0f, col.height / 2f, 0f);
+            // smoothRotationParent.localPosition = col.center;
+            if(currentState.surfacePoint == null || lastState.jumped){
+                PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
             }
         }
 
@@ -213,13 +253,32 @@ namespace PlayerController {
         //     PlayerTransform.position = bottomPos;
         // }
 
-        public void CacheJumpInputIfNeeded () {
-            if(!lastState.jumped && lastState.frame < Time.frameCount && lastState.moveType == MoveType.GROUND){
-                jumpInputCached |= Bind.JUMP.GetKeyDown();
+        // public void AlignWithGravityIfAllowed (float timeStep) {
+        //     if(controlMode == ControlMode.ANCHORED){
+        //         return;
+        //     }
+        //     var gravityRotation = GetGravityRotation();
+        //     var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * pcProps.GravityTurnDegreesPerSecond);
+        //     smoothRotationParent.rotation = newRotation;
+        // }
+
+        // public void ApplySubRotation () {
+        //     var wcPos = WorldCenterPos;
+        //     PlayerTransform.rotation = smoothRotationParent.rotation;
+        //     smoothRotationParent.localRotation = Quaternion.identity;
+        //     WorldCenterPos = wcPos;
+        // }
+
+        public void CacheSingleFrameInputs () {
+            if(Time.frameCount == lastState.frame){
+                return;
+            }
+            if(!lastState.jumped && lastState.moveType == MoveType.GROUND){
+                cachedJumpKeyDown |= Bind.JUMP.GetKeyDown();
             }
         }
 
-        void GroundedMovement (bool readInput, ref State currentState) {
+        void GroundedMovement (bool readInput, ref MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
             var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.GroundDrag, currentState.clampedNormedSurfaceFriction);
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
@@ -240,7 +299,7 @@ namespace PlayerController {
             }
             var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.GroundAccel, currentState.clampedNormedSurfaceFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
-            if(readInput && (Bind.JUMP.GetKeyDown() || jumpInputCached)){
+            if(readInput && (Bind.JUMP.GetKeyDown() || cachedJumpKeyDown)){
                 var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, currentState.clampedNormedSurfaceFriction);
                 moveAccel += PlayerTransform.up * JumpSpeed() * jumpMultiplier / Time.fixedDeltaTime;
                 currentState.jumped = true;
@@ -257,7 +316,7 @@ namespace PlayerController {
             Velocity += (moveAccel + gravity) * Time.fixedDeltaTime;
         }
 
-        Vector3 WaterExitAcceleration (ref State currentState) {
+        Vector3 WaterExitAcceleration (ref MoveState currentState) {
             var verticalLocalVelocity = VerticalComponent(currentState.incomingLocalVelocity);
             if(verticalLocalVelocity.y > 0){
                 var jumpVelocity = PlayerTransform.up * JumpSpeed();
@@ -266,7 +325,7 @@ namespace PlayerController {
             return Vector3.zero;
         }
 
-        void SlopeMovement (bool readInput, ref State currentState) {
+        void SlopeMovement (bool readInput, ref MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.SlopeDrag, currentState.clampedNormedSurfaceFriction);
             var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
@@ -290,7 +349,7 @@ namespace PlayerController {
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
-        void AerialMovement (bool readInput, ref State currentState) {
+        void AerialMovement (bool readInput, ref MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.fixedDeltaTime);
             dragDeceleration *= Time.fixedDeltaTime;
@@ -308,7 +367,7 @@ namespace PlayerController {
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
 
-        void WaterMovement (bool readInput, ref State currentState) {
+        void WaterMovement (bool readInput, ref MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.WaterDrag, Time.fixedDeltaTime);
             dragDeceleration *= Time.fixedDeltaTime;

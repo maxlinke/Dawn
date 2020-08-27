@@ -28,7 +28,7 @@ namespace PlayerController {
         ControlMode m_controlMode = ControlMode.FULL;
         
         List<CollisionPoint> contactPoints;
-        State lastState;
+        MoveState lastState;
         Vector3 m_velocity;
 
         [Multiline] public string DEBUGOUTPUTSTRINGTHING;
@@ -72,17 +72,17 @@ namespace PlayerController {
             FinishMove(currentState);
         }
 
-        void StartMove (out State currentState) {
+        void StartMove (out MoveState currentState) {
             var EMPTYTRIGGERLIST = new List<Collider>();
             currentState = GetCurrentState(lastState, contactPoints, EMPTYTRIGGERLIST);
             contactPoints.Clear();
         }
 
-        void FinishMove (State currentState) {
+        void FinishMove (MoveState currentState) {
             lastState = currentState;
         }
 
-        void ExecuteMove (bool readInput, State currentState) {
+        void ExecuteMove (bool readInput, MoveState currentState) {
             switch(currentState.moveType){
                 case MoveType.AIR:
                     AerialMovement(readInput, currentState);
@@ -158,7 +158,7 @@ namespace PlayerController {
         // TODO test movement with controller for jerkiness (0.5 input) because friction/drag etc
 
         // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
-        void GroundedMovement (bool readInput, State currentState) {
+        void GroundedMovement (bool readInput, MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.deltaTime);
             groundFriction *= Time.deltaTime;
@@ -179,7 +179,7 @@ namespace PlayerController {
         }
 
         // TODO limit fall velocity? only in aerial or everywhere?
-        void AerialMovement (bool readInput, State currentState) {
+        void AerialMovement (bool readInput, MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
             var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.deltaTime);
