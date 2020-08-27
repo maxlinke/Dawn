@@ -6,6 +6,10 @@ namespace DebugTools {
 
     public class FramerateDisplay : MonoBehaviour {
 
+        [Header("Settings")]
+        [SerializeField] bool hideAfterInit = true;
+        [SerializeField] DebugToolColorScheme colorScheme = default;
+
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
         [SerializeField] RawImage image = default;
@@ -14,9 +18,6 @@ namespace DebugTools {
         [SerializeField] Text avgFPSText = default;
         [SerializeField] Text minFPSText = default;
         [SerializeField] Text maxFPSText = default;
-
-        [Header("Colors")]
-        [SerializeField] DebugToolColorScheme colorScheme = default;
 
         bool visible {
             get {
@@ -63,7 +64,9 @@ namespace DebugTools {
             clearCol32 = Color.clear;
             InitUI();
             framerates = new float[tex.width];
-            visible = false;
+            if(hideAfterInit){
+                visible = false;
+            }
         }
 
         void OnDestroy () {

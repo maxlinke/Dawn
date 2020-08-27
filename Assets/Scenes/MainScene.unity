@@ -744,6 +744,11 @@ PrefabInstance:
       propertyPath: lineCol.a
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2596352589241916826, guid: 25f323aa6cb649542b1e7904cb67fc25,
+        type: 3}
+      propertyPath: hideAfterInit
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2596352589241916827, guid: 25f323aa6cb649542b1e7904cb67fc25,
         type: 3}
       propertyPath: m_Name

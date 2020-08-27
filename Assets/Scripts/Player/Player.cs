@@ -10,11 +10,10 @@ public abstract class Player : MonoBehaviour {
     [SerializeField] protected Transform head = default;
     [SerializeField] protected Camera fpCamera = default;
 
-    public float Height => MovementSystem.Height;
+    public float Height => MovementSystem.LocalColliderHeight * transform.lossyScale.Average();
     public Vector3 Velocity => MovementSystem.Velocity;
 
     public Vector3 HeadPos => head.transform.position;
-    public Vector3 FootPos => MovementSystem.WorldFootPos;
     public Vector3 CenterPos => MovementSystem.WorldCenterPos;
 
     protected abstract Movement MovementSystem { get; }

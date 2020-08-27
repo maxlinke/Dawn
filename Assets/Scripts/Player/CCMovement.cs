@@ -10,9 +10,9 @@ namespace PlayerController {
         
         protected override Transform PlayerTransform => cc.transform;
 
-        public override float Height => cc.height;
-        protected override Vector3 LocalCenterPos => (cc.center);
-        protected override Vector3 LocalFootPos => (cc.center + 0.5f * cc.height * Vector3.down);
+        public override float LocalColliderHeight => cc.height;
+        public override float LocalColliderRadius => cc.radius;
+        public override Vector3 LocalColliderCenter => cc.center;
 
         public override Vector3 Velocity {
             get { return m_velocity; }

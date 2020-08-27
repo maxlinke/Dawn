@@ -11,10 +11,10 @@ namespace PlayerController {
 
         protected override Transform PlayerTransform => rb.transform;
 
-        public override float Height => col.height;
-        protected override Vector3 LocalCenterPos => (col.center);
-        protected override Vector3 LocalFootPos => (col.center + 0.5f * col.height * Vector3.down);
-
+        public override float LocalColliderHeight => col.height;
+        public override float LocalColliderRadius => col.radius;
+        public override Vector3 LocalColliderCenter => col.center;
+        
         public override Vector3 Velocity { 
             get { return rb.velocity; }
             set { rb.velocity = value; }
@@ -189,7 +189,31 @@ namespace PlayerController {
             WorldCenterPos = wcPosCache;
         }
 
-        public void ExecuteUpdate () {
+        public void SetTryCrouch (bool value) {
+
+        }
+
+        public void ManageHeight (bool readInput) {
+            // TODO binary crouch. yes or no. input.getkeydown and such. no getvalue
+            // crouch target
+            var currentNormedCrouch = (col.height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight);
+            if(readInput && controlMode == ControlMode.FULL){
+                
+            }
+            if(lastState.surfacePoint != null){
+                // down
+            }else{
+                // up
+            }
+        }
+
+        // public void SetPositionToColliderBottom () {
+        //     var bottomPos = WorldBottomPos;
+        //     col.center = new Vector3(0f, col.height / 2f, 0f);
+        //     PlayerTransform.position = bottomPos;
+        // }
+
+        public void CacheJumpInputIfNeeded () {
             if(!lastState.jumped && lastState.frame < Time.frameCount && lastState.moveType == MoveType.GROUND){
                 jumpInputCached |= Bind.JUMP.GetKeyDown();
             }

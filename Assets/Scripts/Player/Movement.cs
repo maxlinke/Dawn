@@ -41,43 +41,56 @@ namespace PlayerController {
             public int frame;
         }
 
-        public abstract float Height { get; }
+        public abstract float LocalColliderHeight { get; }
+        public abstract float LocalColliderRadius { get; }
+        public abstract Vector3 LocalColliderCenter { get; }
+
         public abstract Vector3 Velocity { get; set; }
         public abstract ControlMode controlMode { get; set; }
 
         protected abstract Transform PlayerTransform { get; }
-        protected abstract Vector3 LocalCenterPos { get; }
-        protected abstract Vector3 LocalFootPos { get; }
 
         protected PlayerControllerProperties pcProps { get; private set; }
         protected Transform head  { get; private set; }
 
+        protected Vector3 LocalHalfHeight => new Vector3(0f, 0.5f * LocalColliderHeight, 0f);
+        protected Vector3 LocalCapsuleSphereOffset => new Vector3(0f, (0.5f * LocalColliderHeight) - LocalColliderRadius, 0f);
+
+        protected Vector3 LocalColliderTop => LocalColliderCenter + LocalHalfHeight;
+        protected Vector3 LocalColliderBottom => LocalColliderCenter - LocalHalfHeight;
+        protected Vector3 LocalColliderTopSphere => LocalColliderCenter + LocalCapsuleSphereOffset;
+        protected Vector3 LocalColliderBottomSphere => LocalColliderCenter - LocalCapsuleSphereOffset;
+
         public Vector3 WorldCenterPos {
-            get {
-                return PlayerTransform.TransformPoint(LocalCenterPos);
-            } set {
-                var current = WorldCenterPos;
-                var delta = value - current;
-                PlayerTransform.position += delta;
-            }
+            get => PlayerTransform.TransformPoint(LocalColliderCenter);
+            set => PositionPropertyUpdate(WorldCenterPos, value);
         }
 
-        public Vector3 WorldFootPos {
-            get {
-                return PlayerTransform.TransformPoint(LocalFootPos);
-            } set {
-                var current = WorldFootPos;
-                var delta = value - current;
-                PlayerTransform.position += delta;
-            }
+        public Vector3 WorldBottomPos {
+            get => PlayerTransform.TransformPoint(LocalColliderBottom);
+            set => PositionPropertyUpdate(WorldBottomPos, value);
+        }
+
+        public Vector3 WorldTopPos {
+            get => PlayerTransform.TransformPoint(LocalColliderTop);
+            set => PositionPropertyUpdate(WorldTopPos, value);
+        }
+
+        private void PositionPropertyUpdate (Vector3 currentPos, Vector3 newPos) {
+            var delta = newPos - currentPos;
+            PlayerTransform.position += delta;
         }
 
         private PhysicMaterial defaultPM;
+        private int collisionCastMask;
 
         public virtual void Initialize (PlayerControllerProperties pcProps, Transform head) {
             this.pcProps = pcProps;
             this.head = head;
             defaultPM = new PhysicMaterial();
+            collisionCastMask = LayerMaskUtils.EverythingMask;      // TODO use actual mask (set up proper layer collision)
+            collisionCastMask &= ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);
+            collisionCastMask &= ~LayerMaskUtils.CreateDirectMask(Layer.Water.index);
         }
 
         protected Vector3 HorizontalComponent (Vector3 vector) {
@@ -142,7 +155,7 @@ namespace PlayerController {
             // TODO if always run is off : runWalkLerp = 1f - runWalkLerp;
             var standingSpeed = Mathf.Lerp(pcProps.MoveSpeedRun, pcProps.MoveSpeedWalk, Mathf.Clamp01(runWalkLerp));
             var crouchSpeed = pcProps.MoveSpeedCrouch;
-            var crouchFactor = Mathf.Clamp01((Height - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
+            var crouchFactor = Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
             return Mathf.Lerp(crouchSpeed, standingSpeed, crouchFactor);
         }
 
@@ -180,6 +193,26 @@ namespace PlayerController {
             }
             newFwd = newFwd.ProjectOnPlane(newUp);
             return Quaternion.LookRotation(newFwd, newUp);
+        }
+
+        protected bool CanUncrouch (State inputState) {
+            Vector3 rayStart, rayDir;
+            if(inputState.surfacePoint == null){
+                rayStart = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+                rayDir = -PlayerTransform.up;
+            }else{
+                rayStart = PlayerTransform.TransformPoint(LocalColliderTopSphere);
+                rayDir = PlayerTransform.up;
+            }
+            var offset = -0.05f;
+            var scale = PlayerTransform.lossyScale.Average();
+            var rayRadius = (LocalColliderRadius * scale) - offset;
+            var rayLength = ((pcProps.NormalHeight - LocalColliderHeight) * scale) + offset;
+            if(Physics.SphereCast(rayStart, rayRadius, rayDir, out var hit, rayLength, collisionCastMask)){
+                // could do a mass check here
+                return false;
+            }
+            return true;
         }
 
         // TODO ladder point

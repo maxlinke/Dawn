@@ -51,14 +51,17 @@ public class RBPlayer : Player {
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(readInput: cursorLocked);
-        rbView.UpdateHeadLocalPosition();
+        // rbView.UpdateHeadLocalPosition();    // <- move responsibility to movement
         rbView.InteractCheck(readInput: cursorLocked);
-        rbMovement.ExecuteUpdate();
+        rbMovement.CacheJumpInputIfNeeded();
     }
 
     void FixedUpdate () {
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.RotateBodyInLookDirection();
+        // update collider height
+        // -> does NOT update head position. that happens in update
+        // rbMovement.SetPositionToColliderBottom();
         rbMovement.Move(readInput: cursorLocked);
     }
 	

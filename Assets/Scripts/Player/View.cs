@@ -50,9 +50,9 @@ namespace PlayerController {
             this.headRoll = headRoll;
         }
 
-        public void UpdateHeadLocalPosition () {
-            head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
-        }
+        // public void UpdateHeadLocalPosition () {
+        //     head.localPosition = new Vector3(0f, player.Height + pcProps.EyeOffset, 0f);
+        // }
 
         protected void ApplyHeadEuler () {
             head.localEulerAngles = new Vector3(headTilt, headPan, headRoll);
