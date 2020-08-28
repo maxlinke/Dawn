@@ -3,6 +3,9 @@ using PlayerController;
 
 public class RBPlayer : Player {
 
+    [Header("Specific Gameobject Parts")]
+    [SerializeField] Transform smoothRotationParent = default;
+
     [Header("Specific Scripty bits")]
     [SerializeField] RBMovement rbMovement = default;
     [SerializeField] RBView rbView = default;
@@ -11,6 +14,8 @@ public class RBPlayer : Player {
     [SerializeField] KeyCode boostKey = KeyCode.Mouse1;
     [SerializeField] KeyCode slowMoKey = KeyCode.Q;
     [SerializeField] KeyCode gravityFlipKey = KeyCode.G;
+    [SerializeField] KeyCode viewLockKey = KeyCode.V;
+    [SerializeField] Transform debugViewTarget = default;
 
     protected override Movement MovementSystem => rbMovement;
 
@@ -27,7 +32,9 @@ public class RBPlayer : Player {
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
+        rbView.smoothRotationParent = smoothRotationParent;
         rbMovement.Initialize(pcProps, head, modelParent);
+        rbMovement.smoothRotationParent = smoothRotationParent;
         // load the states 
         // set collider height
         rbMovement.UpdateHeadAndModelPosition(instantly: true);
@@ -43,13 +50,22 @@ public class RBPlayer : Player {
                 rbMovement.Velocity += head.transform.forward * 50f;
             }
             if(Input.GetKeyDown(slowMoKey)){
-                Time.timeScale = 0.05f;
-            }
-            if(Input.GetKeyUp(slowMoKey)){
-                Time.timeScale = 1f;
+                if(Time.timeScale == 1f){
+                    Time.timeScale = 0.05f;
+                }else{
+                    Time.timeScale = 1f;
+                }
             }
             if(Input.GetKeyDown(gravityFlipKey)){
                 Physics.gravity = -Physics.gravity;
+            }
+            if(Input.GetKeyDown(viewLockKey)){
+                rbView.viewTarget = debugViewTarget;
+                rbView.controlMode = View.ControlMode.TARGETED;
+            }
+            if(Input.GetKeyUp(viewLockKey)){
+                rbView.viewTarget = null;
+                rbView.controlMode = View.ControlMode.FULL;
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
@@ -57,18 +73,18 @@ public class RBPlayer : Player {
         rbView.InteractCheck(readInput: cursorLocked);
         rbMovement.UpdateCrouchState(readInput: cursorLocked);
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
+        rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
         rbMovement.CacheSingleFrameInputs();
-        // rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
     }
 
     void FixedUpdate () {
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        rbView.RotateBodyInLookDirection();
+        // rbView.RotateBodyInLookDirection();
         // update collider height
         // -> does NOT update head position. that happens in update
         // rbMovement.UpdateCrouchState(readInput: cursorLocked);
         // rbMovement.SetPositionToColliderBottom();
-        // rbMovement.ApplySubRotation();
+        rbMovement.ApplySubRotation();
         rbMovement.Move(readInput: cursorLocked);
     }
 	

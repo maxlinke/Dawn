@@ -6,7 +6,6 @@ namespace PlayerController {
 
     public class RBMovement : Movement {
 
-        [SerializeField] Transform smoothRotationParent = default;
         [SerializeField] CapsuleCollider col = default;
         [SerializeField] Rigidbody rb = default;
 
@@ -40,6 +39,8 @@ namespace PlayerController {
                 m_controlMode = value; 
             }
         }
+
+        public Transform smoothRotationParent { private get; set; }
 
         bool initialized = false;
         bool cachedJumpKeyDown = false;
@@ -191,12 +192,12 @@ namespace PlayerController {
                     Velocity += Physics.gravity * Time.fixedDeltaTime;
                     break;
             }
-            var gravityRotation = GetGravityRotation();
-            var newRotation = Quaternion.RotateTowards(PlayerTransform.rotation, gravityRotation, Time.fixedDeltaTime * pcProps.GravityTurnDegreesPerSecond);
-            var wcPosCache = WorldCenterPos;
-            // rb.MoveRotation(newRotation);            // doesn't work. or it does, but not very well and only when i disable the view-rb-rotation-update
-            PlayerTransform.rotation = newRotation;     // << laggy (because fixedupdate) but works
-            WorldCenterPos = wcPosCache;
+            // var gravityRotation = GetGravityRotation(PlayerTransform);
+            // var newRotation = Quaternion.RotateTowards(PlayerTransform.rotation, gravityRotation, Time.fixedDeltaTime * pcProps.GravityTurnDegreesPerSecond);
+            // var wcPosCache = WorldCenterPos;
+            // // rb.MoveRotation(newRotation);            // doesn't work. or it does, but not very well and only when i disable the view-rb-rotation-update
+            // PlayerTransform.rotation = newRotation;     // << laggy (because fixedupdate) but works
+            // WorldCenterPos = wcPosCache;
         }
 
         public void SetTryCrouch (bool value) {
@@ -284,21 +285,21 @@ namespace PlayerController {
         //     PlayerTransform.position = bottomPos;
         // }
 
-        // public void AlignWithGravityIfAllowed (float timeStep) {
-        //     if(controlMode == ControlMode.ANCHORED){
-        //         return;
-        //     }
-        //     var gravityRotation = GetGravityRotation();
-        //     var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * pcProps.GravityTurnDegreesPerSecond);
-        //     smoothRotationParent.rotation = newRotation;
-        // }
+        public void AlignWithGravityIfAllowed (float timeStep) {
+            if(controlMode == ControlMode.ANCHORED){
+                return;
+            }
+            var gravityRotation = GetGravityRotation(smoothRotationParent);
+            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * pcProps.GravityTurnDegreesPerSecond);
+            smoothRotationParent.rotation = newRotation;
+        }
 
-        // public void ApplySubRotation () {
-        //     var wcPos = WorldCenterPos;
-        //     PlayerTransform.rotation = smoothRotationParent.rotation;
-        //     smoothRotationParent.localRotation = Quaternion.identity;
-        //     WorldCenterPos = wcPos;
-        // }
+        public void ApplySubRotation () {
+            var wcPos = WorldCenterPos;
+            PlayerTransform.rotation = smoothRotationParent.rotation;
+            smoothRotationParent.localRotation = Quaternion.identity;
+            WorldCenterPos = wcPos;
+        }
 
         public void CacheSingleFrameInputs () {
             if(Time.frameCount == lastState.frame){

@@ -184,14 +184,14 @@ namespace PlayerController {
             return dVAccel;
         }
 
-        protected Quaternion GetGravityRotation () {
+        protected Quaternion GetGravityRotation (Transform referenceTransform) {
             if(Physics.gravity.sqrMagnitude <= 0f){
-                return PlayerTransform.rotation;
+                return referenceTransform.rotation;
             }
             var newUp = -Physics.gravity;
-            var newFwd = PlayerTransform.forward;
+            var newFwd = referenceTransform.forward;
             if(Mathf.Abs(Vector3.Dot(newFwd, newUp)) > 0.999f){
-                newFwd = PlayerTransform.forward + PlayerTransform.up;
+                newFwd = referenceTransform.forward + referenceTransform.up;
             }
             newFwd = newFwd.ProjectOnPlane(newUp);
             return Quaternion.LookRotation(newFwd, newUp);
