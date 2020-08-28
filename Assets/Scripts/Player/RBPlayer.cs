@@ -79,11 +79,6 @@ public class RBPlayer : Player {
 
     void FixedUpdate () {
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        // rbView.RotateBodyInLookDirection();
-        // update collider height
-        // -> does NOT update head position. that happens in update
-        // rbMovement.UpdateCrouchState(readInput: cursorLocked);
-        // rbMovement.SetPositionToColliderBottom();
         rbMovement.ApplySubRotation();
         rbMovement.Move(readInput: cursorLocked);
     }

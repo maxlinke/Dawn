@@ -19,6 +19,14 @@ public static class LayerMaskUtils {
 		return CreateCollisionMask(layer);
 	}
 
+    public static int CreateDirectMask (params Layer[] layers) {
+        var output = 0;
+        foreach(var layer in layers){
+            output |= (1 << layer.index);
+        }
+        return output;
+    }
+
     public static int CreateDirectMask (params int[] layerIndices) {
         var output = 0;
         foreach(var layerIndex in layerIndices){

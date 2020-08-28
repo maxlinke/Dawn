@@ -223,7 +223,6 @@ namespace PlayerController {
             }
         }
 
-        // TODO some kind of "force this" not the uncrouch check but the correct positioning of all things
         public void UpdateColliderSizeIfNeeded (MoveState currentState, float timeStep) {
             bool noHeightUpdateNeeded = false;
             noHeightUpdateNeeded |= (shouldCrouch && col.height == pcProps.CrouchHeight);
@@ -278,12 +277,6 @@ namespace PlayerController {
                 model.localPosition += deltaModel;
             }
         }
-
-        // public void SetPositionToColliderBottom () {
-        //     var bottomPos = WorldBottomPos;
-        //     col.center = new Vector3(0f, col.height / 2f, 0f);
-        //     PlayerTransform.position = bottomPos;
-        // }
 
         public void AlignWithGravityIfAllowed (float timeStep) {
             if(controlMode == ControlMode.ANCHORED){

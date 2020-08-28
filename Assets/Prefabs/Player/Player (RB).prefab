@@ -43,7 +43,7 @@ GameObject:
   - component: {fileID: 2173083707656654021}
   - component: {fileID: 8225525607218678347}
   - component: {fileID: 6454320554361508810}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Sphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -228,6 +228,8 @@ MonoBehaviour:
   boostKey: 324
   slowMoKey: 113
   gravityFlipKey: 103
+  viewLockKey: 118
+  debugViewTarget: {fileID: 0}
 --- !u!114 &8913080616178811583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,7 +352,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8913080616386587639}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Model (TODO)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

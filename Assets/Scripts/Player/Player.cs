@@ -23,6 +23,7 @@ public abstract class Player : MonoBehaviour {
         fpCamera.orthographic = false;
         fpCamera.nearClipPlane = pcProps.NearClipDist;
         fpCamera.farClipPlane = pcProps.FarClipDist;
+        fpCamera.cullingMask &= ~LayerMaskUtils.CreateDirectMask(Layer.PlayerControllerAndWorldModel);
     }
 	
 }

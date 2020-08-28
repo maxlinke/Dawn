@@ -8,7 +8,7 @@
     public static readonly Layer UI = new Layer(5, "UI");
     // no layers 6 and 7
     public static readonly Layer PostProcessing = new Layer(8, "PostProcessing");
-    public static readonly Layer PlayerController = new Layer(9, "PlayerController");
+    public static readonly Layer PlayerControllerAndWorldModel = new Layer(9, "PlayerControllerAndWorldModel");
 
     public readonly int index;
     public readonly string name;
