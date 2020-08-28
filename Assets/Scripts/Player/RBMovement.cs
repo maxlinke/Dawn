@@ -6,7 +6,7 @@ namespace PlayerController {
 
     public class RBMovement : Movement {
 
-        // [SerializeField] Transform smoothRotationParent = default;
+        [SerializeField] Transform smoothRotationParent = default;
         [SerializeField] CapsuleCollider col = default;
         [SerializeField] Rigidbody rb = default;
 
@@ -15,6 +15,10 @@ namespace PlayerController {
         public override float LocalColliderHeight => col.height;
         public override float LocalColliderRadius => col.radius;
         public override Vector3 LocalColliderCenter => col.center;
+
+        protected Vector3 TargetSmoothRotationParentPos => col.center;
+        protected Vector3 TargetHeadPos => new Vector3(0f, 0.5f * col.height + pcProps.EyeOffset, 0f);
+        protected Vector3 TargetModelPos => new Vector3(0f, -0.5f * col.height, 0f);
         
         public override Vector3 Velocity { 
             get { return rb.velocity; }
@@ -37,8 +41,6 @@ namespace PlayerController {
             }
         }
 
-        public bool SnapHeadPosition => lastState.jumped || lastState.surfacePoint == null;
-
         bool initialized = false;
         bool cachedJumpKeyDown = false;
         bool shouldCrouch = false;
@@ -48,8 +50,8 @@ namespace PlayerController {
         List<Collider> triggerStays;
         MoveState lastState;
 
-        public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
-            base.Initialize(pcProps, head);
+        public override void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
+            base.Initialize(pcProps, head, model);
             contactPoints = new List<CollisionPoint>();
             triggerStays = new List<Collider>();
             InitCol();
@@ -220,7 +222,7 @@ namespace PlayerController {
             }
         }
 
-        // might be best to do the whole head position updating in here too?
+        // TODO some kind of "force this" not the uncrouch check but the correct positioning of all things
         public void UpdateColliderSizeIfNeeded (MoveState currentState, float timeStep) {
             bool noHeightUpdateNeeded = false;
             noHeightUpdateNeeded |= (shouldCrouch && col.height == pcProps.CrouchHeight);
@@ -241,9 +243,38 @@ namespace PlayerController {
             }
             col.height += deltaHeight;
             col.center = new Vector3(0f, col.height / 2f, 0f);
-            // smoothRotationParent.localPosition = col.center;
+            var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
+            smoothRotationParent.localPosition += srpDelta;
             if(currentState.surfacePoint == null || lastState.jumped){
                 PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
+                head.localPosition += srpDelta;
+                model.localPosition += srpDelta;
+            }else{
+                head.localPosition -= srpDelta;
+                model.localPosition -= srpDelta;
+            }
+        }
+
+        public void UpdateHeadAndModelPosition (bool instantly) {
+            var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
+            smoothRotationParent.localPosition += srpDelta;
+            if(instantly){
+                head.localPosition = TargetHeadPos;
+                model.localPosition = TargetModelPos;
+            }else{
+                head.localPosition -= srpDelta;
+                model.localPosition -= srpDelta;
+                var maxDelta = pcProps.HeightChangeSpeed * Time.deltaTime;
+                var deltaHead = TargetHeadPos - head.localPosition;
+                var deltaModel = TargetModelPos - model.localPosition;
+                if(deltaHead.sqrMagnitude > (maxDelta * maxDelta)){
+                    deltaHead = deltaHead.normalized * maxDelta;
+                }
+                if(deltaModel.sqrMagnitude > (maxDelta * maxDelta)){
+                    deltaModel = deltaModel.normalized * maxDelta;
+                }
+                head.localPosition += deltaHead;
+                model.localPosition += deltaModel;
             }
         }
 

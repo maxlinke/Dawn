@@ -27,10 +27,10 @@ public class RBPlayer : Player {
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        rbMovement.Initialize(pcProps, head);
+        rbMovement.Initialize(pcProps, head, modelParent);
         // load the states 
         // set collider height
-        rbView.UpdateHeadLocalPosition(instantly: true);
+        rbMovement.UpdateHeadAndModelPosition(instantly: true);
         InitCamera();
     }
 
@@ -54,9 +54,9 @@ public class RBPlayer : Player {
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(readInput: cursorLocked);
-        rbView.UpdateHeadLocalPosition(instantly: rbMovement.SnapHeadPosition);
         rbView.InteractCheck(readInput: cursorLocked);
         rbMovement.UpdateCrouchState(readInput: cursorLocked);
+        rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.CacheSingleFrameInputs();
         // rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
     }

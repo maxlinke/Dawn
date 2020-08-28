@@ -33,7 +33,7 @@ public class CCPlayer : Player {
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        ccMovement.Initialize(pcProps, head);
+        ccMovement.Initialize(pcProps, head, modelParent);
         InitCamera();
     }
 

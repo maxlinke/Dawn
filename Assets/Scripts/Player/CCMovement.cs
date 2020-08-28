@@ -33,8 +33,8 @@ namespace PlayerController {
 
         [Multiline] public string DEBUGOUTPUTSTRINGTHING;
 
-        public override void Initialize (PlayerControllerProperties pcProps, Transform head) {
-            base.Initialize(pcProps, head);
+        public override void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
+            base.Initialize(pcProps, head, model);
             contactPoints = new List<CollisionPoint>();
             initialized = true;
         }

@@ -52,6 +52,7 @@ namespace PlayerController {
 
         protected PlayerControllerProperties pcProps { get; private set; }
         protected Transform head  { get; private set; }
+        protected Transform model { get; private set; }
 
         protected Vector3 LocalHalfHeight => new Vector3(0f, 0.5f * LocalColliderHeight, 0f);
         protected Vector3 LocalCapsuleSphereOffset => new Vector3(0f, (0.5f * LocalColliderHeight) - LocalColliderRadius, 0f);
@@ -84,9 +85,10 @@ namespace PlayerController {
         private PhysicMaterial defaultPM;
         private int collisionCastMask;
 
-        public virtual void Initialize (PlayerControllerProperties pcProps, Transform head) {
+        public virtual void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
             this.pcProps = pcProps;
             this.head = head;
+            this.model = model;
             defaultPM = new PhysicMaterial();
             collisionCastMask = LayerMaskUtils.EverythingMask;      // TODO use actual mask (set up proper layer collision)
             collisionCastMask &= ~LayerMaskUtils.CreateDirectMask(Layer.PlayerController.index);

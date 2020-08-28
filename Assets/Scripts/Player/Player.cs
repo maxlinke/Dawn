@@ -8,6 +8,7 @@ public abstract class Player : MonoBehaviour {
 
     [Header("GameObject Parts")]
     [SerializeField] protected Transform head = default;
+    [SerializeField] protected Transform modelParent = default;
     [SerializeField] protected Camera fpCamera = default;
 
     public float Height => MovementSystem.LocalColliderHeight * transform.lossyScale.Average();
