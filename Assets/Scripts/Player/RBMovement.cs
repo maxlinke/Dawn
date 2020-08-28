@@ -288,7 +288,8 @@ namespace PlayerController {
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
+            var targetSpeed = RawTargetSpeed(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            targetSpeed = Mathf.Max(targetSpeed, localSpeed);
             var targetDirection = PlayerTransform.TransformDirection(rawInput);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
@@ -335,7 +336,8 @@ namespace PlayerController {
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
+            var targetSpeed = RawTargetSpeed(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            targetSpeed = Mathf.Max(targetSpeed, horizontalLocalSpeed);
             var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
