@@ -32,6 +32,7 @@ namespace PlayerController {
             public bool touchingGround;
             public bool touchingWall;
             public bool isInWater;
+            public bool canCrouchInWater;
             public PhysicMaterial surfacePhysicMaterial;
             public MoveType moveType;
             public Vector3 worldPosition;
@@ -123,20 +124,22 @@ namespace PlayerController {
             return flattestPoint;
         }
 
-        protected void CheckTriggerForWater (Collider otherCollider, out bool isWater, out bool canSwim) {
-            isWater = false;
+        protected bool CheckTriggerForWater (Collider otherCollider, out bool canSwim, out bool canCrouch) {
             canSwim = false;
+            canCrouch = true;
             if(otherCollider.gameObject.layer == Layer.Water.index){
-                isWater = true;
                 if(otherCollider is MeshCollider mc){
                     if(!mc.convex){
-                        canSwim = false;
-                        return;
+                        return false;
                     }
                 }
-                var origin = WorldCenterPos;
-                canSwim = (otherCollider.ClosestPoint(origin) - origin).sqrMagnitude < 0.01f; 
+                var swimPoint = PlayerTransform.TransformPoint(LocalColliderTop + new Vector3(0f, pcProps.SwimOffset, 0f));
+                var crouchPoint = PlayerTransform.TransformPoint(LocalColliderBottom + new Vector3(0f, pcProps.CrouchHeight + pcProps.SwimOffset, 0f));
+                canSwim = (otherCollider.ClosestPoint(swimPoint) - swimPoint).sqrMagnitude < 0.0001f; 
+                canCrouch = (otherCollider.ClosestPoint(crouchPoint) - crouchPoint).sqrMagnitude >= 0.0001f; 
+                return true;
             }
+            return false;
         }
 
         protected bool ColliderIsLadder (Collider otherCollider) {
@@ -252,10 +255,11 @@ namespace PlayerController {
             output.touchingGround = sp != null;
             output.touchingWall = touchingWall;
             output.isInWater = false;
+            output.canCrouchInWater = true;
             var swim = false;
             foreach(var trigger in triggerStays){
-                CheckTriggerForWater(trigger, out var triggerIsWater, out var canSwimInTrigger);
-                output.isInWater |= triggerIsWater;
+                output.isInWater |= CheckTriggerForWater(trigger, out var canSwimInTrigger, out var canCrouchInTrigger);
+                output.canCrouchInWater &= canCrouchInTrigger;
                 if(canSwimInTrigger){
                     swim = true;
                     break;

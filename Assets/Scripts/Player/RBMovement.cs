@@ -208,7 +208,7 @@ namespace PlayerController {
             if(!readInput || controlMode != ControlMode.FULL){
                 return;
             }
-            if(lastState.isInWater){    // TODO check depth to know if i'm so deep that i can't do the crouch without oscillating
+            if(lastState.isInWater && !lastState.canCrouchInWater){
                 shouldCrouch = false;
                 return;
             }

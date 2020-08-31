@@ -7,13 +7,15 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float normalHeight = 1.8f;
     [SerializeField] float crouchHeight = 0.9f;
     [SerializeField] float crouchUncrouchTime = 0.25f;
-    [SerializeField] float eyeOffset = -0.15f;
+    [SerializeField, Tooltip("From collider top")] float eyeOffset = -0.15f;
+    [SerializeField, Tooltip("From collider top")] float swimOffset = -0.3f;
     [SerializeField] float colliderRadius = 0.4f;
 
     public float NormalHeight => normalHeight;
     public float CrouchHeight => crouchHeight;
     public float CrouchUncrouchTime => crouchUncrouchTime;
     public float EyeOffset => eyeOffset;
+    public float SwimOffset => swimOffset;
     public float ColliderRadius => colliderRadius;
 
     public float HeightChangeSpeed => (normalHeight - crouchHeight) / crouchUncrouchTime;
