@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4407e2e7ba18d445971e5655376cf15, type: 3}
   m_Name: Default WaterBodySettings
   m_EditorClassIdentifier: 
-  fogColor: {r: 0.24007654, g: 0.3764901, b: 0.6132076, a: 1}
-  fogMode: 1
-  fogDensity: 0.01
-  fogStart: 10
-  fogEnd: 100
+  fogSettings:
+    fogEnabled: 1
+    fogMode: 1
+    fogColor: {r: 0.24007654, g: 0.3764901, b: 0.6132076, a: 1}
+    fogDensity: 0.01
+    fogStartDistance: 1
+    fogEndDistance: 20
   minWaterDrag: 4
   maxWaterDrag: 8
   waterDragRBDragNormalizer: 2

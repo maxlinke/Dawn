@@ -9,17 +9,9 @@ public class WaterBodySettings : ScriptableObject {
     const string buoyancyDepthTip = "Depth at which buoyancy will be lerped towards 1 at the surface";
 
     [Header("Fog")]
-    [SerializeField] Color fogColor = Color.clear;
-    [SerializeField] FogMode fogMode = FogMode.Linear;
-    [SerializeField] float fogDensity = 0.01f;
-    [SerializeField] float fogStart = 10f;
-    [SerializeField] float fogEnd = 100f;
+    [SerializeField] FogSettings fogSettings = FogSettings.Default;
 
-    public Color FogColor => fogColor;
-    public FogMode FogMode => fogMode;
-    public float FogDensity => fogDensity;
-    public float FogStart => fogStart;
-    public float FogEnd => fogEnd;
+    public FogSettings FogSettings => fogSettings;
 
     [Header("Drag")]
     [SerializeField]                                 float minWaterDrag = 2f;
