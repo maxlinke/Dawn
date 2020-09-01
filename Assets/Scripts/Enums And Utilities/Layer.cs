@@ -13,6 +13,9 @@
     public readonly int index;
     public readonly string name;
 
+    public static implicit operator int (Layer l) => l.index;
+    public static implicit operator string (Layer l) => l.name;
+
     private Layer (int index, string name) {
         this.index = index;
         this.name = name;

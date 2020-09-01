@@ -127,7 +127,7 @@ namespace PlayerController {
         protected bool CheckTriggerForWater (Collider otherCollider, out bool canSwim, out bool canCrouch) {
             canSwim = false;
             canCrouch = true;
-            if(otherCollider.gameObject.layer == Layer.Water.index){
+            if(otherCollider.gameObject.layer == Layer.Water){
                 if(otherCollider is MeshCollider mc){
                     if(!mc.convex){
                         return false;

@@ -32,7 +32,18 @@ public struct FogSettings {
         output.fogStartDistance = 10f;
         output.fogEndDistance   = 100f;
         return output;
-    }}
+    } }
+
+    public static FogSettings Off { get {
+        FogSettings output;
+        output.fogEnabled       = false;
+        output.fogMode          = FogMode.Exponential;
+        output.fogColor         = Color.clear;
+        output.fogDensity       = 0f;
+        output.fogStartDistance = 0f;
+        output.fogEndDistance   = float.PositiveInfinity;
+        return output;
+    } }
 
     public static FogSettings GetCurrent () {
         FogSettings output;

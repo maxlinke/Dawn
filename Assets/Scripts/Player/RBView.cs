@@ -8,6 +8,11 @@ namespace PlayerController {
 
         [SerializeField] float debugOutput = default;
 
+        FogSettings airFogSettings;
+        bool headUnderWater;
+        bool headWasUnderWater;
+        FogSettings waterFogSettings;
+
         protected override void DeltaLook (Vector2 viewDelta) {
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
             // headPan = Mathf.Repeat(headPan + viewDelta.x, 360f);
@@ -26,6 +31,45 @@ namespace PlayerController {
             ApplyHeadEuler();
             var pan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
             smoothRotationParent.Rotate(0f, pan, 0f, Space.Self);
+        }
+
+        void Awake () {
+            airFogSettings = FogSettings.GetCurrent();
+        }
+
+        void OnTriggerStay (Collider otherCollider) {
+            if(headUnderWater){
+                return;
+            }
+            if(otherCollider.gameObject.layer == Layer.Water){
+                if(otherCollider is MeshCollider mc){
+                    if(!mc.convex){
+                        return;
+                    }
+                }
+                var hPos = head.position;
+                var cPos = otherCollider.ClosestPoint(hPos);
+                if((hPos - cPos).sqrMagnitude < 0.0001f){
+                    var wb = otherCollider.GetComponentInParent<WaterBody>();
+                    if(wb != null){
+                        headUnderWater = true;
+                        waterFogSettings = wb.FogSettings;
+                    }
+                }
+            }
+        }
+
+        void FixedUpdate () {
+            headWasUnderWater = headUnderWater;
+            headUnderWater = false;
+        }
+
+        void Update () {
+            if(headUnderWater && !headWasUnderWater){
+                waterFogSettings.Apply();
+            }else if(!headUnderWater && headWasUnderWater){
+                airFogSettings.Apply();
+            }
         }
         
     }

@@ -10,6 +10,8 @@ public class WaterBody : MonoBehaviour {
     bool initialized = false;
     List<Rigidbody> rbs;
 
+    public FogSettings FogSettings => settings.FogSettings;
+
     void Start () {
         bool settingsOk = (settings != null);
         bool colsOk = (cols != null && cols.Length > 0);
