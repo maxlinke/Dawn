@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace PlayerController {
 
@@ -9,9 +10,9 @@ namespace PlayerController {
         [SerializeField] float debugOutput = default;
 
         FogSettings airFogSettings;
-        bool headUnderWater;
-        bool headWasUnderWater;
-        FogSettings waterFogSettings;
+        // List<Collider> waterTriggers;
+        WaterBody lastWaterBody;
+        WaterBody currentWaterBody;
 
         protected override void DeltaLook (Vector2 viewDelta) {
             headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
@@ -38,7 +39,7 @@ namespace PlayerController {
         }
 
         void OnTriggerStay (Collider otherCollider) {
-            if(headUnderWater){
+            if(currentWaterBody != null){
                 return;
             }
             if(otherCollider.gameObject.layer == Layer.Water){
@@ -47,26 +48,32 @@ namespace PlayerController {
                         return;
                     }
                 }
+                // if(!waterTriggers.Contains(otherCollider)){
+                //     waterTriggers.Add(otherCollider);
+                // }
                 var hPos = head.position;
                 var cPos = otherCollider.ClosestPoint(hPos);
                 if((hPos - cPos).sqrMagnitude < 0.0001f){
-                    var wb = otherCollider.GetComponentInParent<WaterBody>();
-                    if(wb != null){
-                        headUnderWater = true;
-                        waterFogSettings = wb.FogSettings;
-                    }
+                    currentWaterBody = otherCollider.GetComponentInParent<WaterBody>();
                 }
             }
         }
 
         void FixedUpdate () {
-            headWasUnderWater = headUnderWater;
-            headUnderWater = false;
+            lastWaterBody = currentWaterBody;
+            currentWaterBody = null;
         }
 
         void Update () {
+            // foreach(var waterTrigger in waterTriggers){
+
+            // }
+            var headUnderWater = currentWaterBody != null;
+            var headWasUnderWater = lastWaterBody != null;
             if(headUnderWater && !headWasUnderWater){
-                waterFogSettings.Apply();
+                if(currentWaterBody.Fog.OverrideFog){
+                    currentWaterBody.Fog.FogSettings.Apply();
+                }
             }else if(!headUnderWater && headWasUnderWater){
                 airFogSettings.Apply();
             }

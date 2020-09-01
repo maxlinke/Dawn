@@ -100,14 +100,15 @@ public class FogSettingsDrawer : PropertyDrawer {
         void DrawProperties () {
             var fogOnProp = property.FindPropertyRelative(nameof(FogSettings.fogEnabled));
             EditorGUI.PropertyField(NextLine(), fogOnProp);
-            GUI.enabled = fogOnProp.boolValue;
+            var localGUIEnabled = guiEnabledCache && fogOnProp.boolValue;
+            GUI.enabled = localGUIEnabled;
             EditorGUI.PropertyField(NextLine(), property.FindPropertyRelative(nameof(FogSettings.fogColor)));
             var modeProp = property.FindPropertyRelative(nameof(FogSettings.fogMode));
             EditorGUI.PropertyField(NextLine(), modeProp);
             var fm = (FogMode)(modeProp.enumValueIndex + 1);    // for some godforsaken reason it's +1. is it because the enum doesn't start at 0 ? 
-            GUI.enabled = fogOnProp.boolValue && (fm == FogMode.Exponential || fm == FogMode.ExponentialSquared);
+            GUI.enabled = localGUIEnabled && (fm == FogMode.Exponential || fm == FogMode.ExponentialSquared);
             EditorGUI.PropertyField(NextLine(), property.FindPropertyRelative(nameof(FogSettings.fogDensity)));
-            GUI.enabled = fogOnProp.boolValue && (fm == FogMode.Linear);
+            GUI.enabled = localGUIEnabled && (fm == FogMode.Linear);
             EditorGUI.PropertyField(NextLine(), property.FindPropertyRelative(nameof(FogSettings.fogStartDistance)));
             EditorGUI.PropertyField(NextLine(), property.FindPropertyRelative(nameof(FogSettings.fogEndDistance)));
         }

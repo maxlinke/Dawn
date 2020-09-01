@@ -1,17 +1,12 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "Water Body Settings", fileName = "New WaterBodySettings")]
-public class WaterBodySettings : ScriptableObject {
+[CreateAssetMenu(menuName = "Water/Phyics Settings", fileName = "New WaterPhyicsSettings")]
+public class WaterPhyicsSettings : ScriptableObject {
 
     const string dragNormalizerTip = "Rigidbody drag will be divided by this value to serve as a lerp value between min and max water drag";
     const string velocityNormalizerTip = "Rigidbody's velocity will be divided by this to serve as multiplier for drag";
     const string buoyancyTip = "Multiplied with gravity strength";
     const string buoyancyDepthTip = "Depth at which buoyancy will be lerped towards 1 at the surface";
-
-    [Header("Fog")]
-    [SerializeField] FogSettings fogSettings = FogSettings.Default;
-
-    public FogSettings FogSettings => fogSettings;
 
     [Header("Drag")]
     [SerializeField]                                 float minWaterDrag = 2f;

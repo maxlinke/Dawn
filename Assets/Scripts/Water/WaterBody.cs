@@ -3,21 +3,26 @@ using UnityEngine;
 
 public class WaterBody : MonoBehaviour {
 
-    [SerializeField] WaterBodySettings settings = default;
+    [SerializeField] WaterPhyicsSettings physics = default;
+    [SerializeField] WaterFog fog = default;
     [SerializeField] Collider[] cols = default;
     // TODO optional bobbing?
 
     bool initialized = false;
     List<Rigidbody> rbs;
 
-    public FogSettings FogSettings => settings.FogSettings;
+    public WaterFog Fog => fog;
 
     void Start () {
-        bool settingsOk = (settings != null);
+        bool physicsOk = (physics != null);
+        bool fogOk = (fog != null);
         bool colsOk = (cols != null && cols.Length > 0);
-        if(!settingsOk || !colsOk){
-            if(!settingsOk){
-                Debug.LogError($"No {nameof(WaterBodySettings)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
+        if(!physicsOk || !fogOk || !colsOk){
+            if(!physicsOk){
+                Debug.LogError($"No {nameof(WaterPhyicsSettings)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
+            }
+            if(!fogOk){
+                Debug.LogError($"No {nameof(WaterFog)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
             }
             if(!colsOk){
                 Debug.LogError($"No collider(s) assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
@@ -77,8 +82,8 @@ public class WaterBody : MonoBehaviour {
     void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
         var deltaV = ownVelocity - rb.velocity;
         var deltaVDragAccel = deltaV / Time.fixedDeltaTime;
-        var drag = Mathf.Lerp(settings.MinWaterDrag, settings.MaxWaterDrag, rb.drag / settings.WaterDragRBDragNormalizer);
-        drag *= (rb.velocity.magnitude / settings.WaterDragRBVelocityNormalizer);
+        var drag = Mathf.Lerp(physics.MinWaterDrag, physics.MaxWaterDrag, rb.drag / physics.WaterDragRBDragNormalizer);
+        drag *= (rb.velocity.magnitude / physics.WaterDragRBVelocityNormalizer);
         if(deltaVDragAccel.sqrMagnitude > (drag * drag)){
             rb.velocity += deltaV.normalized * drag * Time.fixedDeltaTime;
         }else{
@@ -107,10 +112,10 @@ public class WaterBody : MonoBehaviour {
         if(!applyBuoyancy){
             return;
         }
-        var lerp = (rb.drag - settings.MinBuoyancyRBDrag) / (settings.StandardBuoyancyRBDrag - settings.MinBuoyancyRBDrag);
-        var buoyancy = Mathf.LerpUnclamped(settings.MinBuoyancy, settings.StandardBuoyancy, lerp);
+        var lerp = (rb.drag - physics.MinBuoyancyRBDrag) / (physics.StandardBuoyancyRBDrag - physics.MinBuoyancyRBDrag);
+        var buoyancy = Mathf.LerpUnclamped(physics.MinBuoyancy, physics.StandardBuoyancy, lerp);
         if(buoyancy > 1){
-            buoyancy = Mathf.Lerp(1f, buoyancy, depth / settings.BuoyancyNeutralizationDepth);
+            buoyancy = Mathf.Lerp(1f, buoyancy, depth / physics.BuoyancyNeutralizationDepth);
         }        
         Debug.DrawRay(rb.position, Vector3.up * buoyancy, Color.green, Time.fixedDeltaTime);
         rb.velocity -= Physics.gravity * buoyancy * Time.fixedDeltaTime;
