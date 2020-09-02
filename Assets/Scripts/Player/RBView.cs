@@ -13,8 +13,6 @@ namespace PlayerController {
 
         public Transform smoothRotationParent { private get; set; }
 
-        [SerializeField] float debugOutput = default;
-
         FogSettings airFogSettings;
 
         List<Collider> waterTriggers;

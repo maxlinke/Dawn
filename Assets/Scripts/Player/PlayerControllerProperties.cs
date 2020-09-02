@@ -47,7 +47,7 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float moveSpeedRun = 12f;
     [SerializeField] float moveSpeedWalk = 6f;
     [SerializeField] float moveSpeedCrouch = 6f;
-    [SerializeField] float groundAccel = 64f;
+    [SerializeField] float groundAccel = 64f;       // TODO struct w/ property drawer for these
     [SerializeField] float groundDrag = 32f;
     [SerializeField] float slopeAccel = 32f;
     [SerializeField] float slopeDrag = 12f;
@@ -55,6 +55,8 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float airDrag = 4f;
     [SerializeField] float waterAccel = 24f;
     [SerializeField] float waterDrag = 0f;
+    [SerializeField] float ladderAccel = 64f;
+    [SerializeField] float ladderDrag = 48f;
     [SerializeField] float jumpHeight = 1f;
     [SerializeField] float jumpCalcGravity = 29.43f;
 	
@@ -70,6 +72,8 @@ public class PlayerControllerProperties : ScriptableObject {
     public float AirDrag => airDrag;
     public float WaterAccel => waterAccel;
     public float WaterDrag => waterDrag;
+    public float LadderAccel => ladderAccel;
+    public float LadderDrag => ladderDrag;
     public float JumpHeight => jumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;
 

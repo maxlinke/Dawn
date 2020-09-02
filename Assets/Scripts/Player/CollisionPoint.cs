@@ -7,6 +7,7 @@ namespace PlayerController {
         public readonly Vector3 point;
         public readonly Vector3 normal;
         public readonly Collider otherCollider;
+        public Rigidbody otherRB => (otherCollider != null ? otherCollider.attachedRigidbody : null);
 
         public CollisionPoint (ContactPoint contactPoint) {
             this.point = contactPoint.point;
@@ -28,6 +29,13 @@ namespace PlayerController {
 
         public override string ToString () {
             return $"[{nameof(point)}: {point}, {nameof(normal)}: {normal}, {nameof(otherCollider)}: {otherCollider}]";
+        }
+
+        public Vector3 GetVelocity () {
+            if(otherRB == null){
+                return Vector3.zero;
+            }
+            return otherRB.velocity;
         }
         
     }

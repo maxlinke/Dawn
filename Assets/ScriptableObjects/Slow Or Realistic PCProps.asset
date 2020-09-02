@@ -16,12 +16,14 @@ MonoBehaviour:
   crouchHeight: 0.9
   crouchUncrouchTime: 0.25
   eyeOffset: -0.15
+  swimOffset: -0.3
   colliderRadius: 0.4
   playerMass: 80
   collisionDetection: 2
   physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
   footRBNonSolidMass: 160
   footRBSolidMass: 400
+  gravityTurnDegreesPerSecond: 360
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60
@@ -36,6 +38,8 @@ MonoBehaviour:
   airDrag: 4
   waterAccel: 12
   waterDrag: 0
+  ladderAccel: 64
+  ladderDrag: 48
   jumpHeight: 0.75
   jumpCalcGravity: 29.43
   dodgeSpeed: 12

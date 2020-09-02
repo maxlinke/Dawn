@@ -30,6 +30,18 @@ namespace GeometryGenerators {
             }
         }
 
+        [ContextMenu("Clear")]
+        public void Clear () {
+            if(GetTargets(out var mfs, out var mcs)){
+                foreach(var mf in mfs){
+                    mf.sharedMesh = null;
+                }
+                foreach(var mc in mcs){
+                    mc.sharedMesh = null;
+                }
+            }
+        }
+
         protected bool GetTargets (out IEnumerable<MeshFilter> outputMFs, out IEnumerable<MeshCollider> outputMCs) {
             var meshFilters = new List<MeshFilter>();
             var meshColliders = new List<MeshCollider>();

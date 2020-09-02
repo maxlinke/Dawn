@@ -4,9 +4,13 @@ using UnityEngine;
 public static class TagManager{
 
 	public static bool CompareTag (string tag, GameObject obj) {
+        if(obj == null){
+            return false;
+        }
 		if(obj.CompareTag(tag)){
 			return true;
-		}else if(obj.CompareTag(Tag.MultiTag)){
+		}
+        if(obj.CompareTag(Tag.MultiTag)){
 			var multiTag = obj.GetComponent<MultiTag>();
 			if(multiTag == null){
 				Debug.LogError($"GameObject \"{obj.name}\" has tag \"{Tag.MultiTag}\" but no \"{nameof(MultiTag)}\"-Component!");

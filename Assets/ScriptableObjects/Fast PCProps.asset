@@ -16,6 +16,7 @@ MonoBehaviour:
   crouchHeight: 0.9
   crouchUncrouchTime: 0.25
   eyeOffset: -0.15
+  swimOffset: -0.3
   colliderRadius: 0.4
   playerMass: 80
   collisionDetection: 2
@@ -37,6 +38,8 @@ MonoBehaviour:
   airDrag: 4
   waterAccel: 24
   waterDrag: 0
+  ladderAccel: 64
+  ladderDrag: 48
   jumpHeight: 1
   jumpCalcGravity: 29.43
   dodgeSpeed: 12

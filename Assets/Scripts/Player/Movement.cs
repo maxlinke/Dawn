@@ -24,6 +24,7 @@ namespace PlayerController {
 
         public struct MoveState {
             public CollisionPoint surfacePoint;
+            public CollisionPoint ladderPoint;      // it would be more correct to use a list of ladderpoints but when are you colliding with multiple ladders?
             public float surfaceAngle;
             public float surfaceDot;
             public float surfaceSolidness;
@@ -91,7 +92,7 @@ namespace PlayerController {
             this.head = head;
             this.model = model;
             defaultPM = new PhysicMaterial();
-            collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndWorldModel.index);
+            collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndWorldModel);
             collisionCastMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel, Layer.Water);
         }
 
@@ -107,21 +108,36 @@ namespace PlayerController {
             return vector.ProjectOnPlaneAlongVector(groundNormal, PlayerTransform.up);
         }
 
-        protected virtual CollisionPoint DetermineSurfacePoint (IEnumerable<CollisionPoint> points, out bool touchingWall) {
-            touchingWall = false;
-            CollisionPoint flattestPoint = null;
+        protected struct CollisionProcessorOutput {
+            public CollisionPoint flattestPoint;
+            public CollisionPoint ladderPoint;
+            public bool touchingWall;
+        }
+
+        protected virtual CollisionProcessorOutput ProcessCollisionPoints (IEnumerable<CollisionPoint> points) {
+            CollisionProcessorOutput output;
+            output.touchingWall = false;
+            output.flattestPoint = null;
+            output.ladderPoint = null;
             float wallDot = 0.0175f;     // cos(89°)
             float maxDot = wallDot;
             foreach(var point in points){
                 var dot = Vector3.Dot(point.normal, PlayerTransform.up);
+                var isLadder = (point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject));
                 if(dot > maxDot){
-                    flattestPoint = point;
+                    output.flattestPoint = point;
                     maxDot = dot;
+                    if(isLadder){
+                        output.ladderPoint = point;
+                    }
                 }else if((Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
-                    touchingWall = true;
+                    output.touchingWall = true;
+                    if(isLadder && output.ladderPoint == null){
+                        output.ladderPoint = point;
+                    }
                 }
             }
-            return flattestPoint;
+            return output;
         }
 
         protected bool CheckTriggerForWater (Collider otherCollider, out bool canSwim, out bool canCrouch) {
@@ -199,19 +215,6 @@ namespace PlayerController {
             return Quaternion.LookRotation(newFwd, newUp);
         }
 
-        // crouch stuff is managed somewhere
-        // update camera position in update
-        // update collider BEFORE movement in fixedupdate
-        // both use some property-ish number as a resource that is not linked to either one
-        // do a raycast each fixed frame while uncrouching until fully uncrouched
-        // that way if something does come up, go back to crouch.
-
-        // crouch state
-        // should crouch
-        // normed crouch
-        // start time?
-        // public void update
-
         protected bool CanUncrouch (bool checkUpward) {
             Vector3 rayStart, rayDir;
             if(checkUpward){
@@ -232,37 +235,27 @@ namespace PlayerController {
             return true;
         }
 
-        // TODO ladder point
-        // ladder movement decided in actual movement
-        // unless we're airborne or whatever
-        // if on ground and move into ladder, do ladder movement
-        // if on ground and not ladder movement, don't do ladder movement
-        // TODO touching wall. basically do the determine surface point here i guess... includes ladders.
-        //
-        // TODO pull the sp == null default assignments and movetype assignment apart
-        //      do all the sp processing first
-        //      movetype last
-        // TODO also crouching. what if uncrouch in water? because it's basically in the air, so the bottom of the cc gets modified -> DO NOTHING FIRST, SEE IF IT'S SMOOTH ANYWAYS
-        // canuncrouch should use spherecast and explicitly not collide with water. use the layermaskutils for physics collision and !AND the water mask
-        // canuncrouch should also know whether to cast up or down
         protected virtual MoveState GetCurrentState (MoveState lastState, IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             MoveState output;
-            CollisionPoint sp = DetermineSurfacePoint(collisionPoints, out var touchingWall);
+            var colResult = ProcessCollisionPoints(collisionPoints);
+            var sp = colResult.flattestPoint;
             if(lastState.jumped){
                 sp = null;
             }
             output.surfacePoint = sp;
             output.touchingGround = sp != null;
-            output.touchingWall = touchingWall;
+            output.touchingWall = colResult.touchingWall;
+            output.ladderPoint = colResult.ladderPoint;
             output.isInWater = false;
             output.canCrouchInWater = true;
             var swim = false;
+            Vector3 averageTriggerVelocity = Vector3.zero;
             foreach(var trigger in triggerStays){
                 output.isInWater |= CheckTriggerForWater(trigger, out var canSwimInTrigger, out var canCrouchInTrigger);
                 output.canCrouchInWater &= canCrouchInTrigger;
                 if(canSwimInTrigger){
                     swim = true;
-                    break;
+                    break;  // TODO when i properly do the average trigger velocity stuff, remove this break
                 }
             }
             if(sp == null || swim){
@@ -272,10 +265,18 @@ namespace PlayerController {
                 output.normedSurfaceFriction = float.NaN;
                 output.clampedNormedSurfaceFriction = float.NaN;
                 output.surfacePhysicMaterial = null;
-                output.moveType = (swim ? MoveType.WATER : MoveType.AIR);
-                output.incomingLocalVelocity = this.Velocity;   // TODO potentially check for a trigger (such as in a moving train car...)
+                if(swim){
+                    output.moveType = MoveType.WATER;
+                    output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
+                }else if(output.ladderPoint != null){
+                    output.moveType = MoveType.LADDER;
+                    output.incomingLocalVelocity = this.Velocity - output.ladderPoint.GetVelocity();
+                }else{
+                    output.moveType = MoveType.AIR;
+                    output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
+                }
             }else{
-                var otherRB = (sp.otherCollider == null ? null : sp.otherCollider.attachedRigidbody);
+                var otherRB = sp.otherRB;
                 var otherVelocity = (otherRB == null ? Vector3.zero : otherRB.velocity);
                 output.incomingLocalVelocity = this.Velocity - otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
@@ -299,7 +300,22 @@ namespace PlayerController {
                     output.clampedNormedSurfaceFriction = 1f;
                     output.surfacePhysicMaterial = null;
                 }
-                output.moveType = (surfaceAngle < pcProps.HardSlopeLimit) ? MoveType.GROUND : MoveType.SLOPE;
+                // if(sp == colResult.ladderPoint){
+                //     output.moveType = MoveType.LADDER;
+                // }else if(surfaceAngle < pcProps.HardSlopeLimit){
+                //     output.moveType = MoveType.GROUND;
+                // }else{
+                //     output.moveType = MoveType.SLOPE;
+                // }
+                if(surfaceAngle < pcProps.HardSlopeLimit){
+                    output.moveType = MoveType.GROUND;
+                }else{
+                    if(sp == colResult.ladderPoint){
+                        output.moveType = MoveType.LADDER;
+                    }else{
+                        output.moveType = MoveType.SLOPE;
+                    }
+                }
             }
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;

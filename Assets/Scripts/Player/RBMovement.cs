@@ -163,6 +163,9 @@ namespace PlayerController {
                 case MoveType.WATER:
                     lineColor = Color.cyan;
                     break;
+                case MoveType.LADDER:
+                    lineColor = Color.blue;
+                    break;
                 default:
                     lineColor = Color.magenta;
                     break;
@@ -187,17 +190,15 @@ namespace PlayerController {
                     SetTryCrouch(false);
                     WaterMovement(readInput, ref currentState);
                     break;
+                case MoveType.LADDER:
+                    SetTryCrouch(false);
+                    LadderMovement(readInput, ref currentState);
+                    break;
                 default:
                     Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
                     Velocity += Physics.gravity * Time.fixedDeltaTime;
                     break;
             }
-            // var gravityRotation = GetGravityRotation(PlayerTransform);
-            // var newRotation = Quaternion.RotateTowards(PlayerTransform.rotation, gravityRotation, Time.fixedDeltaTime * pcProps.GravityTurnDegreesPerSecond);
-            // var wcPosCache = WorldCenterPos;
-            // // rb.MoveRotation(newRotation);            // doesn't work. or it does, but not very well and only when i disable the view-rb-rotation-update
-            // PlayerTransform.rotation = newRotation;     // << laggy (because fixedupdate) but works
-            // WorldCenterPos = wcPosCache;
         }
 
         public void SetTryCrouch (bool value) {
@@ -415,6 +416,45 @@ namespace PlayerController {
             var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.WaterAccel, Time.fixedDeltaTime);
             Velocity += moveAcceleration * Time.fixedDeltaTime; // no gravity in water.
+        }
+
+        // TODO jumping off
+        // TODO going to ground movement
+        void LadderMovement (bool readInput, ref MoveState currentState) {
+            var localVelocity = currentState.incomingLocalVelocity;
+            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.LadderDrag, Time.fixedDeltaTime);
+            dragDeceleration *= Time.fixedDeltaTime;
+            Velocity += dragDeceleration;
+            localVelocity += dragDeceleration;
+            var localSpeed = localVelocity.magnitude;
+            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            var rawInputMag = rawInput.magnitude;
+            Vector3 targetDirection = Vector3.zero;
+            // if(Vector3.Angle(currentState.ladderPoint.normal, PlayerTransform.up) > pcProps.HardSlopeLimit){
+                var up = currentState.ladderPoint.normal;
+                var fwd = PlayerTransform.up;
+                var right = Vector3.Cross(up, fwd).normalized;
+                fwd = Vector3.Cross(right, up).normalized;
+                var rot = new Matrix4x4(
+                    new Vector4(right.x, right.y, right.z, 0f),
+                    new Vector4(up.x, up.y, up.z, 0f), 
+                    new Vector4(fwd.x, fwd.y, fwd.z, 0f), 
+                    new Vector4(0,0,0,1)
+                );
+                targetDirection = rot * new Vector3(0f, 0f, rawInput.z);
+                targetDirection += PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f));
+            // }else{
+            //     targetDirection = head.TransformDirection(rawInput);
+            // }
+            var targetSpeed = Mathf.Max(localSpeed, RawTargetSpeed(readInput));     // TODO slower ladder speed (explicit speeds for all movements?)
+            var targetVelocity = Vector3.ProjectOnPlane(targetDirection, currentState.ladderPoint.normal) * targetSpeed;
+            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.LadderAccel, Time.fixedDeltaTime);
+
+            var stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;
+            var lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
+            var gravity = Vector3.Slerp(stickGravity, Physics.gravity, lerpFactor);
+
+            Velocity += (moveAcceleration + gravity) * Time.fixedDeltaTime;
         }
 
     }
