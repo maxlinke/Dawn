@@ -108,7 +108,7 @@ namespace PlayerController {
                 QualitySettings.vSyncCount = 0;
             }
             if(Input.GetKey(KeyCode.Mouse0)){
-                Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.MoveSpeedRun;
+                Velocity = cc.transform.TransformDirection(GetLocalSpaceMoveInput()) * pcProps.Ground.Speed * pcProps.RunSpeedMultiplier;
                 // if(Input.GetKey(KeyCode.Mouse1)){
                 //     Velocity += cc.transform.up * 0.1f;
                 // }
@@ -120,6 +120,10 @@ namespace PlayerController {
                 }
             }
             cc.Move(Velocity * Time.deltaTime); // only slides along walls, not the ground, so gravity sliding will have to be implemted explicitly
+        }
+
+        void ApplyDrag (float drag, ref Vector3 localVelocity) {
+            ApplyDrag(drag, Time.deltaTime, ref localVelocity);
         }
 
         // TODO player debug screen (mostly line graphs)
@@ -160,17 +164,14 @@ namespace PlayerController {
         // TODO slope limit, custom gravity (might not need custom gravity because of the way the charactercontroller handles downward collisions...)
         void GroundedMovement (bool readInput, MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.GroundDrag, Time.deltaTime);
-            groundFriction *= Time.deltaTime;
-            Velocity += groundFriction;
-            localVelocity += groundFriction;
+            ApplyDrag(pcProps.Ground.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Ground.Speed * RawSpeedMultiplier(readInput), localSpeed);
             var targetDirection = GroundMoveVector(cc.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
             var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
-            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.GroundAccel, Time.deltaTime);
+            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Ground.Accel, Time.deltaTime);
             if(readInput && Bind.JUMP.GetKeyDown()){
                 moveAccel = new Vector3(moveAccel.x, JumpSpeed() / Time.deltaTime, moveAccel.z);
             }
@@ -182,7 +183,7 @@ namespace PlayerController {
         void AerialMovement (bool readInput, MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             // var decelFactor = (hVelocityMag > pcProps.MoveSpeed) ? 1 : (1f - rawInputMag);
-            var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.deltaTime);
+            var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.Air.Drag, Time.deltaTime);
             dragDeceleration *= Time.deltaTime;
             Velocity += dragDeceleration;
             horizontalLocalVelocity += dragDeceleration;
@@ -190,9 +191,9 @@ namespace PlayerController {
             DEBUGOUTPUTSTRINGTHING = $"{horizontalLocalSpeed.ToString():F2}";
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(readInput), horizontalLocalSpeed);
             var targetVelocity = cc.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.deltaTime);
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel, Time.deltaTime);
             Velocity += (dragDeceleration + moveAcceleration) * Time.deltaTime;
             Velocity += Physics.gravity * Time.deltaTime;
         }

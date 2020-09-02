@@ -169,11 +169,11 @@ namespace PlayerController {
             return otherRB.isKinematic;
         }
 
-        protected float RawTargetSpeed (bool readInput) {
+        protected float RawSpeedMultiplier (bool readInput) {
             float runWalkLerp = readInput ? Bind.WALK_OR_RUN.GetValue() : 0f;
             // TODO if always run is off : runWalkLerp = 1f - runWalkLerp;
-            var standingSpeed = Mathf.Lerp(pcProps.MoveSpeedRun, pcProps.MoveSpeedWalk, Mathf.Clamp01(runWalkLerp));
-            var crouchSpeed = pcProps.MoveSpeedCrouch;
+            var standingSpeed = Mathf.Lerp(pcProps.RunSpeedMultiplier, pcProps.WalkSpeedMultiplier, Mathf.Clamp01(runWalkLerp));
+            var crouchSpeed = pcProps.CrouchSpeedMultiplier;
             var crouchFactor = Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
             return Mathf.Lerp(crouchSpeed, standingSpeed, crouchFactor);
         }
@@ -199,6 +199,13 @@ namespace PlayerController {
                 return dV.normalized * maxAcceleration;
             }
             return dVAccel;
+        }
+
+        protected void ApplyDrag (float drag, float timestep, ref Vector3 localVelocity) {
+            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag, timestep);
+            dragDeceleration *= timestep;
+            Velocity += dragDeceleration;
+            localVelocity += dragDeceleration;
         }
 
         protected Quaternion GetGravityRotation (Transform referenceTransform) {

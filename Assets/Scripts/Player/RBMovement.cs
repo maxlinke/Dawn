@@ -305,6 +305,10 @@ namespace PlayerController {
             }
         }
 
+        void ApplyDrag (float drag, ref Vector3 localVelocity) {
+            ApplyDrag(drag, Time.fixedDeltaTime, ref localVelocity);
+        }
+
         void GroundedMovement (bool readInput, ref MoveState currentState) {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
@@ -316,13 +320,10 @@ namespace PlayerController {
                 }
             }
             var localVelocity = currentState.incomingLocalVelocity;
-            var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.GroundDrag, currentState.clampedNormedSurfaceFriction);
-            var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
-            groundFriction *= Time.fixedDeltaTime;
-            Velocity += groundFriction;
-            localVelocity += groundFriction;
+            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Ground.Drag, currentState.clampedNormedSurfaceFriction);
+            ApplyDrag(frictionMag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
-            var targetSpeed = RawTargetSpeed(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            var targetSpeed = pcProps.Ground.Speed * RawSpeedMultiplier(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
             targetSpeed = Mathf.Max(targetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
@@ -331,7 +332,7 @@ namespace PlayerController {
                 var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
                 targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
             }
-            var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.GroundAccel, currentState.clampedNormedSurfaceFriction);
+            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, currentState.clampedNormedSurfaceFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(readInput && (Bind.JUMP.GetKeyDown() || cachedJumpKeyDown)){
                 var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, currentState.clampedNormedSurfaceFriction);
@@ -361,22 +362,19 @@ namespace PlayerController {
 
         void SlopeMovement (bool readInput, ref MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
-            var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.SlopeDrag, currentState.clampedNormedSurfaceFriction);
-            var slopeFriction = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
-            slopeFriction *= Time.fixedDeltaTime;
-            Velocity += slopeFriction;
-            horizontalLocalVelocity += slopeFriction;
+            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Slope.Drag, currentState.clampedNormedSurfaceFriction);
+            ApplyDrag(frictionMag, ref horizontalLocalVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = RawTargetSpeed(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            var targetSpeed = pcProps.Slope.Speed * RawSpeedMultiplier(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
             targetSpeed = Mathf.Max(targetSpeed, horizontalLocalSpeed);
             var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
             }
-            var accelMag = Mathf.Lerp(pcProps.MinAccel, pcProps.SlopeAccel, currentState.clampedNormedSurfaceFriction);
+            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Slope.Accel, currentState.clampedNormedSurfaceFriction);
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(Bind.JUMP.GetKey() && currentState.isInWater){
                 moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
@@ -386,16 +384,13 @@ namespace PlayerController {
 
         void AerialMovement (bool readInput, ref MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
-            var dragDeceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, Vector3.zero, pcProps.AirDrag, Time.fixedDeltaTime);
-            dragDeceleration *= Time.fixedDeltaTime;
-            Velocity += dragDeceleration;
-            horizontalLocalVelocity += dragDeceleration;
+            ApplyDrag(pcProps.Air.Drag, ref horizontalLocalVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(readInput), horizontalLocalSpeed);
             var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.AirAccel, Time.fixedDeltaTime);
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel, Time.fixedDeltaTime);
             if(Bind.JUMP.GetKey() && currentState.isInWater && currentState.touchingWall){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
             }
@@ -404,10 +399,7 @@ namespace PlayerController {
 
         void WaterMovement (bool readInput, ref MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
-            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.WaterDrag, Time.fixedDeltaTime);
-            dragDeceleration *= Time.fixedDeltaTime;
-            Velocity += dragDeceleration;
-            localVelocity += dragDeceleration;
+            ApplyDrag(pcProps.Water.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             if(readInput){
@@ -419,9 +411,9 @@ namespace PlayerController {
                 }
             }
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(RawTargetSpeed(readInput), localSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Water.Speed * RawSpeedMultiplier(readInput), localSpeed);
             var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
-            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.WaterAccel, Time.fixedDeltaTime);
+            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Water.Accel, Time.fixedDeltaTime);
             Velocity += moveAcceleration * Time.fixedDeltaTime; // no gravity in water.
         }
 
@@ -433,10 +425,7 @@ namespace PlayerController {
                 return;
             }
             var localVelocity = currentState.incomingLocalVelocity;
-            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.LadderDrag, Time.fixedDeltaTime);
-            dragDeceleration *= Time.fixedDeltaTime;
-            Velocity += dragDeceleration;
-            localVelocity += dragDeceleration;
+            ApplyDrag(pcProps.Ladder.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
             Vector3 targetDirection = Vector3.zero;
             var lSpaceUp = currentState.ladderPoint.normal;
@@ -453,9 +442,9 @@ namespace PlayerController {
             Vector3 upDown = rot * new Vector3(0f, 0f, rawInput.z * (facingLadder ? 1f : -1f));
             Vector3 sideToSide = PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f)).ProjectOnVector(lSpaceRight);
             targetDirection = upDown + sideToSide;
-            var targetSpeed = Mathf.Max(localSpeed, RawTargetSpeed(readInput));     // TODO slower ladder speed (explicit speeds for all movements?)
+            var targetSpeed = Mathf.Max(localSpeed, pcProps.Ladder.Speed * RawSpeedMultiplier(readInput));     // TODO slower ladder speed (explicit speeds for all movements?)
             var targetVelocity = Vector3.ProjectOnPlane(targetDirection, currentState.ladderPoint.normal) * targetSpeed;
-            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.LadderAccel, Time.fixedDeltaTime);
+            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Ladder.Accel, Time.fixedDeltaTime);
             Vector3 gravity;
             if(readInput && Bind.JUMP.GetKeyDown()){
                 moveAcceleration += currentState.ladderPoint.normal * JumpSpeed() / Time.fixedDeltaTime;

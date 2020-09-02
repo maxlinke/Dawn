@@ -27,21 +27,31 @@ MonoBehaviour:
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60
-  moveSpeedRun: 12
-  moveSpeedWalk: 6
-  moveSpeedCrouch: 6
-  groundAccel: 64
-  groundDrag: 32
-  slopeAccel: 32
-  slopeDrag: 12
-  airAccel: 24
-  airDrag: 4
-  waterAccel: 24
-  waterDrag: 0
-  ladderAccel: 64
-  ladderDrag: 48
+  runSpeedMultiplier: 1
+  walkSpeedMultiplier: 0.5
+  crouchSpeedMultiplier: 0.5
   jumpHeight: 1
   jumpCalcGravity: 29.43
+  ground:
+    speed: 12
+    accel: 64
+    drag: 32
+  slope:
+    speed: 12
+    accel: 32
+    drag: 12
+  air:
+    speed: 12
+    accel: 24
+    drag: 4
+  water:
+    speed: 12
+    accel: 24
+    drag: 0
+  ladder:
+    speed: 6
+    accel: 64
+    drag: 32
   dodgeSpeed: 12
   dodgeStartTime: 0.125
   dodgeEndTime: 0.125
