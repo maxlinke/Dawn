@@ -18,7 +18,7 @@ public static class MeshUtils {
         
     }
 
-    public static int[] MakeNormalTriangleIndexArray (IEnumerable<Triangle> tris) {
+    public static int[] MakeIndexArrayFromTriangles (IEnumerable<Triangle> tris) {
         var output = new List<int>();
         foreach(var tri in tris){
             output.Add(tri.i0);

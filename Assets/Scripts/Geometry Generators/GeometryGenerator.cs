@@ -15,6 +15,7 @@ namespace GeometryGenerators {
 
         protected abstract Mesh CreateMesh ();
 
+        [ContextMenu("Generate")]
         public void Generate () {
             if(GetTargets(out var mfs, out var mcs)){
                 var mesh = CreateMesh();

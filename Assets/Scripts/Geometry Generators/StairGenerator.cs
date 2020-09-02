@@ -46,7 +46,7 @@ namespace GeometryGenerators {
             var output = new Mesh();
             output.name = "Generated Stairs";
             output.vertices = vertices.ToArray();
-            output.triangles = MeshUtils.MakeNormalTriangleIndexArray(triangles);
+            output.triangles = MeshUtils.MakeIndexArrayFromTriangles(triangles);
             output.RecalculateBounds();
             output.RecalculateNormals();
             output.RecalculateTangents();

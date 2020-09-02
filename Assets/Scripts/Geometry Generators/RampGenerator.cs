@@ -59,7 +59,7 @@ namespace GeometryGenerators {
             output.name = "Generated Ramp";
             output.vertices = vertices.ToArray();
             if(!multiMaterial){
-                output.triangles = MeshUtils.MakeNormalTriangleIndexArray(triangles);
+                output.triangles = MeshUtils.MakeIndexArrayFromTriangles(triangles);
             }else{
                 var ramp = new List<Triangle>();
                 var rest = new List<Triangle>();
@@ -71,8 +71,8 @@ namespace GeometryGenerators {
                     }
                 }
                 output.subMeshCount = 2;
-                output.SetTriangles(MeshUtils.MakeNormalTriangleIndexArray(ramp), 0, false);
-                output.SetTriangles(MeshUtils.MakeNormalTriangleIndexArray(rest), 1, false);
+                output.SetTriangles(MeshUtils.MakeIndexArrayFromTriangles(ramp), 0, false);
+                output.SetTriangles(MeshUtils.MakeIndexArrayFromTriangles(rest), 1, false);
             }
             output.RecalculateBounds();
             output.RecalculateNormals();
