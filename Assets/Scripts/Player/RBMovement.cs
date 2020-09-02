@@ -305,6 +305,15 @@ namespace PlayerController {
         }
 
         void GroundedMovement (bool readInput, ref MoveState currentState) {
+            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            var rawInputMag = rawInput.magnitude;
+            var targetDirection = PlayerTransform.TransformDirection(rawInput);
+            if(currentState.ladderPoint != null && currentState.ladderPoint != currentState.surfacePoint){
+                if(Vector3.Dot(targetDirection.normalized, currentState.ladderPoint.normal) < 0f){
+                    LadderMovement(readInput, ref currentState);
+                    return;
+                }
+            }
             var localVelocity = currentState.incomingLocalVelocity;
             var frictionMag = Mathf.Lerp(pcProps.MinDrag, pcProps.GroundDrag, currentState.clampedNormedSurfaceFriction);
             var groundFriction = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, frictionMag, Time.fixedDeltaTime);
@@ -312,11 +321,8 @@ namespace PlayerController {
             Velocity += groundFriction;
             localVelocity += groundFriction;
             var localSpeed = localVelocity.magnitude;
-            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
-            var rawInputMag = rawInput.magnitude;
             var targetSpeed = RawTargetSpeed(readInput) / Mathf.Max(1f, currentState.normedSurfaceFriction);
             targetSpeed = Mathf.Max(targetSpeed, localSpeed);
-            var targetDirection = PlayerTransform.TransformDirection(rawInput);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
@@ -418,8 +424,6 @@ namespace PlayerController {
             Velocity += moveAcceleration * Time.fixedDeltaTime; // no gravity in water.
         }
 
-        // TODO jumping off
-        // TODO going to ground movement
         void LadderMovement (bool readInput, ref MoveState currentState) {
             var localVelocity = currentState.incomingLocalVelocity;
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.LadderDrag, Time.fixedDeltaTime);
@@ -430,30 +434,33 @@ namespace PlayerController {
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
             Vector3 targetDirection = Vector3.zero;
-            // if(Vector3.Angle(currentState.ladderPoint.normal, PlayerTransform.up) > pcProps.HardSlopeLimit){
-                var up = currentState.ladderPoint.normal;
-                var fwd = PlayerTransform.up;
-                var right = Vector3.Cross(up, fwd).normalized;
-                fwd = Vector3.Cross(right, up).normalized;
-                var rot = new Matrix4x4(
-                    new Vector4(right.x, right.y, right.z, 0f),
-                    new Vector4(up.x, up.y, up.z, 0f), 
-                    new Vector4(fwd.x, fwd.y, fwd.z, 0f), 
-                    new Vector4(0,0,0,1)
-                );
-                targetDirection = rot * new Vector3(0f, 0f, rawInput.z);
-                targetDirection += PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f));
-            // }else{
-            //     targetDirection = head.TransformDirection(rawInput);
-            // }
+            var lSpaceUp = currentState.ladderPoint.normal;
+            var lSpaceFwd = PlayerTransform.up;
+            var lSpaceRight = Vector3.Cross(lSpaceUp, lSpaceFwd).normalized;
+            lSpaceFwd = Vector3.Cross(lSpaceRight, lSpaceUp).normalized;
+            var rot = new Matrix4x4(
+                new Vector4(lSpaceRight.x, lSpaceRight.y, lSpaceRight.z, 0f),
+                new Vector4(lSpaceUp.x, lSpaceUp.y, lSpaceUp.z, 0f), 
+                new Vector4(lSpaceFwd.x, lSpaceFwd.y, lSpaceFwd.z, 0f), 
+                new Vector4(0,0,0,1)
+            );
+            var facingLadder = Vector3.Dot(PlayerTransform.forward, currentState.ladderPoint.normal) < 0;
+            Vector3 upDown = rot * new Vector3(0f, 0f, rawInput.z * (facingLadder ? 1f : -1f));
+            Vector3 sideToSide = PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f)).ProjectOnVector(lSpaceRight);
+            targetDirection = upDown + sideToSide;
             var targetSpeed = Mathf.Max(localSpeed, RawTargetSpeed(readInput));     // TODO slower ladder speed (explicit speeds for all movements?)
             var targetVelocity = Vector3.ProjectOnPlane(targetDirection, currentState.ladderPoint.normal) * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.LadderAccel, Time.fixedDeltaTime);
-
-            var stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;
-            var lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
-            var gravity = Vector3.Slerp(stickGravity, Physics.gravity, lerpFactor);
-
+            Vector3 gravity;
+            if(readInput && Bind.JUMP.GetKeyDown()){
+                moveAcceleration += currentState.ladderPoint.normal * JumpSpeed() / Time.fixedDeltaTime;
+                currentState.jumped = true;
+                gravity = Physics.gravity * 0.5f;
+            }else{
+                var stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;
+                var lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
+                gravity = Vector3.Slerp(stickGravity, Physics.gravity, lerpFactor);
+            }
             Velocity += (moveAcceleration + gravity) * Time.fixedDeltaTime;
         }
 

@@ -121,18 +121,17 @@ namespace PlayerController {
             output.ladderPoint = null;
             float wallDot = 0.0175f;     // cos(89°)
             float maxDot = wallDot;
+            float maxLadderDot = -wallDot;
             foreach(var point in points){
                 var dot = Vector3.Dot(point.normal, PlayerTransform.up);
-                var isLadder = (point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject));
                 if(dot > maxDot){
                     output.flattestPoint = point;
                     maxDot = dot;
-                    if(isLadder){
-                        output.ladderPoint = point;
-                    }
                 }else if((Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
                     output.touchingWall = true;
-                    if(isLadder && output.ladderPoint == null){
+                }
+                if(dot > maxLadderDot){
+                    if((point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject))){
                         output.ladderPoint = point;
                     }
                 }
@@ -239,13 +238,15 @@ namespace PlayerController {
             MoveState output;
             var colResult = ProcessCollisionPoints(collisionPoints);
             var sp = colResult.flattestPoint;
+            var lp = colResult.ladderPoint;
             if(lastState.jumped){
                 sp = null;
+                lp = null;
             }
             output.surfacePoint = sp;
+            output.ladderPoint = lp;
             output.touchingGround = sp != null;
             output.touchingWall = colResult.touchingWall;
-            output.ladderPoint = colResult.ladderPoint;
             output.isInWater = false;
             output.canCrouchInWater = true;
             var swim = false;
@@ -300,17 +301,10 @@ namespace PlayerController {
                     output.clampedNormedSurfaceFriction = 1f;
                     output.surfacePhysicMaterial = null;
                 }
-                // if(sp == colResult.ladderPoint){
-                //     output.moveType = MoveType.LADDER;
-                // }else if(surfaceAngle < pcProps.HardSlopeLimit){
-                //     output.moveType = MoveType.GROUND;
-                // }else{
-                //     output.moveType = MoveType.SLOPE;
-                // }
                 if(surfaceAngle < pcProps.HardSlopeLimit){
                     output.moveType = MoveType.GROUND;
                 }else{
-                    if(sp == colResult.ladderPoint){
+                    if(sp == lp){
                         output.moveType = MoveType.LADDER;
                     }else{
                         output.moveType = MoveType.SLOPE;
