@@ -37,6 +37,13 @@ namespace PlayerController {
             }
             return otherRB.velocity;
         }
+
+        public string GetName () {
+            if(otherCollider == null){
+                return "null";
+            }
+            return otherCollider.name;
+        }
         
     }
 

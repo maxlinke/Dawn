@@ -304,7 +304,7 @@ namespace PlayerController {
                 if(surfaceAngle < pcProps.HardSlopeLimit){
                     output.moveType = MoveType.GROUND;
                 }else{
-                    if(sp == lp){
+                    if(lp != null){
                         output.moveType = MoveType.LADDER;
                     }else{
                         output.moveType = MoveType.SLOPE;

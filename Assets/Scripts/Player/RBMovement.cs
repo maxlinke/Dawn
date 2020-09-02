@@ -143,6 +143,7 @@ namespace PlayerController {
             DEBUGTEXTFIELD.text += $"{currentState.surfaceAngle.ToString()}°\n";
             DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
+            DEBUGTEXTFIELD.text += $"{(currentState.surfacePoint == null ? "null" : currentState.surfacePoint.GetName())}\n";
             DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
             DEBUGTEXTFIELD.text += $"{currentState.incomingLocalVelocity.magnitude:F3} m/s\n";            
             DEBUGTEXTFIELD.text += $"crouch: {shouldCrouch}\n";
@@ -425,14 +426,18 @@ namespace PlayerController {
         }
 
         void LadderMovement (bool readInput, ref MoveState currentState) {
+            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
+            var rawInputMag = rawInput.magnitude;
+            if(currentState.isInWater && Vector3.Dot(PlayerTransform.TransformDirection(rawInput), currentState.ladderPoint.normal) > 0){
+                AerialMovement(readInput, ref currentState);
+                return;
+            }
             var localVelocity = currentState.incomingLocalVelocity;
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, pcProps.LadderDrag, Time.fixedDeltaTime);
             dragDeceleration *= Time.fixedDeltaTime;
             Velocity += dragDeceleration;
             localVelocity += dragDeceleration;
             var localSpeed = localVelocity.magnitude;
-            var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
-            var rawInputMag = rawInput.magnitude;
             Vector3 targetDirection = Vector3.zero;
             var lSpaceUp = currentState.ladderPoint.normal;
             var lSpaceFwd = PlayerTransform.up;
