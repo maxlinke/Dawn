@@ -91,8 +91,8 @@ namespace PlayerController {
             this.head = head;
             this.model = model;
             defaultPM = new PhysicMaterial();
-            collisionCastMask = LayerMaskUtils.EverythingMask;      // TODO use actual mask (set up proper layer collision)
-            collisionCastMask &= ~LayerMaskUtils.CreateDirectMask(Layer.PlayerControllerAndWorldModel, Layer.Water);
+            collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndWorldModel.index);
+            collisionCastMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel, Layer.Water);
         }
 
         protected Vector3 HorizontalComponent (Vector3 vector) {

@@ -4,7 +4,7 @@ public static class LayerMaskUtils {
 
     public static readonly int EverythingMask = unchecked((int)0b_1111_1111_1111_1111_1111_1111_1111_1111);
 
-	public static int CreateCollisionMask (int layer) {
+	public static int GetFullPhysicsCollisionMask (int layer) {
 		string[] names = new string[32];
 		for(int i=0; i<32; i++){
 			if(!Physics.GetIgnoreLayerCollision(layer, i)){
@@ -14,20 +14,7 @@ public static class LayerMaskUtils {
 		return LayerMask.GetMask(names);
 	}
 
-	public static int CreateCollisionMask (string layerName) {
-		int layer = LayerMask.NameToLayer(layerName);
-		return CreateCollisionMask(layer);
-	}
-
-    public static int CreateDirectMask (params Layer[] layers) {
-        var output = 0;
-        foreach(var layer in layers){
-            output |= (1 << layer.index);
-        }
-        return output;
-    }
-
-    public static int CreateDirectMask (params int[] layerIndices) {
+    public static int LayerToBitMask (params int[] layerIndices) {
         var output = 0;
         foreach(var layerIndex in layerIndices){
             output |= (1 << layerIndex);

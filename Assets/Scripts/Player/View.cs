@@ -35,7 +35,7 @@ namespace PlayerController {
         }
 
         protected virtual void SetupInteractMask () {
-            interactMask = ~LayerMaskUtils.CreateDirectMask(Layer.PlayerControllerAndWorldModel);
+            interactMask = ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
         }
 
         protected Vector2 GetViewInput () {
