@@ -1,16 +1,21 @@
 fileFormatVersion: 2
-guid: 74f5a98d334d4bd439883ff18aeb2513
+guid: dfc8f7629df744b4b8a3aefd97528a08
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: default
-    100002: //RootNode
-    400000: default
-    400002: //RootNode
-    2100000: defaultMat
-    2300000: default
-    3300000: default
-    4300000: default
+    100000: //RootNode
+    100002: ladder_pool
+    100004: ladder_pool_rails
+    400000: //RootNode
+    400002: ladder_pool
+    400004: ladder_pool_rails
+    2100000: Default OBJ.003
+    2300000: ladder_pool
+    2300002: ladder_pool_rails
+    3300000: ladder_pool
+    3300002: ladder_pool_rails
+    4300000: ladder_pool
+    4300002: ladder_pool_rails
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -42,7 +47,7 @@ ModelImporter:
     isReadable: 1
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 100
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
