@@ -108,6 +108,19 @@ namespace PlayerController {
             return vector.ProjectOnPlaneAlongVector(groundNormal, PlayerTransform.up);
         }
 
+        protected Vector3 LadderMoveVector (Vector3 rawInput, Vector3 ladderNormal) {
+            var lUp = ladderNormal;
+            var lFwd = PlayerTransform.up;
+            var lRight = Vector3.Cross(lUp, lFwd).normalized;
+            lFwd = Vector3.Cross(lRight, lUp).normalized;
+            if(Vector3.Dot(PlayerTransform.forward, ladderNormal) > 0f){
+                rawInput.z *= -1f;
+            }
+            var upDown = lFwd * rawInput.z;
+            var leftRight = PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f)).ProjectOnVector(lRight);
+            return upDown + leftRight;
+        }
+
         protected struct CollisionProcessorOutput {
             public CollisionPoint flattestPoint;
             public CollisionPoint ladderPoint;

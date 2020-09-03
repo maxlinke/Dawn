@@ -427,23 +427,9 @@ namespace PlayerController {
             var localVelocity = currentState.incomingLocalVelocity;
             ApplyDrag(pcProps.Ladder.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
-            Vector3 targetDirection = Vector3.zero;
-            var lSpaceUp = currentState.ladderPoint.normal;
-            var lSpaceFwd = PlayerTransform.up;
-            var lSpaceRight = Vector3.Cross(lSpaceUp, lSpaceFwd).normalized;
-            lSpaceFwd = Vector3.Cross(lSpaceRight, lSpaceUp).normalized;
-            var rot = new Matrix4x4(
-                new Vector4(lSpaceRight.x, lSpaceRight.y, lSpaceRight.z, 0f),
-                new Vector4(lSpaceUp.x, lSpaceUp.y, lSpaceUp.z, 0f), 
-                new Vector4(lSpaceFwd.x, lSpaceFwd.y, lSpaceFwd.z, 0f), 
-                new Vector4(0,0,0,1)
-            );
-            var facingLadder = Vector3.Dot(PlayerTransform.forward, currentState.ladderPoint.normal) < 0;
-            Vector3 upDown = rot * new Vector3(0f, 0f, rawInput.z * (facingLadder ? 1f : -1f));
-            Vector3 sideToSide = PlayerTransform.TransformDirection(new Vector3(rawInput.x, 0f, 0f)).ProjectOnVector(lSpaceRight);
-            targetDirection = upDown + sideToSide;
-            var targetSpeed = Mathf.Max(localSpeed, pcProps.Ladder.Speed * RawSpeedMultiplier(readInput));     // TODO slower ladder speed (explicit speeds for all movements?)
-            var targetVelocity = Vector3.ProjectOnPlane(targetDirection, currentState.ladderPoint.normal) * targetSpeed;
+            var targetDirection = LadderMoveVector(rawInput, currentState.ladderPoint.normal);
+            var targetSpeed = Mathf.Max(localSpeed, pcProps.Ladder.Speed * RawSpeedMultiplier(readInput));
+            var targetVelocity = targetDirection * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Ladder.Accel, Time.fixedDeltaTime);
             Vector3 gravity;
             if(readInput && Bind.JUMP.GetKeyDown()){
