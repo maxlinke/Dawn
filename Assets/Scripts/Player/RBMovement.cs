@@ -300,7 +300,9 @@ namespace PlayerController {
             if(Time.frameCount == lastState.frame){
                 return;
             }
-            if(!lastState.jumped && lastState.moveType == MoveType.GROUND){
+            // either check states where JUMPING is possible here
+            // or the ones where you can't jump (i.e. AIR, WATER, SLOPE)
+            if(!lastState.jumped && (lastState.moveType == MoveType.GROUND || lastState.moveType == MoveType.LADDER)){
                 cachedJumpKeyDown |= Bind.JUMP.GetKeyDown();
             }
         }
