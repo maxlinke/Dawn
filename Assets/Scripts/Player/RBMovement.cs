@@ -432,7 +432,7 @@ namespace PlayerController {
             var targetVelocity = targetDirection * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Ladder.Accel, Time.fixedDeltaTime);
             Vector3 gravity;
-            if(readInput && Bind.JUMP.GetKeyDown()){
+            if(readInput && (Bind.JUMP.GetKeyDown() || cachedJumpKeyDown)){
                 moveAcceleration += currentState.ladderPoint.normal * JumpSpeed() / Time.fixedDeltaTime;
                 currentState.jumped = true;
                 gravity = Physics.gravity * 0.5f;
