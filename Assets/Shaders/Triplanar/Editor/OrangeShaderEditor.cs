@@ -5,6 +5,8 @@ namespace ShaderEditors {
 
     public class OrangeShaderEditor : ShaderGUI {
 
+        static MaterialProperty[] emptyProps = new MaterialProperty[0];
+
         const string kw_bgColor = "BACKGROUND_ORANGE";
 
         const string kw_gridWorld = "GRIDCOORDS_TRIPLANAR_WORLD";
@@ -50,6 +52,7 @@ namespace ShaderEditors {
             if(isOverlayVersion){
                 OverlayProperties();
             }
+            base.OnGUI(editor, emptyProps);     // renderqueue etc.
 
             void MainColorSelection () {
                 GUILayout.Label("Background", EditorStyles.boldLabel);
