@@ -17,6 +17,8 @@ public class RBPlayer : Player {
     [SerializeField] KeyCode gravityFlipKey = KeyCode.G;
     [SerializeField] KeyCode viewLockKey = KeyCode.V;
     [SerializeField] Transform debugViewTarget = default;
+    [SerializeField] UnityEngine.UI.Text movementDebugText = default;
+    [SerializeField] UnityEngine.UI.Text viewDebugText = default;
 
     protected override Movement MovementSystem => rbMovement;
 
@@ -71,12 +73,19 @@ public class RBPlayer : Player {
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        rbView.Look(readInput: cursorLocked);
-        rbView.InteractCheck(readInput: cursorLocked);
+        rbView.Look(cursorLocked ? GetViewInput() : Vector2.zero);
+        if(rbView.InteractCheck(out var interactable, out var interactDescription)){
+            if(Bind.INTERACT.GetKeyDown()){
+                interactable.Interact(this);
+            }
+        }
         rbMovement.UpdateCrouchState(GetCrouchInput(readInput: cursorLocked));
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
         CacheSingleFrameInputs();
+
+        viewDebugText.text = rbView.debugInfo;
+        movementDebugText.text = rbMovement.debugInfo;
     }
 
     void FixedUpdate () {

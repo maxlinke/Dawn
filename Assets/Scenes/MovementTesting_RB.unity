@@ -12514,6 +12514,16 @@ PrefabInstance:
       propertyPath: debugViewTarget
       value: 
       objectReference: {fileID: 4913766}
+    - target: {fileID: 8913080616178811582, guid: b824ad0361de63f4bb7b5355c52cc363,
+        type: 3}
+      propertyPath: viewDebugText
+      value: 
+      objectReference: {fileID: 1657395637}
+    - target: {fileID: 8913080616178811582, guid: b824ad0361de63f4bb7b5355c52cc363,
+        type: 3}
+      propertyPath: movementDebugText
+      value: 
+      objectReference: {fileID: 42044448}
     - target: {fileID: 8913080616178811583, guid: b824ad0361de63f4bb7b5355c52cc363,
         type: 3}
       propertyPath: DEBUGTEXTFIELD

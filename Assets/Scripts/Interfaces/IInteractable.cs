@@ -1,6 +1,6 @@
 ﻿public interface IInteractable {
 
-    bool CanBeInteractedWith { get; }
+    bool CanBeInteractedWith { get; }       // as in, completely disabled. interactions that don't do anything should be handled in the actual script.
 
     string InteractionDescription { get; }
 

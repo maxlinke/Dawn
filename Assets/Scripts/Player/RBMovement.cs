@@ -154,15 +154,15 @@ namespace PlayerController {
             currentState = GetCurrentState(contactPoints, triggerStays);
             contactPoints.Clear();
             triggerStays.Clear();
-            DEBUGTEXTFIELD.text = string.Empty;
-            DEBUGTEXTFIELD.text += $"{currentState.surfaceAngle.ToString()}°\n";
-            DEBUGTEXTFIELD.text += $"{currentState.surfaceDot.ToString()}\n";
-            DEBUGTEXTFIELD.text += $"{currentState.moveType.ToString()}\n";
-            DEBUGTEXTFIELD.text += $"{(currentState.surfacePoint == null ? "null" : currentState.surfacePoint.GetName())}\n";
-            DEBUGTEXTFIELD.text += $"{currentState.normedSurfaceFriction.ToString()}\n";
-            DEBUGTEXTFIELD.text += $"{currentState.incomingLocalVelocity.magnitude:F3} m/s\n";            
-            DEBUGTEXTFIELD.text += $"crouch: {shouldCrouch}\n";
-            DEBUGTEXTFIELD.text += $"height: {col.height}\n";
+            debugInfo = string.Empty;
+            debugInfo += $"sp:  {(currentState.surfacePoint == null ? "null" : currentState.surfacePoint.GetName())}\n";
+            debugInfo += $"sa:  {currentState.surfaceAngle.ToString()}°\n";
+            debugInfo += $"sd:  {currentState.surfaceDot.ToString()}\n";
+            debugInfo += $"mt:  {currentState.moveType.ToString()}\n";
+            debugInfo += $"nsf: {currentState.normedSurfaceFriction.ToString()}\n";
+            debugInfo += $"ilv: {currentState.incomingLocalVelocity.magnitude:F3} m/s\n";
+            debugInfo += $"c:   {shouldCrouch}\n";
+            debugInfo += $"h:   {col.height}\n";
         }
 
         void FinishMove (MoveState currentState) {Color lineColor;

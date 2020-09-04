@@ -5,8 +5,6 @@ namespace PlayerController {
 
     public abstract class Movement : MonoBehaviour {
 
-        [SerializeField] protected UnityEngine.UI.Text DEBUGTEXTFIELD = default;
-
         public enum ControlMode {
             FULL,
             BLOCK_INPUT,
@@ -80,6 +78,14 @@ namespace PlayerController {
 
         public MoveState lastState { get; protected set; }
         protected bool shouldCrouch = false;
+        
+        private string m_debugInfo = string.Empty;
+        public string debugInfo { 
+            get => m_debugInfo; 
+            protected set {
+                m_debugInfo = value != null ? value : string.Empty;
+            }
+        }
 
         public Vector3 WorldCenterPos {
             get => PlayerTransform.TransformPoint(LocalColliderCenter);

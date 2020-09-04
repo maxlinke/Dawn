@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using CustomInputSystem;
 
 namespace PlayerController {
 
@@ -10,8 +9,6 @@ namespace PlayerController {
             BLOCK_INPUT,
             TARGETED
         }
-
-        [SerializeField] UnityEngine.UI.Text DEBUGTEXTFIELD = default;
 
         protected PlayerControllerProperties pcProps;
         protected Player player;
@@ -27,6 +24,14 @@ namespace PlayerController {
 
         int interactMask;
 
+        private string m_debugInfo = string.Empty;
+        public string debugInfo { 
+            get => m_debugInfo; 
+            protected set {
+                m_debugInfo = value != null ? value : string.Empty;
+            }
+        }     // TODO a clearer reset point
+
         public void Initialize (PlayerControllerProperties pcProps, Player player, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
@@ -36,12 +41,6 @@ namespace PlayerController {
 
         protected virtual void SetupInteractMask () {
             interactMask = ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
-        }
-
-        protected Vector2 GetViewInput () {
-            var dx = Bind.LOOK_RIGHT.GetValue() - Bind.LOOK_LEFT.GetValue();
-            var dy = Bind.LOOK_DOWN.GetValue() - Bind.LOOK_UP.GetValue();
-            return new Vector2(dx, dy);
         }
 
         public void SetHeadOrientation (float headTilt, float headPan, float headRoll) {
@@ -64,10 +63,10 @@ namespace PlayerController {
             ApplyHeadEuler();
         }
 
-        public void Look (bool readInput) {
+        public void Look (Vector2 viewInput) {
             switch(controlMode){
                 case ControlMode.FULL: 
-                    DeltaLook(readInput ? GetViewInput() * 60f * Time.deltaTime : Vector2.zero);
+                    DeltaLook(viewInput * 60f * Time.deltaTime);
                     break;
                 case ControlMode.TARGETED:
                     TargetLook(viewTarget.position);
@@ -83,32 +82,29 @@ namespace PlayerController {
         protected abstract void DeltaLook (Vector2 viewDelta);
         protected abstract void TargetLook (Vector3 targetPoint);
 
-        public void InteractCheck (bool readInput) {
+        public bool InteractCheck (out IInteractable outputInteractable, out string outputDescription) {
             Color rayCol;
-            var description = string.Empty;
+            outputDescription = string.Empty;
+            outputInteractable = null;
+            debugInfo = string.Empty;
             if(Physics.Raycast(head.transform.position, head.transform.forward, out var hit, pcProps.InteractRange, interactMask, QueryTriggerInteraction.Collide)){
                 var interactable = hit.collider.GetComponent<IInteractable>();
                 if(interactable != null && interactable.CanBeInteractedWith){
-                    description = interactable.InteractionDescription;
-                    if(readInput && Bind.INTERACT.GetKeyDown()){
-                        Debug.Log($"{Time.frameCount} | interacting with \"{interactable.GetType()}\"");
-                        interactable.Interact(player);      // would be nice if i had player-specific interactions, as to avoid getcomponent-calls
-                    }
+                    outputDescription = interactable.InteractionDescription;
+                    debugInfo = outputDescription;
                 }else{
                     if(interactable == null){
-                        description = $"no interactable (hit {hit.collider.name})";
+                        debugInfo = $"no interactable (hit {hit.collider.name})";
                     }else if(!interactable.CanBeInteractedWith){
-                        description = "cant be interacted with";
+                        debugInfo = "cant be interacted with";
                     }
                 }
                 rayCol = Color.green;
             }else{
                 rayCol = Color.red;
             }
-            if(DEBUGTEXTFIELD != null){
-                DEBUGTEXTFIELD.text = description;
-            }
             Debug.DrawRay(head.transform.position, head.transform.forward * pcProps.InteractRange, rayCol, 0f);
+            return outputInteractable != null;
         }
         
     }

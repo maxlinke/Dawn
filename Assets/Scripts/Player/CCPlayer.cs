@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using PlayerController;
+using CustomInputSystem;
 
 public class CCPlayer : Player {
 
@@ -44,10 +45,14 @@ public class CCPlayer : Player {
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        ccView.Look(readInput: cursorLocked);
+        ccView.Look(cursorLocked ? GetViewInput() : Vector2.zero);
         ccMovement.Move(readInput: cursorLocked);
         ccView.UpdateHeadLocalPosition();
-        ccView.InteractCheck(readInput: cursorLocked);
+        if(ccView.InteractCheck(out var interactable, out var interactDescription)){
+            if(Bind.INTERACT.GetKeyDown()){
+                interactable.Interact(this);
+            }
+        }
     }
 
     // bad move, this causes me to re-enter triggers i'm already in.

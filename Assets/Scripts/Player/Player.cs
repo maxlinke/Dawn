@@ -27,6 +27,12 @@ public abstract class Player : MonoBehaviour {
         fpCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
     }
 
+    protected Vector2 GetViewInput () {
+        var dx = Bind.LOOK_RIGHT.GetValue() - Bind.LOOK_LEFT.GetValue();
+        var dy = Bind.LOOK_DOWN.GetValue() - Bind.LOOK_UP.GetValue();
+        return new Vector2(dx, dy);
+    }
+
     protected Vector3 GetHorizontalLocalSpaceMoveVector () {
         float move = Bind.MOVE_FWD.GetValue() - Bind.MOVE_BWD.GetValue();
         float strafe = Bind.MOVE_RIGHT.GetValue() - Bind.MOVE_LEFT.GetValue();
