@@ -259,12 +259,13 @@ namespace PlayerController {
                 head.localPosition -= srpDelta;
                 model.localPosition -= srpDelta;
                 var maxDelta = pcProps.HeightChangeSpeed * Time.deltaTime;
+                var maxDeltaSqr = maxDelta * maxDelta;
                 var deltaHead = TargetHeadPos - head.localPosition;
                 var deltaModel = TargetModelPos - model.localPosition;
-                if(deltaHead.sqrMagnitude > (maxDelta * maxDelta)){
+                if(deltaHead.sqrMagnitude > maxDeltaSqr){
                     deltaHead = deltaHead.normalized * maxDelta;
                 }
-                if(deltaModel.sqrMagnitude > (maxDelta * maxDelta)){
+                if(deltaModel.sqrMagnitude > maxDeltaSqr){
                     deltaModel = deltaModel.normalized * maxDelta;
                 }
                 head.localPosition += deltaHead;
