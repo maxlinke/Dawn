@@ -55,6 +55,7 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] float footRBNonSolidMass = 160f;
     [SerializeField] float footRBSolidMass = 400f;
     [SerializeField] float gravityTurnDegreesPerSecond = 360f;
+    [SerializeField, Range(0f, 1f)] float minGravityTurnSpeedMultiplier = 0f;
 
     public float PlayerMass => playerMass;
     public CollisionDetectionMode CollisionDetection => collisionDetection;
@@ -62,6 +63,7 @@ public class PlayerControllerProperties : ScriptableObject {
     public float FootRBNonSolidMass => footRBNonSolidMass;
     public float FootRBSolidMass => footRBSolidMass;
     public float GravityTurnDegreesPerSecond => gravityTurnDegreesPerSecond;
+    public float MinGravityTurnSpeedMultiplier => minGravityTurnSpeedMultiplier;
 
     [Header("Camera")]
     [SerializeField] float nearClipDist = 0.15f;

@@ -24,6 +24,7 @@ MonoBehaviour:
   footRBNonSolidMass: 160
   footRBSolidMass: 400
   gravityTurnDegreesPerSecond: 360
+  minGravityTurnSpeedMultiplier: 0.5
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60

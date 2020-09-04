@@ -277,7 +277,9 @@ namespace PlayerController {
                 return;
             }
             var gravityRotation = GetGravityRotation(smoothRotationParent);
-            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * pcProps.GravityTurnDegreesPerSecond);
+            var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.JumpCalcGravity);
+            var degreesPerSecond = pcProps.GravityTurnDegreesPerSecond * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
+            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * degreesPerSecond);
             smoothRotationParent.rotation = newRotation;
         }
 
