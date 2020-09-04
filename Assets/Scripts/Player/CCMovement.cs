@@ -28,13 +28,12 @@ namespace PlayerController {
         ControlMode m_controlMode = ControlMode.FULL;
         
         List<CollisionPoint> contactPoints;
-        MoveState lastState;
         Vector3 m_velocity;
 
         [Multiline] public string DEBUGOUTPUTSTRINGTHING;
 
-        public override void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
-            base.Initialize(pcProps, head, model);
+        public void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
+            base.Init(pcProps, head, model);
             contactPoints = new List<CollisionPoint>();
             initialized = true;
         }
@@ -74,7 +73,7 @@ namespace PlayerController {
 
         void StartMove (out MoveState currentState) {
             var EMPTYTRIGGERLIST = new List<Collider>();
-            currentState = GetCurrentState(lastState, contactPoints, EMPTYTRIGGERLIST);
+            currentState = GetCurrentState(contactPoints, EMPTYTRIGGERLIST);
             contactPoints.Clear();
         }
 

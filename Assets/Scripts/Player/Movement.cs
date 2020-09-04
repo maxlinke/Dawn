@@ -64,6 +64,9 @@ namespace PlayerController {
         protected Vector3 LocalColliderTopSphere => LocalColliderCenter + LocalCapsuleSphereOffset;
         protected Vector3 LocalColliderBottomSphere => LocalColliderCenter - LocalCapsuleSphereOffset;
 
+        public MoveState lastState { get; protected set; }
+        protected bool shouldCrouch = false;
+
         public Vector3 WorldCenterPos {
             get => PlayerTransform.TransformPoint(LocalColliderCenter);
             set => PositionPropertyUpdate(WorldCenterPos, value);
@@ -87,7 +90,7 @@ namespace PlayerController {
         private PhysicMaterial defaultPM;
         private int collisionCastMask;
 
-        public virtual void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
+        protected virtual void Init (PlayerControllerProperties pcProps, Transform head, Transform model) {
             this.pcProps = pcProps;
             this.head = head;
             this.model = model;
@@ -234,6 +237,29 @@ namespace PlayerController {
             return Quaternion.LookRotation(newFwd, newUp);
         }
 
+        public void SetTryCrouch (bool value) {
+            shouldCrouch = value;
+        }
+
+        public void UpdateCrouchState (bool readInput) {
+            if(!readInput || controlMode != ControlMode.FULL){
+                return;
+            }
+            if(lastState.isInWater && !lastState.canCrouchInWater){
+                shouldCrouch = false;
+                return;
+            }
+            if(Bind.CROUCH_TOGGLE.GetKeyDown()){
+                shouldCrouch = !shouldCrouch;
+            }
+            if(Bind.CROUCH_HOLD.GetKey()){
+                shouldCrouch = true;
+            }
+            if(Bind.CROUCH_HOLD.GetKeyUp()){
+                shouldCrouch = false;
+            }
+        }
+
         protected bool CanUncrouch (bool checkUpward) {
             Vector3 rayStart, rayDir;
             if(checkUpward){
@@ -254,7 +280,7 @@ namespace PlayerController {
             return true;
         }
 
-        protected virtual MoveState GetCurrentState (MoveState lastState, IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
+        protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             MoveState output;
             var colResult = ProcessCollisionPoints(collisionPoints);
             var sp = colResult.flattestPoint;

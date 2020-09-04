@@ -40,19 +40,17 @@ namespace PlayerController {
             }
         }
 
-        public Transform smoothRotationParent { private get; set; }
-
         bool initialized = false;
         bool cachedJumpKeyDown = false;
-        bool shouldCrouch = false;
+        Transform smoothRotationParent;
         ControlMode m_controlMode = ControlMode.FULL;
 
         List<CollisionPoint> contactPoints;
         List<Collider> triggerStays;
-        MoveState lastState;
 
-        public override void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model) {
-            base.Initialize(pcProps, head, model);
+        public void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model, Transform smoothRotationParent) {
+            base.Init(pcProps, head, model);
+            this.smoothRotationParent = smoothRotationParent;
             contactPoints = new List<CollisionPoint>();
             triggerStays = new List<Collider>();
             InitCol();
@@ -136,7 +134,7 @@ namespace PlayerController {
         }
 
         void StartMove (out MoveState currentState) {
-            currentState = GetCurrentState(lastState, contactPoints, triggerStays);
+            currentState = GetCurrentState(contactPoints, triggerStays);
             contactPoints.Clear();
             triggerStays.Clear();
             DEBUGTEXTFIELD.text = string.Empty;
@@ -199,29 +197,6 @@ namespace PlayerController {
                     Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
                     Velocity += Physics.gravity * Time.fixedDeltaTime;
                     break;
-            }
-        }
-
-        public void SetTryCrouch (bool value) {
-            shouldCrouch = value;
-        }
-
-        public void UpdateCrouchState (bool readInput) {
-            if(!readInput || controlMode != ControlMode.FULL){
-                return;
-            }
-            if(lastState.isInWater && !lastState.canCrouchInWater){
-                shouldCrouch = false;
-                return;
-            }
-            if(Bind.CROUCH_TOGGLE.GetKeyDown()){
-                shouldCrouch = !shouldCrouch;
-            }
-            if(Bind.CROUCH_HOLD.GetKey()){
-                shouldCrouch = true;
-            }
-            if(Bind.CROUCH_HOLD.GetKeyUp()){
-                shouldCrouch = false;
             }
         }
 

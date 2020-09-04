@@ -33,8 +33,7 @@ public class RBPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         rbView.smoothRotationParent = smoothRotationParent;
-        rbMovement.Initialize(pcProps, head, modelParent);
-        rbMovement.smoothRotationParent = smoothRotationParent;
+        rbMovement.Initialize(pcProps, head, modelParent, smoothRotationParent);
         // load the states 
         // set collider height
         rbMovement.UpdateHeadAndModelPosition(instantly: true);
