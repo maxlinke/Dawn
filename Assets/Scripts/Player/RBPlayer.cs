@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using PlayerController;
+using CustomInputSystem;
 
 public class RBPlayer : Player {
 
@@ -18,6 +19,8 @@ public class RBPlayer : Player {
     [SerializeField] Transform debugViewTarget = default;
 
     protected override Movement MovementSystem => rbMovement;
+
+    private bool cachedJumpKeyDown = false;
 
     // TODO more camera init 
     // layers etc
@@ -70,16 +73,54 @@ public class RBPlayer : Player {
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(readInput: cursorLocked);
         rbView.InteractCheck(readInput: cursorLocked);
-        rbMovement.UpdateCrouchState(readInput: cursorLocked);
+        rbMovement.UpdateCrouchState(GetCrouchInput(readInput: cursorLocked));
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
-        rbMovement.CacheSingleFrameInputs();
+        CacheSingleFrameInputs();
     }
 
     void FixedUpdate () {
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbMovement.ApplySubRotation();
-        rbMovement.Move(readInput: cursorLocked);
+        rbMovement.Move(GetMoveInput(readInput: cursorLocked));
+        ResetSingleFrameInputs();
+    }
+
+    Movement.CrouchControlInput GetCrouchInput (bool readInput) {
+        if(!readInput){
+            return Movement.CrouchControlInput.None;
+        }
+        Movement.CrouchControlInput output;
+        output.toggleCrouch = Bind.CROUCH_TOGGLE.GetKeyDown();
+        output.crouchHold = Bind.CROUCH_HOLD.GetKey();
+        output.crouchHoldRelease = Bind.CROUCH_HOLD.GetKeyUp();
+        return output;
+    }
+
+    RBMovement.MoveInput GetMoveInput (bool readInput) {
+        if(!readInput){
+            return RBMovement.MoveInput.None;
+        }
+        RBMovement.MoveInput output;
+        output.horizontalInput = GetHorizontalLocalSpaceMoveVector();
+        output.verticalInput = GetVerticalLocalSpaceMoveVector();
+        output.run = 1f - Mathf.Clamp01(Bind.WALK_OR_RUN.GetValue());   // TODO make (1f - x) optional because "Auto Run"
+        output.jump = Bind.JUMP.GetKeyDown() || cachedJumpKeyDown;
+        output.waterExitJump = Bind.JUMP.GetKey();
+        return output;
+    }
+
+    void CacheSingleFrameInputs () {
+        var lastState = rbMovement.lastState;
+        if(Time.frameCount != lastState.frame){
+            if(!lastState.jumped && lastState.canJump){
+                cachedJumpKeyDown |= Bind.JUMP.GetKeyDown();
+            }
+        }
+    }
+
+    void ResetSingleFrameInputs () {
+        cachedJumpKeyDown = false;
     }
 	
 }

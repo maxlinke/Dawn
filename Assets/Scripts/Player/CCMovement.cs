@@ -167,7 +167,7 @@ namespace PlayerController {
             var localSpeed = localVelocity.magnitude;
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(pcProps.Ground.Speed * RawSpeedMultiplier(readInput), localSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Ground.Speed * RawSpeedMultiplier(GetRunInput(readInput)), localSpeed);
             var targetDirection = GroundMoveVector(cc.transform.TransformDirection(rawInput), currentState.surfacePoint.normal);
             var targetVelocity = targetDirection.normalized * rawInputMag * targetSpeed;
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Ground.Accel, Time.deltaTime);
@@ -190,7 +190,7 @@ namespace PlayerController {
             DEBUGOUTPUTSTRINGTHING = $"{horizontalLocalSpeed.ToString():F2}";
             var rawInput = (readInput ? GetLocalSpaceMoveInput() : Vector3.zero);
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(readInput), horizontalLocalSpeed);
+            var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(GetRunInput(readInput)), horizontalLocalSpeed);
             var targetVelocity = cc.transform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel, Time.deltaTime);
             Velocity += (dragDeceleration + moveAcceleration) * Time.deltaTime;
@@ -216,6 +216,23 @@ namespace PlayerController {
             if(Vector3.Dot(hit.normal, Velocity) < 0){  // TODO RELATIVE VELOCITY!!!
                 Velocity = Vector3.ProjectOnPlane(Velocity, hit.normal);
             }
+        }
+
+        Vector3 GetLocalSpaceMoveInput () {
+            float move = Bind.MOVE_FWD.GetValue() - Bind.MOVE_BWD.GetValue();
+            float strafe = Bind.MOVE_RIGHT.GetValue() - Bind.MOVE_LEFT.GetValue();
+            var output = new Vector3(strafe, 0, move);
+            if(output.sqrMagnitude > 1){
+                return output.normalized;
+            }
+            return output;
+        }
+
+        float GetRunInput (bool readInput) {
+            if(!readInput){
+                return 0f;
+            }
+            return 1f - Mathf.Clamp01(Bind.WALK_OR_RUN.GetValue());     // hardcoded inversion "for now"
         }
 
     }

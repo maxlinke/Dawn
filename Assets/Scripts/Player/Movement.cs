@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using CustomInputSystem;
 using System.Collections.Generic;
 
 namespace PlayerController {
@@ -34,6 +33,7 @@ namespace PlayerController {
             public bool touchingWall;
             public bool isInWater;
             public bool canCrouchInWater;
+            public bool canJump;
             public PhysicMaterial surfacePhysicMaterial;
             public MoveType moveType;
             public Vector3 worldPosition;
@@ -41,6 +41,20 @@ namespace PlayerController {
             public Vector3 incomingLocalVelocity;
             public bool jumped;
             public int frame;
+        }
+
+        public struct CrouchControlInput {
+            public bool toggleCrouch;
+            public bool crouchHold;
+            public bool crouchHoldRelease;
+
+            public static CrouchControlInput None { get {
+                CrouchControlInput output;
+                output.toggleCrouch = false;
+                output.crouchHold = false;
+                output.crouchHoldRelease = false;
+                return output;
+            } }
         }
 
         public abstract float LocalColliderHeight { get; }
@@ -185,10 +199,8 @@ namespace PlayerController {
             return otherRB.isKinematic;
         }
 
-        protected float RawSpeedMultiplier (bool readInput) {
-            float runWalkLerp = readInput ? Bind.WALK_OR_RUN.GetValue() : 0f;
-            // TODO if always run is off : runWalkLerp = 1f - runWalkLerp;
-            var standingSpeed = Mathf.Lerp(pcProps.RunSpeedMultiplier, pcProps.WalkSpeedMultiplier, Mathf.Clamp01(runWalkLerp));
+        protected float RawSpeedMultiplier (float run) {
+            var standingSpeed = Mathf.Lerp(pcProps.WalkSpeedMultiplier, pcProps.RunSpeedMultiplier, Mathf.Clamp01(run));
             var crouchSpeed = pcProps.CrouchSpeedMultiplier;
             var crouchFactor = Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
             return Mathf.Lerp(crouchSpeed, standingSpeed, crouchFactor);
@@ -196,16 +208,6 @@ namespace PlayerController {
 
         protected float JumpSpeed () {
             return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
-        }
-
-        protected Vector3 GetLocalSpaceMoveInput () {
-            float move = Bind.MOVE_FWD.GetValue() - Bind.MOVE_BWD.GetValue();
-            float strafe = Bind.MOVE_RIGHT.GetValue() - Bind.MOVE_LEFT.GetValue();
-            var output = new Vector3(strafe, 0, move);
-            if(output.sqrMagnitude > 1){
-                return output.normalized;
-            }
-            return output;
         }
 
         protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float timeStep) {
@@ -241,21 +243,21 @@ namespace PlayerController {
             shouldCrouch = value;
         }
 
-        public void UpdateCrouchState (bool readInput) {
-            if(!readInput || controlMode != ControlMode.FULL){
-                return;
-            }
+        public void UpdateCrouchState (CrouchControlInput ccInput) {
             if(lastState.isInWater && !lastState.canCrouchInWater){
                 shouldCrouch = false;
                 return;
             }
-            if(Bind.CROUCH_TOGGLE.GetKeyDown()){
+            if(controlMode != ControlMode.FULL){
+                ccInput = CrouchControlInput.None;
+            }
+            if(ccInput.toggleCrouch){
                 shouldCrouch = !shouldCrouch;
             }
-            if(Bind.CROUCH_HOLD.GetKey()){
+            if(ccInput.crouchHold){
                 shouldCrouch = true;
             }
-            if(Bind.CROUCH_HOLD.GetKeyUp()){
+            if(ccInput.crouchHoldRelease){
                 shouldCrouch = false;
             }
         }
@@ -357,6 +359,7 @@ namespace PlayerController {
                     }
                 }
             }
+            output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
