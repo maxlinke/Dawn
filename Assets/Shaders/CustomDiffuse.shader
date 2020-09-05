@@ -4,7 +4,7 @@
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
 
-        [Toggle(_EMISSIVE)] _Emissive ("Emissive", Int) = 0
+        [Toggle(_EMISSIVE)] _Emissive ("Enable Emission", Int) = 0
         [HDR] _EmissionColor ("Emission Color", Color) = (1,1,1,1)
         _EmissionTex ("Emission Color (RGB)", 2D) = "white" {}
 

@@ -1,13 +1,12 @@
-﻿Shader "Custom/Specular (Mapped)" {
+﻿Shader "Custom/Diffuse (Normalmap)" {
 
     Properties {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _SpecTex ("Specular Color (RGB), Hardness (A)", 2D) = "white" {}
-        _SpecColor ("Specular Color", Color) = (0.5,0.5,0.5,1)
-        _SpecHardness ("Specular Hardness", Range(0, 1)) = 0.5
 
-        [Toggle(_EMISSIVE)] _Emissive ("Emissive", Int) = 0
+        [Normal] _BumpMap ("Normal Map", 2D) = "bump" {}
+
+        [Toggle(_EMISSIVE)] _Emissive ("Enable Emission", Int) = 0
         [HDR] _EmissionColor ("Emission Color", Color) = (1,1,1,1)
         _EmissionTex ("Emission Color (RGB)", 2D) = "white" {}
 
@@ -20,7 +19,7 @@
     }
 
     CustomEditor "ShaderEditors.DefaultCustomLMEditor"
-	
+
     SubShader {
 	
         Tags { "RenderType"="Opaque" }
@@ -34,22 +33,20 @@
 
         CGPROGRAM
 		
-        #pragma surface surf CustomBlinnPhong fullforwardshadows
+        #pragma surface surf CustomLambert fullforwardshadows
         #pragma shader_feature _EMISSIVE
         #pragma target 3.0
         #include "CustomLighting.cginc"
 
         fixed4 _Color;
         sampler2D _MainTex;
-        // fixed4 _SpecColor;   << already declared in UnityLightingCommon.cginc
-        sampler2D _SpecTex;
-        float _SpecHardness;
+        sampler2D _BumpMap;
         fixed4 _EmissionColor;
         sampler2D _EmissionTex;
 
         struct Input {
             float2 uv_MainTex;
-            float2 uv_SpecTex;
+            float2 uv_BumpMap;
             #if defined(_EMISSIVE)
                 float2 uv_EmissionTex;
             #endif
@@ -59,13 +56,11 @@
             fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
             o.Albedo = c.rgb;
             o.Alpha = c.a;
-            fixed4 s = tex2D (_SpecTex, IN.uv_SpecTex);
-            o.SpecCol = s.rgb * _SpecColor.rgb;
-            o.Hardness = s.a * _SpecHardness;
             #if defined(_EMISSIVE)
                 fixed4 e = tex2D (_EmissionTex, IN.uv_EmissionTex) * _EmissionColor;
                 o.Emission = e.rgb;
             #endif
+            o.Normal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap));
         }
 		
         ENDCG
