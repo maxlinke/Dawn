@@ -58,7 +58,6 @@ namespace PlayerController {
         }
 
         bool initialized = false;
-        bool cachedJumpKeyDown = false;
         Transform smoothRotationParent;
         ControlMode m_controlMode = ControlMode.FULL;
 
@@ -188,7 +187,6 @@ namespace PlayerController {
             }
             Debug.DrawLine(lastState.worldPosition, currentState.worldPosition, lineColor, 10f);
             lastState = currentState;
-            cachedJumpKeyDown = false;
         }
         
         void ExecuteMove (MoveInput moveInput, ref MoveState currentState) {

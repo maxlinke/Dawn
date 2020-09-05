@@ -193,11 +193,6 @@ namespace PlayerController {
             return false;
         }
 
-        protected bool ColliderIsLadder (Collider otherCollider) {
-            if(otherCollider == null) return false;
-            return TagManager.CompareTag(Tag.Ladder, otherCollider.gameObject);
-        }
-
         protected bool ColliderIsSolid (Collider otherCollider) {
             if(otherCollider == null) return false;
             var otherRB = otherCollider.attachedRigidbody;
@@ -356,13 +351,13 @@ namespace PlayerController {
                     output.surfacePhysicMaterial = null;
                 }
                 if(surfaceAngle < pcProps.HardSlopeLimit){
-                    output.moveType = MoveType.GROUND;
-                }else{
-                    if(lp != null){
-                        output.moveType = MoveType.LADDER;
-                    }else{
-                        output.moveType = MoveType.SLOPE;
+                    bool slippery = false;
+                    if(sp.otherCollider != null){
+                        slippery = TagManager.CompareTag(Tag.Slippery, sp.otherCollider.gameObject);
                     }
+                    output.moveType = (slippery ? MoveType.SLOPE : MoveType.GROUND);
+                }else{
+                    output.moveType = ((lp != null) ? MoveType.LADDER : MoveType.SLOPE);
                 }
             }
             output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
