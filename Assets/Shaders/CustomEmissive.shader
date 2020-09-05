@@ -1,8 +1,15 @@
 ﻿Shader "Custom/Emissive" {
 
     Properties {
-        _Color ("Color", Color) = (1,1,1,1)
+        [HDR] _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Emission (RGB)", 2D) = "white" {}
+
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Culling", Int) = 2
+        [Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", Int) = 1
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Int) = 4
+
+        [Enum(UnityEngine.Rendering.BlendMode)] _BlendSrc ("Blend mode Source", Int) = 1
+		[Enum(UnityEngine.Rendering.BlendMode)] _BlendDst ("Blend mode Destination", Int) = 0
     }
 
     CustomEditor "ShaderEditors.CustomEmissiveEditor"
@@ -11,6 +18,12 @@
 	
         Tags { "RenderType"="Opaque" }
         LOD 200
+
+        Cull [_Cull]
+        ZWrite [_ZWrite]
+        ZTest [_ZTest]
+
+        Blend [_BlendSrc] [_BlendDst]
 
         CGPROGRAM
 		

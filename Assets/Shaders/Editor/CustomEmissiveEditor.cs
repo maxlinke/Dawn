@@ -3,27 +3,26 @@ using UnityEditor;
 
 namespace ShaderEditors {
 
-    public class CustomEmissiveEditor : ShaderGUI {
+    public class CustomEmissiveEditor : CustomShaderGUI {
 
         static MaterialProperty[] emptyProps = new MaterialProperty[0];
 
         public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties) {
             var targetMat = editor.target as Material;
             
-            var colProp = FindProperty("_Color", properties);
-            var texProp = FindProperty("_MainTex", properties);
-            editor.TexturePropertySingleLine(new GUIContent(texProp.displayName), texProp, colProp);
-            editor.TextureScaleOffsetProperty(texProp);
+            GUILayout.Label("Emission", EditorStyles.boldLabel);
+            DrawIndented(() => {
+                var colProp = FindProperty("_Color", properties);
+                var texProp = FindProperty("_MainTex", properties);
+                editor.TexturePropertySingleLine(new GUIContent(texProp.displayName), texProp, colProp);
+                editor.TextureScaleOffsetProperty(texProp);
+                GUILayout.Space(4f);
+                DrawFullGISelection(editor, targetMat);
+            });
 
-            EditorGUI.BeginChangeCheck();
-            var gi = targetMat.globalIlluminationFlags;
-            gi = (MaterialGlobalIlluminationFlags)EditorGUILayout.EnumPopup(new GUIContent("Global Illumination"), gi);
-            if(EditorGUI.EndChangeCheck()){
-                editor.RegisterPropertyChangeUndo("Global Illumination Flags");
-                targetMat.globalIlluminationFlags = gi;
-            }
-            
-            base.OnGUI(editor, emptyProps);     // renderqueue etc.
+            GUILayout.Space(10f);
+            DrawRenderingOptionsIfExists(editor, properties);
+            DrawDefaultBottomProperties(editor);
         }
         
     }
