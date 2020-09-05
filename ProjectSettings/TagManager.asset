@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MultiTag
   - Ladder
+  - Slippery
   layers:
   - Default
   - TransparentFX

@@ -3,6 +3,29 @@ using UnityEngine;
 
 public static class TagManager{
 
+    private const int MAX_MULTI_TAG_CACHE_SIZE = 32;
+
+    private static Dictionary<GameObject, MultiTag> multiTagCache = new Dictionary<GameObject, MultiTag>();
+    private static Queue<GameObject> cachedQueue = new Queue<GameObject>();
+
+    public static void CacheMultiTag (GameObject obj, MultiTag multiTag) {
+        try{
+            multiTagCache.Add(obj, multiTag);
+            cachedQueue.Enqueue(obj);
+            if(cachedQueue.Count > MAX_MULTI_TAG_CACHE_SIZE){
+                multiTagCache.Remove(cachedQueue.Dequeue());
+            }
+        }catch(System.Exception e){
+            Debug.LogError(e.Message);
+        }
+    }
+
+    public static void RemoveCachedMultiTag (GameObject obj) {
+        if(multiTagCache.ContainsKey(obj)){
+            multiTagCache.Remove(obj);
+        }
+    }
+
 	public static bool CompareTag (string tag, GameObject obj) {
         if(obj == null){
             return false;
@@ -11,7 +34,11 @@ public static class TagManager{
 			return true;
 		}
         if(obj.CompareTag(Tag.MultiTag)){
-			var multiTag = obj.GetComponent<MultiTag>();
+            MultiTag multiTag;
+            if(!multiTagCache.TryGetValue(obj, out multiTag)){
+                multiTag = obj.GetComponent<MultiTag>();
+                CacheMultiTag(obj, multiTag);
+            }
 			if(multiTag == null){
 				Debug.LogError($"GameObject \"{obj.name}\" has tag \"{Tag.MultiTag}\" but no \"{nameof(MultiTag)}\"-Component!");
                 return false;

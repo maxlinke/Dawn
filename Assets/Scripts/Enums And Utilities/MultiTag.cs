@@ -10,6 +10,11 @@ public class MultiTag : MonoBehaviour{
             Debug.LogWarning($"GameObject \"{gameObject.name}\" has \"{nameof(MultiTag)}\" component, but is tagged \"{gameObject.tag}\"! This should already be \"{Tag.MultiTag}\", changing it now...");
             gameObject.tag = Tag.MultiTag;
         }
+        TagManager.CacheMultiTag(this.gameObject, this);
+    }
+
+    void OnDestroy () {
+        TagManager.RemoveCachedMultiTag(this.gameObject);
     }
 
     public IEnumerator<string> GetEnumerator () {
