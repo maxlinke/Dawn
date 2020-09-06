@@ -45,7 +45,7 @@ public class CCPlayer : Player {
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        ccView.Look(cursorLocked ? GetViewInput() : Vector2.zero);
+        ccView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
         ccMovement.Move(readInput: cursorLocked);
         ccView.UpdateHeadLocalPosition();
         if(ccView.InteractCheck(out var interactable, out var interactDescription)){

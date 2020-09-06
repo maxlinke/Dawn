@@ -24,7 +24,6 @@ namespace CustomInputSystem {
                 return;
             }
             instance = this;
-            Test();
             Bind.Initialize();
             if(resetAxisConfigToDefault){
                 Axis.Config.ResetToDefault();
@@ -47,10 +46,6 @@ namespace CustomInputSystem {
                 output += $"{axisInput}\n";
             }
             return output;
-        }
-
-        void Test () {
-
         }
 
         void OnDestroy () {

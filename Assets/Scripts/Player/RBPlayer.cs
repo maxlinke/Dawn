@@ -73,7 +73,7 @@ public class RBPlayer : Player {
             }
         #endif
         var cursorLocked = CursorLockManager.CursorIsLocked();
-        rbView.Look(cursorLocked ? GetViewInput() : Vector2.zero);
+        rbView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
         if(rbView.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
                 interactable.Interact(this);
@@ -111,8 +111,8 @@ public class RBPlayer : Player {
             return RBMovement.MoveInput.None;
         }
         RBMovement.MoveInput output;
-        output.horizontalInput = GetHorizontalLocalSpaceMoveVector();
-        output.verticalInput = GetVerticalLocalSpaceMoveVector();
+        output.horizontalInput = Bind.GetHorizontalMoveInput();
+        output.verticalInput = Bind.GetVerticalMoveInput();
         output.run = 1f - Mathf.Clamp01(Bind.WALK_OR_RUN.GetValue());   // TODO make (1f - x) optional because "Auto Run"
         output.jump = Bind.JUMP.GetKeyDown() || cachedJumpKeyDown;
         output.waterExitJump = Bind.JUMP.GetKey();

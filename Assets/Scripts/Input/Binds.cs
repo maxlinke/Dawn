@@ -214,6 +214,32 @@ namespace CustomInputSystem {
             return output;
         }
 
+        public static Vector2 GetViewInput () {
+            var dx = Bind.LOOK_RIGHT.GetValue() - Bind.LOOK_LEFT.GetValue();
+            var dy = Bind.LOOK_DOWN.GetValue() - Bind.LOOK_UP.GetValue();
+            return new Vector2(dx, dy);
+        }
+
+        public static Vector3 GetHorizontalMoveInput () {
+            float move = Bind.MOVE_FWD.GetValue() - Bind.MOVE_BWD.GetValue();
+            float strafe = Bind.MOVE_RIGHT.GetValue() - Bind.MOVE_LEFT.GetValue();
+            var output = new Vector3(strafe, 0, move);
+            if(output.sqrMagnitude > 1){
+                return output.normalized;
+            }
+            return output;
+        }
+
+        public static Vector3 GetVerticalMoveInput () {
+            var up = Bind.JUMP.GetValue();
+            var down = Mathf.Max(Bind.CROUCH_HOLD.GetValue(), Bind.CROUCH_TOGGLE.GetValue());
+            var output = new Vector3(0f, up - down, 0f);
+            if(output.sqrMagnitude > 1){
+                return output.normalized;
+            }
+            return output;
+        }
+
     }
 
     
