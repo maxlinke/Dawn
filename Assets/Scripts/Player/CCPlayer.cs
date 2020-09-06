@@ -28,6 +28,9 @@ public class CCPlayer : Player {
     // TODO gravity alignment
 
     void Start () {
+        if(!IsValidSingleton()){
+            return;
+        }
         ccView.Initialize(pcProps, this, head);
         ccView.SetHeadOrientation(
             headTilt: 0f, 

@@ -29,7 +29,9 @@ namespace CustomInputSystem {
             INTERACT,
 
             TOGGLE_DEBUG_LOG,
-            TOGGLE_FRAMERATE_DISPLAY
+            TOGGLE_FRAMERATE_DISPLAY,
+            TOGGLE_DEBUG_CONSOLE,
+            TOGGLE_PLAYERCONTROLLER_DEBUG
         }
     
         public static readonly Bind PAUSE_CANCEL_ETC = CreateImmutableBind(ID.PAUSE_CANCEL_ETC, "Pause/Unpause/Cancel Rebind", new KeyCodeInput(KeyCode.Escape), new KeyCodeInput(KeyCodeUtils.XBoxKeyCode.START));
@@ -52,6 +54,8 @@ namespace CustomInputSystem {
 
         public static readonly Bind TOGGLE_DEBUG_LOG = new Bind(ID.TOGGLE_DEBUG_LOG, "Toggle Debug Log");
         public static readonly Bind TOGGLE_FRAMERATE_DISPLAY = new Bind(ID.TOGGLE_FRAMERATE_DISPLAY, "Toggle Framerate Display");
+        public static readonly Bind TOGGLE_DEBUG_CONSOLE = new Bind(ID.TOGGLE_DEBUG_CONSOLE, "Toggle Debug Console");
+        public static readonly Bind TOGGLE_PLAYERCONTROLLER_DEBUG = new Bind(ID.TOGGLE_PLAYERCONTROLLER_DEBUG, "Toggle PlayerController Debug UI");
         // fire, alt fire?, interact
         // the scroll-weapon-switch stuff, the q-weapon-switch stuff ("previous"/"next" and "last used")
         // weapon category keys
@@ -79,6 +83,9 @@ namespace CustomInputSystem {
 
                 case ID.TOGGLE_DEBUG_LOG: return TOGGLE_DEBUG_LOG;
                 case ID.TOGGLE_FRAMERATE_DISPLAY: return TOGGLE_FRAMERATE_DISPLAY;
+                case ID.TOGGLE_DEBUG_CONSOLE: return TOGGLE_DEBUG_CONSOLE;
+                case ID.TOGGLE_PLAYERCONTROLLER_DEBUG: return TOGGLE_PLAYERCONTROLLER_DEBUG;
+                
                 default: 
                     Debug.LogError($"Unknown {nameof(ID)} \"{id}\"!");
                     return null;
@@ -140,6 +147,8 @@ namespace CustomInputSystem {
 
             ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_LOG, new KeyCodeInput(KeyCode.F1));
             ClearAndAddWithoutInputSystemNotification(TOGGLE_FRAMERATE_DISPLAY, new KeyCodeInput(KeyCode.F2));
+            ClearAndAddWithoutInputSystemNotification(TOGGLE_DEBUG_CONSOLE, new KeyCodeInput(KeyCode.F3));
+            ClearAndAddWithoutInputSystemNotification(TOGGLE_PLAYERCONTROLLER_DEBUG, new KeyCodeInput(KeyCode.F4));
 
             void ClearAndAddWithoutInputSystemNotification (Bind bind, params InputMethod[] inputsToAdd) {
                 bind.ClearInputs(false);

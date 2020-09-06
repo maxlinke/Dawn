@@ -17,8 +17,6 @@ public class RBPlayer : Player {
     [SerializeField] KeyCode gravityFlipKey = KeyCode.G;
     [SerializeField] KeyCode viewLockKey = KeyCode.V;
     [SerializeField] Transform debugViewTarget = default;
-    [SerializeField] UnityEngine.UI.Text movementDebugText = default;
-    [SerializeField] UnityEngine.UI.Text viewDebugText = default;
 
     protected override Movement MovementSystem => rbMovement;
 
@@ -31,6 +29,9 @@ public class RBPlayer : Player {
     // because if the fov gets changed or velocity lean disabled, that should actually happen...
 
     void Start () {
+        if(!IsValidSingleton()){
+            return;
+        }
         rbView.Initialize(pcProps, this, head);
         rbView.SetHeadOrientation(
             headTilt: 0f, 
@@ -84,8 +85,8 @@ public class RBPlayer : Player {
         rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
         CacheSingleFrameInputs();
 
-        viewDebugText.text = rbView.debugInfo;
-        movementDebugText.text = rbMovement.debugInfo;
+        DebugTools.PlayerControllerDebugUI.ViewInfo = rbView.debugInfo;
+        DebugTools.PlayerControllerDebugUI.MovementInfo = rbMovement.debugInfo;
     }
 
     void FixedUpdate () {

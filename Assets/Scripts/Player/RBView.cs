@@ -5,6 +5,9 @@ namespace PlayerController {
 
     public class RBView : View {
 
+        // TODO copy water stuff to player health system
+        // but the fog stuff can go
+
         private struct WaterState {
             public bool headUnderWater;
             public Collider trigger;
