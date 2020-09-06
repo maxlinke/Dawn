@@ -82,6 +82,8 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
     [SerializeField] MovementProperties slope = MovementProperties.SlopeDefault;
     [SerializeField] MovementProperties air = MovementProperties.AirDefault;
+    const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
+    [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
     [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
     [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
 	
@@ -94,6 +96,7 @@ public class PlayerControllerProperties : ScriptableObject {
     public MovementProperties Ground => ground;
     public MovementProperties Slope => slope;
     public MovementProperties Air => air;
+    public bool EnableFullFlightParabola => enableFullFlightParabola;
     public MovementProperties Water => water;
     public MovementProperties Ladder => ladder;
 

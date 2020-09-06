@@ -45,6 +45,7 @@ MonoBehaviour:
     speed: 12
     accel: 24
     drag: 4
+  enableFullFlightParabola: 1
   water:
     speed: 12
     accel: 24

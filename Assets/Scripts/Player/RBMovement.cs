@@ -367,13 +367,20 @@ namespace PlayerController {
         }
 
         void AerialMovement (MoveInput moveInput, ref MoveState currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
-            ApplyDrag(pcProps.Air.Drag, ref horizontalLocalVelocity);
-            var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = moveInput.horizontalInput;
             var rawInputMag = rawInput.magnitude;
+            var targetDirection = PlayerTransform.TransformDirection(rawInput);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
+            var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
+            var drag = pcProps.Air.Drag;
+            if(pcProps.EnableFullFlightParabola && horizontalLocalSpeed > pcProps.Air.Speed){
+                var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
+                drag *= (1f - Mathf.Clamp01(dirDot));
+            }
+            ApplyDrag(drag, ref horizontalLocalVelocity);
+            horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(moveInput.run), horizontalLocalSpeed);
-            var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            var targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel, Time.fixedDeltaTime);
             if(currentState.isInWater && currentState.touchingWall && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
