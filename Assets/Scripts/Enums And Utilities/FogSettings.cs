@@ -76,7 +76,30 @@ public struct FogSettings {
         output.fogEndDistance = Mathf.LerpUnclamped(a.fogEndDistance, b.fogEndDistance, lerp);
         return output;
     }
-	
+
+    public override bool Equals (object obj) {
+        if(obj == null){
+            return false;
+        }
+        if(obj is FogSettings other){
+            return (other.fogEnabled       == this.fogEnabled)
+                && (other.fogMode          == this.fogMode)
+                && (other.fogColor         == this.fogColor)
+                && (other.fogDensity       == this.fogDensity)
+                && (other.fogStartDistance == this.fogStartDistance)
+                && (other.fogEndDistance   == this.fogEndDistance);
+
+        }
+        return false;
+    }
+
+    public override int GetHashCode () {
+        return base.GetHashCode();
+    }
+
+    public override string ToString () {
+        return base.ToString();
+    }
 }
 
 #if UNITY_EDITOR

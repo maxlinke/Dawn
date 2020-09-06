@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abe9c4a20cbaf0c44b6b62b77c08f136, type: 3}
   m_Name: Water Fog Blue
   m_EditorClassIdentifier: 
-  overrideFog: 1
+  overlayColor: {r: 0.24007654, g: 0.3764901, b: 0.6132076, a: 0.2509804}
+  multiplyColor: {r: 1, g: 1, b: 1, a: 1}
+  overrideFog: 0
   fogSettings:
     fogEnabled: 1
     fogMode: 1

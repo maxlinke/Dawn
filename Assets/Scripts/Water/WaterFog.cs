@@ -7,8 +7,16 @@ using UnityEditor;
 [CreateAssetMenu(menuName = "Water/Fog Settings", fileName = "New WaterFog")]
 public class WaterFog : ScriptableObject {
 
+    [Header("Camera Overlay")]
+    [SerializeField] Color overlayColor = Color.clear;
+    [SerializeField] Color multiplyColor = Color.white;
+
+    [Header("Fog")]
     [SerializeField] bool overrideFog = true;
     [SerializeField] FogSettings fogSettings = FogSettings.Default;
+
+    public Color OverlayColor => overlayColor;
+    public Color MultiplyColor => multiplyColor;
 
     public bool OverrideFog => overrideFog;
     public FogSettings FogSettings => fogSettings;
@@ -34,6 +42,9 @@ public class WaterFogEditor : Editor {
         EditorGUILayout.ObjectField("Script", MonoScript.FromScriptableObject(wfs), wfs.GetType(), false);
         EditorGUILayout.Space();
         GUI.enabled = guiCache;
+
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("overlayColor"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("multiplyColor"));
 
         var overrideProp = serializedObject.FindProperty("overrideFog");
         EditorGUILayout.PropertyField(overrideProp);

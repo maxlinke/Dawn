@@ -89,6 +89,8 @@ GameObject:
   - component: {fileID: 5667464448456441082}
   - component: {fileID: 5667464448456441080}
   - component: {fileID: 5667464448456441083}
+  - component: {fileID: 8242871214574094878}
+  - component: {fileID: 1091937845838086272}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -160,3 +162,33 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5667464448456441085}
   m_Enabled: 1
+--- !u!114 &8242871214574094878
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5667464448456441085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df27f8ca09acb9469a3d8b594157f1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fogEffectShader: {fileID: 4800000, guid: ced218d865b16154fb921e151689c871, type: 3}
+--- !u!114 &1091937845838086272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5667464448456441085}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcc9c882ff7ea644787693cc7861559a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waterFXShader: {fileID: 4800000, guid: e8ba3a9bc46d59e45b5de7a4fc8b6e2d, type: 3}
+  waterFXOverlayPropName: _OverlayColor
+  waterFXTintPropName: _TintColor
+  a: {r: 0, g: 0, b: 0, a: 0}
+  b: {r: 0, g: 0, b: 0, a: 0}

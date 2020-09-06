@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using CustomInputSystem;
 
 public class FreeCam : MonoBehaviour {
@@ -11,9 +9,9 @@ public class FreeCam : MonoBehaviour {
     const float DRAG = 125f;
 
     [Header("Components")]
-    [SerializeField] Rigidbody rb;
-    [SerializeField] SphereCollider col;
-    [SerializeField] Camera cam;
+    [SerializeField] Rigidbody rb = default;
+    [SerializeField] SphereCollider col = default;
+    [SerializeField] Camera cam = default;
 
     float pitch;
     float pan;

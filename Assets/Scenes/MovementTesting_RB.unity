@@ -14,12 +14,12 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_Fog: 0
+  m_Fog: 1
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_FogMode: 1
   m_FogDensity: 0.01
-  m_LinearFogStart: 0
-  m_LinearFogEnd: 300
+  m_LinearFogStart: 100
+  m_LinearFogEnd: 150
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -3276,6 +3276,8 @@ MonoBehaviour:
   fog: {fileID: 11400000, guid: dc3d223ee2a3fcd45ad8869a986b757a, type: 2}
   cols:
   - {fileID: 681126786}
+  runtimeStatic: 0
+  showBoundingVolume: 0
 --- !u!65 &681126786
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5145,6 +5147,8 @@ MonoBehaviour:
   fog: {fileID: 11400000, guid: 6ef95c6259731714eade960150c69348, type: 2}
   cols:
   - {fileID: 922064410}
+  runtimeStatic: 0
+  showBoundingVolume: 0
 --- !u!1 &970986768
 GameObject:
   m_ObjectHideFlags: 0
@@ -10285,6 +10289,8 @@ MonoBehaviour:
   fog: {fileID: 11400000, guid: 6ef95c6259731714eade960150c69348, type: 2}
   cols:
   - {fileID: 1752105268}
+  runtimeStatic: 0
+  showBoundingVolume: 0
 --- !u!65 &1752105268
 BoxCollider:
   m_ObjectHideFlags: 0
