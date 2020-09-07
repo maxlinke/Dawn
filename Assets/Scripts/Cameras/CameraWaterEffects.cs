@@ -13,11 +13,14 @@ public class CameraWaterEffects : MonoBehaviour {
     Camera cam;
     Material waterFXMat;
 
-    FogSettings airFogSettings; // TODO get from level
-    bool fogOverridden;         // TODO get rid of, compare with level fog settings
+    FogSettings m_initFogSettings;
+    FogSettings airFogSettings { get {
+        var lvl = Level.current;
+        return (lvl != null ? lvl.FogSettings : m_initFogSettings);
+    } }
     bool isUnderWater;
 
-    void Awake () {
+    void Start () {
         cam = GetComponent<Camera>();
         if(waterFXShader == null){
             waterFXShader = Shader.Find(waterFXShaderName);
@@ -26,7 +29,7 @@ public class CameraWaterEffects : MonoBehaviour {
         }
         waterFXMat = new Material(waterFXShader);
         waterFXMat.hideFlags = HideFlags.HideAndDontSave;
-        airFogSettings = FogSettings.GetCurrent();
+        m_initFogSettings = FogSettings.GetCurrent();
     }
 
     void OnPreRender () {
@@ -38,15 +41,13 @@ public class CameraWaterEffects : MonoBehaviour {
             if(waterFog.OverrideFog){
                 if(!waterFog.FogSettings.Equals(FogSettings.GetCurrent())){
                     waterFog.FogSettings.Apply();
-                    fogOverridden = true;
                 }
             }
         }else{
             waterFXMat.SetColor(overlayID, Color.clear);
             waterFXMat.SetColor(tintID, Color.white);
-            if(fogOverridden){
+            if(!FogSettings.GetCurrent().Equals(airFogSettings)){
                 airFogSettings.Apply();
-                fogOverridden = false;
             }
         }
     }
