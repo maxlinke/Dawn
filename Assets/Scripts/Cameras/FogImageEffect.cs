@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class FogImageEffect : MonoBehaviour {
 
@@ -7,6 +10,8 @@ public class FogImageEffect : MonoBehaviour {
     static Material fogEffectMaterial;
 
     Camera cam;
+    bool m_appliedEffect;
+    public bool AppliedEffect => m_appliedEffect;
 
     [ContextMenu(nameof(LogRenderingPaths))]
     void LogRenderingPaths () {
@@ -33,11 +38,32 @@ public class FogImageEffect : MonoBehaviour {
 
     [ImageEffectOpaque]
     void OnRenderImage (RenderTexture src, RenderTexture dst) {
-        if(cam.actualRenderingPath == RenderingPath.DeferredShading){
+        var fogOn = RenderSettings.fog;
+        var deferred = cam.actualRenderingPath == RenderingPath.DeferredShading;
+        if(fogOn && deferred){
             Graphics.Blit(src, dst, fogEffectMaterial);
+            m_appliedEffect = true;
         }else{
             Graphics.Blit(src, dst);
+            m_appliedEffect = false;
         }
     }
 
 }
+
+#if UNITY_EDITOR
+
+[CustomEditor(typeof(FogImageEffect))]
+public class FogImageEffectEditor : Editor {
+
+    public override void OnInspectorGUI () {
+        DrawDefaultInspector();
+        if(EditorApplication.isPlaying){
+            var applied = ((FogImageEffect)target).AppliedEffect;
+            EditorGUILayout.LabelField(applied ? "Active" : "Not active");
+        }
+    }
+
+}
+
+#endif
