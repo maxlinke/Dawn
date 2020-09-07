@@ -2,7 +2,7 @@
 
 public class CameraWaterEffects : MonoBehaviour {
 
-    const string ShaderName = "Custom/Image Effects/Color Overlay and Tint";
+    const string waterFXShaderName = "Custom/Image Effects/Color Overlay and Tint";
     const string OverlayPropName = "_OverlayColor";
     const string TintPropName = "_TintColor";
 
@@ -13,14 +13,14 @@ public class CameraWaterEffects : MonoBehaviour {
     Camera cam;
     Material waterFXMat;
 
-    FogSettings airFogSettings;
-    bool fogOverridden;
+    FogSettings airFogSettings; // TODO get from level
+    bool fogOverridden;         // TODO get rid of, compare with level fog settings
     bool isUnderWater;
 
     void Awake () {
         cam = GetComponent<Camera>();
         if(waterFXShader == null){
-            waterFXShader = Shader.Find(ShaderName);
+            waterFXShader = Shader.Find(waterFXShaderName);
             overlayID = Shader.PropertyToID(OverlayPropName);
             tintID = Shader.PropertyToID(TintPropName);
         }
@@ -30,7 +30,7 @@ public class CameraWaterEffects : MonoBehaviour {
     }
 
     void OnPreRender () {
-        isUnderWater = WaterBody.ContainsPoint(cam.transform.position, out WaterBody waterBody);
+        isUnderWater = WaterBody.IsInAnyWaterBody(cam.transform.position, out WaterBody waterBody);
         if(isUnderWater){
             var waterFog = waterBody.Fog;
             waterFXMat.SetColor(overlayID, waterFog.OverlayColor);
@@ -51,6 +51,8 @@ public class CameraWaterEffects : MonoBehaviour {
         }
     }
 
+    // TODO FXAA
+    // when fxaa is implemented, only do blit(src, dst) when no other blits happened!
     void OnRenderImage (RenderTexture src, RenderTexture dst) {
         if(isUnderWater){
             Graphics.Blit(src, dst, waterFXMat);

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class WaterBody : MonoBehaviour {
 
+    public const float DEFAULT_MIN_CONTAINS_DIST = 0.01f;
+
     [Header("Components")]
     [SerializeField] WaterPhyicsSettings physics = default;
     [SerializeField] WaterFog fog = default;
@@ -36,6 +38,8 @@ public class WaterBody : MonoBehaviour {
         waterBodies.Add(this);
         if(runtimeStatic){
             worldBounds = CalculateWorldBounds();
+        }else{
+            Debug.LogAssertion($"{nameof(WaterBody)} \"{this.gameObject.name}\" is not marked \"{nameof(runtimeStatic)}\". You should have a good reason for that. It's much more efficient!");
         }
         initialized = true;
 
@@ -43,6 +47,7 @@ public class WaterBody : MonoBehaviour {
             bool physicsOk = (physics != null);
             bool fogOk = (fog != null);
             bool colsOk = (cols != null && cols.Length > 0);
+            var output = true;
             if(!physicsOk || !fogOk || !colsOk){
                 if(!physicsOk){
                     Debug.LogError($"No {nameof(WaterPhyicsSettings)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
@@ -53,10 +58,12 @@ public class WaterBody : MonoBehaviour {
                 if(!colsOk){
                     Debug.LogError($"No collider(s) assigned on {nameof(WaterBody)} \"{gameObject.name}\"!");
                 }
-                Debug.DrawRay(transform.position, Vector3.up * 100f, Color.red, float.PositiveInfinity);
-                return false;
+                output = false;
             }
-            return true;
+            if(!output){
+                Debug.DrawRay(transform.position, Vector3.up * 100f, Color.red, float.PositiveInfinity);
+            }
+            return output;
         }
 
         bool AllTriggersOnWaterLayer (Transform transformToCheck) {
@@ -76,13 +83,18 @@ public class WaterBody : MonoBehaviour {
             foreach(var col in cols){
                 bool colOK = true;
                 string temp = $"{col.GetType()} \"{col.name}\" ";
-                if(!col.isTrigger){
-                    temp += "| isn't a trigger! ";
+                if(col == null){
+                    temp += "is null!";
                     colOK = false;
-                }
-                if(!CanDoContainsCheck(col)){
-                    temp += "| can't do contains check (non-convex mesh collider?) ";
-                    colOK = false;
+                }else{
+                    if(!col.isTrigger){
+                        temp += "| isn't a trigger! ";
+                        colOK = false;
+                    }
+                    if(!CanDoContainsCheck(col)){
+                        temp += "| can't do contains check (non-convex mesh collider?) ";
+                        colOK = false;
+                    }
                 }
                 if(!colOK){
                     message += $"{temp}\n";
@@ -206,25 +218,28 @@ public class WaterBody : MonoBehaviour {
         return true;
     }
 
-    public bool ContainsPoint (Vector3 worldPoint) {
-        var bounds = (runtimeStatic ? worldBounds : CalculateWorldBounds());
-        if(!bounds.Contains(worldPoint)){
-            return false;
+    public bool ContainsPoint (Vector3 worldPoint, float minDist = DEFAULT_MIN_CONTAINS_DIST) {
+        if(cols.Length > 1){
+            var bounds = (runtimeStatic ? worldBounds : CalculateWorldBounds());
+            if(!bounds.Contains(worldPoint)){
+                return false;
+            }
         }
+        float minDistSqr = minDist * minDist;
         foreach(var col in cols){
             if(!CanDoContainsCheck(col)){
                 continue;
             }
-            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < 0.0001f){
+            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < minDistSqr){
                 return true;
             }
         }
         return false;
     }
 
-    public static bool ContainsPoint (Vector3 worldPoint, out WaterBody outputWB) {
+    public static bool IsInAnyWaterBody (Vector3 worldPoint, out WaterBody outputWB, float minDist = DEFAULT_MIN_CONTAINS_DIST) {
         foreach(var wb in waterBodies){
-            if(wb.ContainsPoint(worldPoint)){
+            if(wb.ContainsPoint(worldPoint, minDist)){
                 outputWB = wb;
                 return true;
             }

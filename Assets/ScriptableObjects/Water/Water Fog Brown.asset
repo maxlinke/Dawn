@@ -17,8 +17,8 @@ MonoBehaviour:
   overrideFog: 1
   fogSettings:
     fogEnabled: 1
-    fogMode: 1
-    fogColor: {r: 0.2830189, g: 0.2504293, b: 0.17221431, a: 1}
-    fogDensity: 0.01
+    fogMode: 2
+    fogColor: {r: 0.24528301, g: 0.23172964, b: 0.1978462, a: 1}
+    fogDensity: 0.1
     fogStartDistance: 0
-    fogEndDistance: 10
+    fogEndDistance: 20
