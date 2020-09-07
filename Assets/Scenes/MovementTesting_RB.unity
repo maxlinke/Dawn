@@ -1497,7 +1497,7 @@ GameObject:
   - component: {fileID: 153720809}
   - component: {fileID: 153720808}
   - component: {fileID: 153720807}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Capsule
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2252,7 +2252,7 @@ GameObject:
   - component: {fileID: 376419304}
   - component: {fileID: 376419303}
   - component: {fileID: 376419302}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2589,7 +2589,7 @@ GameObject:
   - component: {fileID: 564183903}
   - component: {fileID: 564183902}
   - component: {fileID: 564183901}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2788,7 +2788,7 @@ GameObject:
   - component: {fileID: 580561519}
   - component: {fileID: 580561518}
   - component: {fileID: 580561517}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: triangleramp (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3253,7 +3253,7 @@ GameObject:
   - component: {fileID: 684026819}
   - component: {fileID: 684026818}
   - component: {fileID: 684026817}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4148,7 +4148,7 @@ GameObject:
   - component: {fileID: 800846923}
   - component: {fileID: 800846922}
   - component: {fileID: 800846921}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5260,7 +5260,7 @@ GameObject:
   - component: {fileID: 1013741094}
   - component: {fileID: 1013741093}
   - component: {fileID: 1013741092}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: triangleramp (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7610,7 +7610,7 @@ GameObject:
   - component: {fileID: 1444208029}
   - component: {fileID: 1444208028}
   - component: {fileID: 1444208027}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (5)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9472,7 +9472,7 @@ GameObject:
   - component: {fileID: 1679005099}
   - component: {fileID: 1679005098}
   - component: {fileID: 1679005097}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: triangleramp (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10759,7 +10759,7 @@ GameObject:
   - component: {fileID: 1821201747}
   - component: {fileID: 1821201746}
   - component: {fileID: 1821201745}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Cube (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -10978,7 +10978,7 @@ GameObject:
   - component: {fileID: 1837356335}
   - component: {fileID: 1837356334}
   - component: {fileID: 1837356333}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: triangleramp (4)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

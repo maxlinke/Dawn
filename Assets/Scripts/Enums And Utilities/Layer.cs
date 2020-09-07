@@ -12,6 +12,7 @@
     public static readonly Layer SmallProp = new Layer(11, "SmallProp");
     public static readonly Layer EntityGround = new Layer(12, "EntityGround");
     public static readonly Layer PropGround = new Layer(13, "PropGround");
+    public static readonly Layer FreeCam = new Layer(14, "FreeCam");
 
     public readonly int index;
     public readonly string name;
