@@ -5,6 +5,7 @@ public abstract class Player : MonoBehaviour {
 
     [Header("Properties")]
     [SerializeField] protected PlayerControllerProperties pcProps = default;
+    [SerializeField] protected PlayerHealthSettings healthSettings = default;
 
     [Header("GameObject Parts")]
     [SerializeField] protected Transform head = default;

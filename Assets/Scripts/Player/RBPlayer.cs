@@ -10,6 +10,8 @@ public class RBPlayer : Player {
     [Header("Specific Scripty bits")]
     [SerializeField] RBMovement rbMovement = default;
     [SerializeField] RBView rbView = default;
+    [SerializeField] PlayerModel model = default;
+    [SerializeField] PlayerHealth health = default;
 
     [Header("Debug")]
     [SerializeField] KeyCode boostKey = KeyCode.Mouse1;
@@ -40,6 +42,10 @@ public class RBPlayer : Player {
         ); // should be deserialized or something later on
         rbView.smoothRotationParent = smoothRotationParent;
         rbMovement.Initialize(pcProps, head, modelParent, smoothRotationParent);
+        health.Initialize(healthSettings);
+        health.SetHealth(healthSettings.DefaultHealth);
+        health.SetInvulnerable(false);      // TODO commandprompt.godmodeenabled
+        model.Initialize(pcProps, rbMovement, head);
         // load the states 
         // set collider height
         rbMovement.UpdateHeadAndModelPosition(instantly: true);
@@ -84,6 +90,7 @@ public class RBPlayer : Player {
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
         CacheSingleFrameInputs();
+        model.UpdateSpherePositions();
 
         DebugTools.PlayerControllerDebugUI.ViewInfo = rbView.debugInfo;
         DebugTools.PlayerControllerDebugUI.MovementInfo = rbMovement.debugInfo;

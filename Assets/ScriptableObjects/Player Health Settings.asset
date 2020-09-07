@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0656038002add9479b51f2370d79280, type: 3}
+  m_Name: Player Health Settings
+  m_EditorClassIdentifier: 
+  defaultHealth: 100
+  maxHealth: 200
+  minFallDamageHeight: 10
+  oneHundredFallDamageHeight: 30
+  fallDamageReferenceGravity: 29.43
+  breathTime: 30
+  breathRecoveryTime: 5
+  drowningDamagePerSecond: 10
+  drowningDamageInterval: 1

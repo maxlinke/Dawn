@@ -98,19 +98,6 @@ namespace DebugTools {
             viewText.color = colorScheme.PCDebugForeground;
             movementTextBG.color = colorScheme.PCDebugBackground;
             viewTextBG.color = colorScheme.PCDebugBackground;
-
-            // void AddBGImage (RectTransform targetRT) {
-            //     var newBG = new GameObject("Background", typeof(RectTransform), typeof(Image));
-            //     var newBGRT = newBG.GetComponent<RectTransform>();
-            //     newBGRT.SetParent(targetRT);
-            //     newBGRT.localPosition = Vector3.zero;
-            //     newBGRT.localRotation = Quaternion.identity;
-            //     newBGRT.localScale = Vector3.one;
-            //     newBGRT.SetToFill();
-            //     var newImg = newBG.GetComponent<Image>();
-            //     newImg.sprite = null;
-            //     newImg.color = colorScheme.BackgroundColor;
-            // }
         }
 
         void ResetText () {
