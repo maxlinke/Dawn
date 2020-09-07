@@ -27,10 +27,7 @@ public class CCPlayer : Player {
 
     // TODO gravity alignment
 
-    void Start () {
-        if(!IsValidSingleton()){
-            return;
-        }
+    protected override void InitializeComponents () {
         ccView.Initialize(pcProps, this, head);
         ccView.SetHeadOrientation(
             headTilt: 0f, 
@@ -38,7 +35,6 @@ public class CCPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         ccMovement.Initialize(pcProps, head, modelParent);
-        InitCamera();
     }
 
     void Update () {

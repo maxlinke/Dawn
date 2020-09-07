@@ -19,7 +19,9 @@ namespace SceneLoading {
         [SerializeField] Image loadingBar = default;
         [SerializeField] Text[] loadingTexts = default;
 
-        private static SceneLoader instance;
+        public static SceneLoader instance { get; private set; }
+
+        public static event System.Action onDoneLoading = delegate {};
         
         Coroutine loadCoroutine = null;
 
@@ -88,11 +90,20 @@ namespace SceneLoading {
                     foreach(var text in loadingTexts){
                         text.text = loadingTextText;
                     }
-                    yield return null;
+                    if(!doneLoading){
+                        yield return null;   
+                    }
                 }
                 SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex((int)newScene));
                 loadingScreenCanvas.enabled = false;
                 loadCoroutine = null;
+                if(Level.current != null){
+                    if(Level.current.ID != newScene){
+                        Debug.LogWarning($"{nameof(SceneID)} mismatch! Loaded \"{newScene}\" but {nameof(Level)} is \"{Level.current.ID}\"!");
+                    }
+                    Level.current.Init();
+                }
+                onDoneLoading?.Invoke();
             }
         }
 

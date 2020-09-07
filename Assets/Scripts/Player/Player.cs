@@ -6,6 +6,7 @@ public abstract class Player : MonoBehaviour {
     [Header("Properties")]
     [SerializeField] protected PlayerControllerProperties pcProps = default;
     [SerializeField] protected PlayerHealthSettings healthSettings = default;
+    [SerializeField] protected bool selfInit = false;
 
     [Header("GameObject Parts")]
     [SerializeField] protected Transform head = default;
@@ -22,14 +23,23 @@ public abstract class Player : MonoBehaviour {
 
     protected abstract Movement MovementSystem { get; }
 
-    protected bool IsValidSingleton () {
+    private bool m_initialized = false;
+    public bool initialized { 
+        get => m_initialized; 
+        private set => m_initialized = value;
+    }
+
+    protected virtual void Start () {
         if(Instance != null){
             Debug.LogError($"Singleton violation, instance of {nameof(Player)} is not null!");
             Destroy(this.gameObject);
-            return false;
+            return;
         }
         Instance = this;
-        return true;
+        if(selfInit){
+            Debug.LogWarning($"{nameof(Player)} is self initializing!");
+            Initialize();
+        }
     }
 
     protected virtual void OnDestroy () {
@@ -38,7 +48,20 @@ public abstract class Player : MonoBehaviour {
         }
     }
 
-    protected void InitCamera () {
+    public void Initialize () {
+        if(initialized){
+            Debug.LogWarning($"{nameof(Player)} is already initialized, aborting!");
+            return;
+        }
+        InitCamera();
+        InitializeComponents();
+        initialized = true;
+    }
+
+    protected abstract void InitializeComponents ();
+
+    // TODO also third person camera
+    void InitCamera () {
         fpCamera.orthographic = false;
         fpCamera.nearClipPlane = pcProps.NearClipDist;
         fpCamera.farClipPlane = pcProps.FarClipDist;

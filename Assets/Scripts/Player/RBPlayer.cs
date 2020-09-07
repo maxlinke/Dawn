@@ -30,10 +30,12 @@ public class RBPlayer : Player {
     // also some kind of subscription or something to playerconfig
     // because if the fov gets changed or velocity lean disabled, that should actually happen...
 
-    void Start () {
-        if(!IsValidSingleton()){
-            return;
-        }
+    // TODO separate "state loading". init should just set all the important references and init the components
+    // so i don't have to destroy the player and spawn a new one if i want to reload a quicksave or something
+    
+    // TODO serializable playerstate thing (class so null is an option?)
+    // so there is a difference between a "fresh" load and a "save" load
+    protected override void InitializeComponents () {
         rbView.Initialize(pcProps, this, head);
         rbView.SetHeadOrientation(
             headTilt: 0f, 
@@ -49,10 +51,12 @@ public class RBPlayer : Player {
         // load the states 
         // set collider height
         rbMovement.UpdateHeadAndModelPosition(instantly: true);
-        InitCamera();
     }
 
     void Update () {
+        if(!initialized){
+            return;
+        }
         #if UNITY_EDITOR
             if(Input.anyKeyDown){
                 CursorLockManager.UpdateLockState();
@@ -97,6 +101,9 @@ public class RBPlayer : Player {
     }
 
     void FixedUpdate () {
+        if(!initialized){
+            return;
+        }
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbMovement.ApplySubRotation();
         rbMovement.Move(GetMoveInput(readInput: cursorLocked));
