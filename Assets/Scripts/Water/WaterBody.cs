@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class WaterBody : MonoBehaviour {
 
-    public const float DEFAULT_MIN_CONTAINS_DIST = 0.01f;
+    public const float CONTAINS_THRESHOLD_DIST = 0.01f;
+    public const float CONTAINS_THRESHOLD_DIST_SQR = CONTAINS_THRESHOLD_DIST * CONTAINS_THRESHOLD_DIST;
 
     [Header("Components")]
     [SerializeField] WaterPhyicsSettings physics = default;
@@ -218,28 +219,27 @@ public class WaterBody : MonoBehaviour {
         return true;
     }
 
-    public bool ContainsPoint (Vector3 worldPoint, float minDist = DEFAULT_MIN_CONTAINS_DIST) {
+    public bool ContainsPoint (Vector3 worldPoint) {
         if(cols.Length > 1){
             var bounds = (runtimeStatic ? worldBounds : CalculateWorldBounds());
             if(!bounds.Contains(worldPoint)){
                 return false;
             }
         }
-        float minDistSqr = minDist * minDist;
         foreach(var col in cols){
             if(!CanDoContainsCheck(col)){
                 continue;
             }
-            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < minDistSqr){
+            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR){
                 return true;
             }
         }
         return false;
     }
 
-    public static bool IsInAnyWaterBody (Vector3 worldPoint, out WaterBody outputWB, float minDist = DEFAULT_MIN_CONTAINS_DIST) {
+    public static bool IsInAnyWaterBody (Vector3 worldPoint, out WaterBody outputWB) {
         foreach(var wb in waterBodies){
-            if(wb.ContainsPoint(worldPoint, minDist)){
+            if(wb.ContainsPoint(worldPoint)){
                 outputWB = wb;
                 return true;
             }

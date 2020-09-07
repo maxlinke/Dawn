@@ -6,7 +6,7 @@ namespace PlayerController {
 
     public class PlayerHealth : MonoBehaviour {
 
-        private float m_health;
+        [SerializeField] private float m_health;    // TODO temp debug serialization
 
         public float Health {
             get => m_health;
@@ -21,7 +21,12 @@ namespace PlayerController {
         public event System.Action<float> OnHealthUpdated = delegate {};
 
         PlayerHealthSettings healthSettings;
-        bool invulnerable;
+        List<Collider> waterTriggers;
+        Transform head;
+
+        [SerializeField] float normedBreath = 1f;   // TODO temp debug serialization
+        bool invulnerable = false;
+        bool initialized = false;
 
         // TODO
         // TODO
@@ -34,10 +39,14 @@ namespace PlayerController {
         // see if i can make it non-enable dependent (no awake, no (fixed)update)
         // TODO
         // TODO
+        
+        // TODO gib head flying off
 
-        public void Initialize (PlayerHealthSettings healthSettings) {
+        public void Initialize (PlayerHealthSettings healthSettings, Transform head) {
             this.healthSettings = healthSettings;
-            invulnerable = false;
+            this.head = head;
+            waterTriggers = new List<Collider>();
+            initialized = true;
         }
 
         public void SetHealth (float value) {
@@ -71,9 +80,56 @@ namespace PlayerController {
             Health -= fallDmg;
         }
 
-        // TODO internal on health update stuff
-        // TODO gib head flying off
-        // TODO more methods
+        public void InternalHealthUpdate (float timeStep) {
+            float breathDelta;
+            if(HeadUnderWater()){
+                breathDelta = -1f * timeStep / healthSettings.BreathTime;
+            }else{
+                breathDelta = timeStep / healthSettings.BreathRecoveryTime;
+            }
+            normedBreath = Mathf.Clamp01(normedBreath + breathDelta);
+            // TODO health ticking down from drowning
+            // TODO should breath go down when invulnerable?
+            // rename invulnerable to godmode in here?
+        }
+
+        public void ClearWaterTriggerList () {
+            waterTriggers.Clear();
+        }
+
+        void OnTriggerStay (Collider otherCollider) {
+            if(!initialized){
+                return;
+            }
+            if(otherCollider.gameObject.layer == Layer.Water){
+                AddToWaterTriggersIfValid();
+            }
+
+            void AddToWaterTriggersIfValid () {
+                if(otherCollider is MeshCollider mc){
+                    if(!mc.convex){
+                        return;
+                    }
+                }
+                if(!waterTriggers.Contains(otherCollider)){
+                    waterTriggers.Add(otherCollider);
+                }
+            }
+        }
+
+        bool HeadUnderWater () {
+            if(waterTriggers.Count <= 0){
+                return false;
+            }
+            foreach(var waterTrigger in waterTriggers){
+                var hPos = head.position;
+                var cPos = waterTrigger.ClosestPoint(hPos);
+                if((hPos - cPos).sqrMagnitude < WaterBody.CONTAINS_THRESHOLD_DIST_SQR){
+                    return true;
+                }
+            }
+            return false;
+        }
         
     }
 

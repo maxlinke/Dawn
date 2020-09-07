@@ -44,7 +44,7 @@ public class RBPlayer : Player {
         ); // should be deserialized or something later on
         rbView.smoothRotationParent = smoothRotationParent;
         rbMovement.Initialize(pcProps, head, modelParent, smoothRotationParent);
-        health.Initialize(healthSettings);
+        health.Initialize(healthSettings, head);
         health.SetHealth(healthSettings.DefaultHealth);
         health.SetInvulnerable(false);      // TODO commandprompt.godmodeenabled
         model.Initialize(pcProps, rbMovement, head);
@@ -58,31 +58,10 @@ public class RBPlayer : Player {
             return;
         }
         #if UNITY_EDITOR
-            if(Input.anyKeyDown){
-                CursorLockManager.UpdateLockState();
-            }
-            if(Input.GetKeyDown(boostKey)){
-                rbMovement.Velocity += head.transform.forward * 50f;
-            }
-            if(Input.GetKeyDown(slowMoKey)){
-                if(Time.timeScale == 1f){
-                    Time.timeScale = 0.05f;
-                }else{
-                    Time.timeScale = 1f;
-                }
-            }
-            if(Input.GetKeyDown(gravityFlipKey)){
-                Physics.gravity = -Physics.gravity;
-            }
-            if(Input.GetKeyDown(viewLockKey)){
-                rbView.viewTarget = debugViewTarget;
-                rbView.controlMode = View.ControlMode.TARGETED;
-            }
-            if(Input.GetKeyUp(viewLockKey)){
-                rbView.viewTarget = null;
-                rbView.controlMode = View.ControlMode.FULL;
-            }
+            DebugInputs();
         #endif
+        health.InternalHealthUpdate(Time.deltaTime);
+        // TODO what about being dead?
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
         if(rbView.InteractCheck(out var interactable, out var interactDescription)){
@@ -104,6 +83,7 @@ public class RBPlayer : Player {
         if(!initialized){
             return;
         }
+        health.ClearWaterTriggerList();
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbMovement.ApplySubRotation();
         rbMovement.Move(GetMoveInput(readInput: cursorLocked));
@@ -145,6 +125,33 @@ public class RBPlayer : Player {
 
     void ResetSingleFrameInputs () {
         cachedJumpKeyDown = false;
+    }
+
+    void DebugInputs () {
+        if(Input.anyKeyDown){
+            CursorLockManager.UpdateLockState();
+        }
+        if(Input.GetKeyDown(boostKey)){
+            rbMovement.Velocity += head.transform.forward * 50f;
+        }
+        if(Input.GetKeyDown(slowMoKey)){
+            if(Time.timeScale == 1f){
+                Time.timeScale = 0.05f;
+            }else{
+                Time.timeScale = 1f;
+            }
+        }
+        if(Input.GetKeyDown(gravityFlipKey)){
+            Physics.gravity = -Physics.gravity;
+        }
+        if(Input.GetKeyDown(viewLockKey)){
+            rbView.viewTarget = debugViewTarget;
+            rbView.controlMode = View.ControlMode.TARGETED;
+        }
+        if(Input.GetKeyUp(viewLockKey)){
+            rbView.viewTarget = null;
+            rbView.controlMode = View.ControlMode.FULL;
+        }
     }
 	
 }
