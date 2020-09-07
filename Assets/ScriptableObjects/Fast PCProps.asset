@@ -16,7 +16,7 @@ MonoBehaviour:
   crouchHeight: 0.9
   crouchUncrouchTime: 0.25
   eyeOffset: -0.15
-  swimOffset: -0.3
+  swimOffset: -0.4
   colliderRadius: 0.4
   playerMass: 80
   collisionDetection: 2

@@ -4755,7 +4755,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 922064408}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -4.51, z: 0}
+  m_LocalPosition: {x: 0, y: -4.55, z: 0}
   m_LocalScale: {x: 9, y: 10, z: 19}
   m_Children: []
   m_Father: {fileID: 342431214}
@@ -9878,7 +9878,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1752105265}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -4.51, z: 0}
+  m_LocalPosition: {x: 0, y: -4.55, z: 0}
   m_LocalScale: {x: 9, y: 10, z: 19}
   m_Children: []
   m_Father: {fileID: 623954489}
@@ -13135,7 +13135,7 @@ PrefabInstance:
     - target: {fileID: 5667464447170029806, guid: bd5dcf73476542f419baa95438fdaeec,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bd5dcf73476542f419baa95438fdaeec, type: 3}
@@ -13314,11 +13314,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 8913080616178811552, guid: b824ad0361de63f4bb7b5355c52cc363,
-        type: 3}
-      propertyPath: DEBUGTEXTFIELD
-      value: 
-      objectReference: {fileID: 0}
     - target: {fileID: 8913080616178811553, guid: b824ad0361de63f4bb7b5355c52cc363,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -13382,27 +13377,12 @@ PrefabInstance:
     - target: {fileID: 8913080616178811556, guid: b824ad0361de63f4bb7b5355c52cc363,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8913080616178811582, guid: b824ad0361de63f4bb7b5355c52cc363,
         type: 3}
       propertyPath: debugViewTarget
       value: 
       objectReference: {fileID: 4913766}
-    - target: {fileID: 8913080616178811582, guid: b824ad0361de63f4bb7b5355c52cc363,
-        type: 3}
-      propertyPath: viewDebugText
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8913080616178811582, guid: b824ad0361de63f4bb7b5355c52cc363,
-        type: 3}
-      propertyPath: movementDebugText
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8913080616178811583, guid: b824ad0361de63f4bb7b5355c52cc363,
-        type: 3}
-      propertyPath: DEBUGTEXTFIELD
-      value: 
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b824ad0361de63f4bb7b5355c52cc363, type: 3}
