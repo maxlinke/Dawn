@@ -9,7 +9,7 @@ namespace GeometryGenerators {
 
         [Header("Settings")]
         [SerializeField] Vector3 newCenter = Vector3.zero;
-        [SerializeField] Vector3 newExtents = Vector3.one;
+        [SerializeField] Vector3 newSize = Vector3.one;
 
         [Header("Gizmos")]
         [SerializeField] bool drawGizmos = true;
@@ -29,12 +29,12 @@ namespace GeometryGenerators {
                 var gc = Gizmos.color;
                 Gizmos.color = gizmoColor;
                 if(mr != null){
-                    Gizmos.DrawWireCube(mr.bounds.center, 2f * mr.bounds.extents);
+                    Gizmos.DrawWireCube(mr.bounds.center, mr.bounds.size);
                     Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, gizmoColor.a * 0.5f);
                 }
                 var gm = Gizmos.matrix;
                 Gizmos.matrix = mf.transform.localToWorldMatrix;
-                Gizmos.DrawWireCube(mesh.bounds.center, 2f * mesh.bounds.extents);
+                Gizmos.DrawWireCube(mesh.bounds.center, mesh.bounds.size);
                 Gizmos.matrix = gm;
                 Gizmos.color = gc;
             }
@@ -74,7 +74,7 @@ namespace GeometryGenerators {
                 #if UNITY_EDITOR
                 Undo.RecordObject(mesh, "Update bounds");
                 #endif
-                mesh.bounds = new Bounds(newCenter, newExtents);
+                mesh.bounds = new Bounds(newCenter, newSize);
             }
         }
 
@@ -82,8 +82,11 @@ namespace GeometryGenerators {
             if(mesh != null || TryGetMesh(out mesh, out _)){
                 #if UNITY_EDITOR
                 Undo.RecordObject(mesh, "Reset bounds");
+                Undo.RecordObject(this, "Reset bounds");
                 #endif
                 mesh.RecalculateBounds();
+                newCenter = mesh.bounds.center;
+                newSize = mesh.bounds.size;
             }
         }
         

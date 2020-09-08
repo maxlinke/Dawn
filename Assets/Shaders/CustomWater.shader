@@ -37,7 +37,7 @@
 
         CGPROGRAM
 		
-        #pragma surface surf CustomBlinnPhong vertex:vert addshadow fullforwardshadows
+        #pragma surface surf CustomLambert vertex:vert addshadow fullforwardshadows
         #pragma shader_feature _OFFSET_VERTICES
         #pragma shader_feature _EMISSIVE
         #pragma target 3.0
