@@ -145,8 +145,10 @@ public class RBPlayer : Player {
             Physics.gravity = -Physics.gravity;
         }
         if(Input.GetKeyDown(viewLockKey)){
-            rbView.viewTarget = debugViewTarget;
-            rbView.controlMode = View.ControlMode.TARGETED;
+            if(debugViewTarget != null){
+                rbView.viewTarget = debugViewTarget;
+                rbView.controlMode = View.ControlMode.TARGETED;
+            }
         }
         if(Input.GetKeyUp(viewLockKey)){
             rbView.viewTarget = null;

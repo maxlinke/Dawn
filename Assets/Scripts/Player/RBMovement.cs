@@ -354,14 +354,13 @@ namespace PlayerController {
             var targetSpeed = pcProps.Slope.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, currentState.normedSurfaceFriction);
             targetSpeed = Mathf.Max(targetSpeed, horizontalLocalSpeed);
             var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            if(Vector3.Dot(targetVelocity, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
-                targetVelocity = targetVelocity.ProjectOnVector(allowedMoveDirection);
-            }
             var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Slope.Accel, currentState.clampedNormedSurfaceFriction);
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(currentState.isInWater && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
+            }else if(Vector3.Dot(moveAcceleration, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
+                var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
+                moveAcceleration = moveAcceleration.ProjectOnVector(allowedMoveDirection);
             }
             Velocity += (moveAcceleration + Physics.gravity) * Time.fixedDeltaTime;
         }
