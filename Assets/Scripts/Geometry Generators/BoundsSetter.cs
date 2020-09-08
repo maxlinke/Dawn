@@ -12,9 +12,9 @@ namespace GeometryGenerators {
         [SerializeField] Vector3 newCenter = Vector3.zero;
         [SerializeField] Vector3 newExtents = Vector3.one;
 
-        bool TryGetMesh (out Mesh mesh) {
+        bool TryGetMesh (out Mesh mesh, out MeshFilter mf) {
             mesh = null;
-            var mf = GetComponent<MeshFilter>();
+            mf = GetComponent<MeshFilter>();
             if(mf == null){
                 Debug.LogError($"No {nameof(MeshFilter)} found!");
                 return false;
@@ -31,14 +31,25 @@ namespace GeometryGenerators {
             return true;
         }
 
+        public void CopyAndApply () {
+            if(TryGetMesh(out var mesh, out var mf)){
+                #if UNITY_EDITOR
+                Undo.RecordObject(mf, "Duplicate Mesh");
+                #endif
+                var newMesh = Instantiate(mesh);
+                mf.sharedMesh = newMesh;
+                ApplyBounds(newMesh);
+            }
+        }
+
         public void ApplyBounds (Mesh mesh = null) {
-            if(mesh != null || TryGetMesh(out mesh)){
+            if(mesh != null || TryGetMesh(out mesh, out _)){
                 mesh.bounds = new Bounds(newCenter, newExtents);
             }
         }
 
         public void ResetBounds (Mesh mesh = null) {
-            if(mesh != null || TryGetMesh(out mesh)){
+            if(mesh != null || TryGetMesh(out mesh, out _)){
                 mesh.RecalculateBounds();
             }
         }
@@ -51,11 +62,15 @@ namespace GeometryGenerators {
 
         public override void OnInspectorGUI () {
             DrawDefaultInspector();
+            var bs = target as BoundsSetter;
+            if(GUILayout.Button("! Copy Mesh and Apply Bounds !")){
+                bs.CopyAndApply();
+            }
             if(GUILayout.Button("Apply Bounds")){
-                ((BoundsSetter)target).ApplyBounds();
+                bs.ApplyBounds();
             }
             if(GUILayout.Button("Reset Bounds")){
-                ((BoundsSetter)target).ResetBounds();
+                bs.ResetBounds();
             }
         }
 
