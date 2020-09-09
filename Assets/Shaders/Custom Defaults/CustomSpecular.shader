@@ -1,10 +1,12 @@
-﻿Shader "Custom/Diffuse (Normalmap)" {
+﻿Shader "Custom/Defaults/Specular" {
 
     Properties {
         _Color ("Color", Color) = (1,1,1,1)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
-
-        [Normal] _BumpMap ("Normal Map", 2D) = "bump" {}
+        [Toggle(_SPECULARMAP)] _SampleSpecularMap ("Sample Specular Texture", Int) = 0
+        _SpecTex ("Specular Color (RGB), Hardness (A)", 2D) = "white" {}
+        _SpecColor ("Specular Color", Color) = (0.5,0.5,0.5,1)
+        _SpecHardness ("Specular Hardness", Range(0, 1)) = 0.5
 
         [Toggle(_EMISSIVE)] _Emissive ("Enable Emission", Int) = 0
         [HDR] _EmissionColor ("Emission Color", Color) = (1,1,1,1)
@@ -19,7 +21,7 @@
     }
 
     CustomEditor "ShaderEditors.DefaultCustomLMEditor"
-
+	
     SubShader {
 	
         Tags { "RenderType"="Opaque" "Queue" = "Geometry" }
@@ -33,12 +35,13 @@
 
         CGPROGRAM
 		
-        #pragma surface surf CustomLambert fullforwardshadows
+        #pragma surface surf CustomBlinnPhong fullforwardshadows
+        #pragma shader_feature _SPECULARMAP
         #pragma shader_feature _EMISSIVE
         #pragma target 3.0
-        #include "CustomLighting.cginc"
-        #define _NORMALMAP
-        #include "CustomLightingDefaults.cginc"
+        #include "../CustomLighting.cginc"
+        #define _SPECULAR
+        #include "CustomLightingDefaults.cginc"  
 		
         ENDCG
     }
