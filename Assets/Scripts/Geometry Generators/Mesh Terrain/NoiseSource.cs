@@ -4,10 +4,11 @@ namespace GeometryGenerators {
 
     public abstract class NoiseSource {
 
-        [SerializeField] public float scale;
-        [SerializeField, Range(0f, 1f)] public float strength;
-        [SerializeField] public bool randomOffset;
-        [SerializeField] public bool randomRotation;
+        [SerializeField] public float scale = 1f;
+        [SerializeField, Range(0f, 1f)] public float strength = 0.5f;
+        [SerializeField] public bool randomOffset = false;
+        [SerializeField] public bool randomRotation = false;
+
         [System.NonSerialized] public Vector2 offset;
         [System.NonSerialized] public float rotation;
 

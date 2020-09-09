@@ -13,6 +13,8 @@ namespace GeometryGenerators {
         [SerializeField] [Range(1, 254)] protected int xTiles = 32;
         [SerializeField] [Range(1, 254)] protected int zTiles = 32;
         [SerializeField] protected Vector2 tileSize = Vector2.one;
+
+        [Header("UV Settings")]
         [SerializeField] protected UVMode uvMode = UVMode.NORMALIZED;
         [SerializeField] protected Vector2 uvScale = Vector2.one;
 

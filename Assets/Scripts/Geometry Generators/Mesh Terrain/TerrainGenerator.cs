@@ -12,7 +12,7 @@ namespace GeometryGenerators {
         }
 
         [Header("Deformation Settings")]
-        [SerializeField] bool useSeed = true;
+        [SerializeField] bool useSeed = false;
         [SerializeField] string seed = string.Empty;
         [SerializeField, Range(-1f, 1f)] float noiseOffset = 0f;
         [SerializeField] float noiseStrength = 1f;

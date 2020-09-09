@@ -1,59 +1,29 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 
 namespace GeometryGenerators {
 
     [CustomEditor(typeof(TerrainGenerator))]
-    public class TerrainGeneratorEditor : Editor {
+    public class TerrainGeneratorEditor : PlaneGeneratorEditor {
 
-        public override void OnInspectorGUI () {
-            TerrainGenerator tg = target as TerrainGenerator;
+        protected override void DrawAdditionalProperties () {
+            base.DrawAdditionalProperties();
 
-    //		DrawDefaultInspector();
-            DrawCustomInspector(tg);
-
-            if(GUILayout.Button("Generate")){
-                tg.Generate();
+            var seedProp = serializedObject.FindProperty("useSeed");
+            EditorGUILayout.PropertyField(seedProp);
+            if(seedProp.boolValue){
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("seed"));
+                EditorGUI.indentLevel--;
             }
-        }
-
-        void DrawScriptReference (TerrainGenerator tg) {
-            GUI.enabled = false;
-            MonoScript script = MonoScript.FromMonoBehaviour(tg);
-            EditorGUILayout.ObjectField("Script", script, script.GetType(), false);
-            GUI.enabled = true;
-        }
-
-        void DrawCustomInspector (TerrainGenerator tg) {
-            serializedObject.Update();
-            DrawScriptReference(tg);
-            // targets
-            GeometryGenerator.DrawInspectorTargets(serializedObject);
-            // general settings
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("seed"), new GUIContent("Seed"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("xTiles"), new GUIContent("Number of tiles in X"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("zTiles"), new GUIContent("Number of tiles in Z"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("tileSize"), new GUIContent("Tile Size"), true);
-            SerializedProperty uvModeProp = serializedObject.FindProperty("uvMode");
-            EditorGUILayout.PropertyField(uvModeProp, new GUIContent("UV Mode"), true);
-            if(uvModeProp.enumValueIndex == (int)TerrainGenerator.UVMode.VERTEXCOORDS){
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("uvScale"), new GUIContent("UV Scale"), true);
-            }else{
-                GUI.enabled = false;
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("uvScale"), new GUIContent("UV Scale"), true);
-                GUI.enabled = true;
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("noiseOffset"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("noiseStrength"));
+            var nstProp = serializedObject.FindProperty("noiseSourceType");
+            EditorGUILayout.PropertyField(nstProp);
+            if(nstProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.PERLIN)){
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("perlinNoiseSources"), true);
+            }else if(nstProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.TEXTURE)){
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("textureNoiseSources"), true);
             }
-            // deformation settings
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationDirection"), new GUIContent("Deformation Direction"), true);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("deformationStrength"), new GUIContent("Deformation Strength"), true);
-            SerializedProperty noiseSourceProp = serializedObject.FindProperty("noiseSourceType");
-            EditorGUILayout.PropertyField(noiseSourceProp, new GUIContent("Noise Source Type"), true);
-            if(noiseSourceProp.enumValueIndex == (int)TerrainGenerator.NoiseSourceType.PERLIN){
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("perlinNoiseSources"), new GUIContent("Noise Sources"), true);
-            }else if(noiseSourceProp.enumValueIndex == (int)TerrainGenerator.NoiseSourceType.TEXTURE){
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("textureNoiseSources"), new GUIContent("Noise Sources"), true);
-            }
-            serializedObject.ApplyModifiedProperties();
         }
 
     }

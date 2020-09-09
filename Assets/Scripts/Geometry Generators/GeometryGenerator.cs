@@ -89,6 +89,18 @@ namespace GeometryGenerators {
             }
         }
 
+        public static void DrawButtons (GeometryGenerator targetGenerator, bool addSpace = true) {
+            if(addSpace){
+                GUILayout.Space(10f);
+            }
+            if(GUILayout.Button("Generate")){
+                targetGenerator.Generate();
+            }
+            if(GUILayout.Button("Clear")){
+                targetGenerator.Clear();
+            }
+        }
+
         #endif
         
     }

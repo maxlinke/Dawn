@@ -13,7 +13,7 @@ namespace GeometryGenerators {
 
         [Header("Gizmos")]
         [SerializeField] bool drawGizmos = true;
-        [SerializeField] Color gizmoColor = Color.white;
+        [SerializeField] Color gizmoColor = new Color(1f, 0.5f, 0f, 1f);
 
         void OnDrawGizmosSelected () {
             if(!drawGizmos){
@@ -24,7 +24,7 @@ namespace GeometryGenerators {
                 return;
             }
             #endif
-            if(TryGetMesh(out var mesh, out var mf)){
+            if(TryGetMesh(out var mesh, out var mf, logErrors: false)){
                 var mr = GetComponent<MeshRenderer>();
                 var gc = Gizmos.color;
                 Gizmos.color = gizmoColor;
@@ -40,20 +40,26 @@ namespace GeometryGenerators {
             }
         }
 
-        bool TryGetMesh (out Mesh mesh, out MeshFilter mf) {
+        bool TryGetMesh (out Mesh mesh, out MeshFilter mf, bool logErrors = true) {
             mesh = null;
             mf = GetComponent<MeshFilter>();
             if(mf == null){
-                Debug.LogError($"No {nameof(MeshFilter)} found!");
+                if(logErrors){
+                    Debug.LogError($"No {nameof(MeshFilter)} found!");
+                }
                 return false;
             }
             mesh = mf.sharedMesh;
             if(mesh == null){
-                Debug.LogError($"No {nameof(Mesh)} on {nameof(MeshFilter)}!");
+                if(logErrors){
+                    Debug.LogError($"No {nameof(Mesh)} on {nameof(MeshFilter)}!");
+                }
                 return false;
             }
             if(!mesh.isReadable){
-                Debug.LogError($"{nameof(Mesh)} isn't readable!");
+                if(logErrors){
+                    Debug.LogError($"{nameof(Mesh)} isn't readable!");
+                }
                 return false;
             }
             return true;
