@@ -20,7 +20,7 @@
 
     SubShader {
 	
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType"="Opaque" "Queue" = "Geometry" }
         LOD 200
 
         Cull [_Cull]
@@ -35,28 +35,7 @@
         #pragma shader_feature _EMISSIVE
         #pragma target 3.0
         #include "CustomLighting.cginc"
-
-        fixed4 _Color;
-        sampler2D _MainTex;
-        fixed4 _EmissionColor;
-        sampler2D _EmissionTex;
-
-        struct Input {
-            float2 uv_MainTex;
-            #if defined(_EMISSIVE)
-                float2 uv_EmissionTex;
-            #endif
-        };
-
-        void surf (Input IN, inout CustomSurfaceOutput o) {
-            fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
-            o.Albedo = c.rgb;
-            o.Alpha = c.a;
-            #if defined(_EMISSIVE)
-                fixed4 e = tex2D (_EmissionTex, IN.uv_EmissionTex) * _EmissionColor;
-                o.Emission = e.rgb;
-            #endif
-        }
+        #include "CustomLightingDefaults.cginc"
 		
         ENDCG
     }
