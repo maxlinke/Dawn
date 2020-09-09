@@ -7,7 +7,7 @@ namespace ShaderEditors {
 
         public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties) {
             var targetMat = GetTargetMaterial(editor);
-            DrawDiffuseProperties(editor, properties);
+            DrawDiffuseProperties(editor, properties, targetMat);
             if(targetMat.HasProperty("_SpecColor")){
                 DrawSpecularProperties(editor, properties, targetMat);
             }
@@ -24,12 +24,17 @@ namespace ShaderEditors {
             return editor.target as Material;
         }
 
-        protected void DrawDiffuseProperties (MaterialEditor editor, MaterialProperty[] properties) {
+        protected void DrawDiffuseProperties (MaterialEditor editor, MaterialProperty[] properties, Material targetMat) {
             GUILayout.Label("Diffuse", EditorStyles.boldLabel);
             DrawIndented(() => {
                 var mainColProp = FindProperty("_Color", properties);
                 var mainTexProp = FindProperty("_MainTex", properties);
-                editor.TexturePropertySingleLine(new GUIContent(mainTexProp.displayName), mainTexProp, mainColProp);
+                if(targetMat.HasProperty("_AlphaCutoff")){
+                    var cutoffProp = FindProperty("_AlphaCutoff", properties);
+                    editor.TexturePropertySingleLine(new GUIContent(mainTexProp.displayName), mainTexProp, mainColProp, cutoffProp);
+                }else{
+                    editor.TexturePropertySingleLine(new GUIContent(mainTexProp.displayName), mainTexProp, mainColProp);
+                }
                 DrawIndented(() => {editor.TextureScaleOffsetProperty(mainTexProp);});
             });
         }

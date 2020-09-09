@@ -7,7 +7,7 @@ namespace ShaderEditors {
 
         public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties) {
             var targetMat = GetTargetMaterial(editor);
-            DrawDiffuseProperties(editor, properties);
+            DrawDiffuseProperties(editor, properties, targetMat);
             DrawEmissionProperties(editor, properties, targetMat);
             DrawFlowProperties(editor, properties, targetMat);
             DrawFooterProperties(editor, properties);
