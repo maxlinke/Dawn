@@ -157,7 +157,7 @@ namespace PlayerController {
             output.ladderPoint = null;
             float wallDot = 0.0175f;     // cos(89°)
             float maxDot = wallDot;
-            float maxLadderDot = -wallDot;
+            float minLadderDot = float.PositiveInfinity;
             foreach(var point in points){
                 var dot = Vector3.Dot(point.normal, PlayerTransform.up);
                 if(dot > maxDot){
@@ -166,9 +166,10 @@ namespace PlayerController {
                 }else if((Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
                     output.touchingWall = true;
                 }
-                if(dot > maxLadderDot){
+                if(dot < minLadderDot && dot > -wallDot){
                     if((point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject))){
                         output.ladderPoint = point;
+                        minLadderDot = dot;
                     }
                 }
             }
@@ -350,14 +351,14 @@ namespace PlayerController {
                     output.clampedNormedSurfaceFriction = 1f;
                     output.surfacePhysicMaterial = null;
                 }
-                if(surfaceAngle < pcProps.HardSlopeLimit){
-                    bool slippery = false;
-                    if(sp.otherCollider != null){
-                        slippery = TagManager.CompareTag(Tag.Slippery, sp.otherCollider.gameObject);
-                    }
-                    output.moveType = (slippery ? MoveType.SLOPE : MoveType.GROUND);
+                if(sp.otherCollider != null && TagManager.CompareTag(Tag.Slippery, sp.otherCollider.gameObject)){
+                    output.moveType = MoveType.SLOPE;
                 }else{
-                    output.moveType = ((lp != null) ? MoveType.LADDER : MoveType.SLOPE);
+                    if(surfaceAngle <= pcProps.HardSlopeLimit){
+                        output.moveType = MoveType.GROUND;
+                    }else{
+                        output.moveType = ((lp != null) ? MoveType.LADDER : MoveType.SLOPE);
+                    }
                 }
             }
             output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
