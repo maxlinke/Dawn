@@ -12,23 +12,18 @@
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Culling", Int) = 2
         [Enum(Off, 0, On, 1)] _ZWrite ("ZWrite", Int) = 1
         [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("ZTest", Int) = 4
-
-        [Enum(UnityEngine.Rendering.BlendMode)] _BlendSrc ("Blend mode Source", Int) = 1
-		[Enum(UnityEngine.Rendering.BlendMode)] _BlendDst ("Blend mode Destination", Int) = 0
     }
 
     CustomEditor "ShaderEditors.DefaultCustomLMEditor"
 	
     SubShader {
 	
-        Tags { "RenderType"="Opaque" "Queue" = "AlphaTest" }
+        Tags { "RenderType"="Opaque" "Queue"="AlphaTest" }
         LOD 200
 
         Cull [_Cull]
         ZWrite [_ZWrite]
         ZTest [_ZTest]
-
-        Blend [_BlendSrc] [_BlendDst]
 
         CGPROGRAM
 		

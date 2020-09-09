@@ -9,8 +9,8 @@ namespace ShaderEditors {
         static MaterialProperty[] emptyProperties = new MaterialProperty[0];
 
         bool expandRenderOps = false;
-        bool expandBlendOps = false;
-        bool expandStencilOps = true;   // because if there are stencil ops, they are probably important
+        bool expandBlendOps = true;
+        bool expandStencilOps = true;
 
         public override void OnGUI (MaterialEditor editor, MaterialProperty[] properties) {
             base.OnGUI(editor, properties);
