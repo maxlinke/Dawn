@@ -5,9 +5,8 @@ namespace GeometryGenerators {
     [CustomEditor(typeof(TerrainGenerator))]
     public class TerrainGeneratorEditor : PlaneGeneratorEditor {
 
-        protected override void DrawAdditionalProperties () {
-            base.DrawAdditionalProperties();
-
+        protected override void DrawOwnProperties () {
+            base.DrawOwnProperties();
             var seedProp = serializedObject.FindProperty("useSeed");
             EditorGUILayout.PropertyField(seedProp);
             if(seedProp.boolValue){
@@ -17,11 +16,11 @@ namespace GeometryGenerators {
             }
             EditorGUILayout.PropertyField(serializedObject.FindProperty("noiseOffset"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("noiseStrength"));
-            var nstProp = serializedObject.FindProperty("noiseSourceType");
-            EditorGUILayout.PropertyField(nstProp);
-            if(nstProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.PERLIN)){
+            var noiseTypeProp = serializedObject.FindProperty("noiseSourceType");
+            EditorGUILayout.PropertyField(noiseTypeProp);
+            if(noiseTypeProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.PERLIN)){
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("perlinNoiseSources"), true);
-            }else if(nstProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.TEXTURE)){
+            }else if(noiseTypeProp.enumValueIndex == (int)(TerrainGenerator.NoiseSourceType.TEXTURE)){
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("textureNoiseSources"), true);
             }
         }

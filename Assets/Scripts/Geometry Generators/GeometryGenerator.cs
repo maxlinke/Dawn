@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace GeometryGenerators {
 
@@ -77,31 +74,6 @@ namespace GeometryGenerators {
                 return true;
             }
         }
-
-        #if UNITY_EDITOR
-
-        public static void DrawInspectorTargets (SerializedObject serializedObject) {
-            var selfProp = serializedObject.FindProperty(nameof(targetOnlySelf));
-            EditorGUILayout.PropertyField(selfProp);
-            if(!selfProp.boolValue){
-                EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(targetMeshFilters)), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty(nameof(targetMeshColliders)), true);
-            }
-        }
-
-        public static void DrawButtons (GeometryGenerator targetGenerator, bool addSpace = true) {
-            if(addSpace){
-                GUILayout.Space(10f);
-            }
-            if(GUILayout.Button("Generate")){
-                targetGenerator.Generate();
-            }
-            if(GUILayout.Button("Clear")){
-                targetGenerator.Clear();
-            }
-        }
-
-        #endif
         
     }
 

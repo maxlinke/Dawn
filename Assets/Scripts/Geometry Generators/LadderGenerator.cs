@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
-    public class LadderGenerator : GeometryGenerator {
+    public class LadderGenerator : GeometryGeneratorWithGizmos {
 
         const float MIN_LENGTH = 0.5f;
         const float MAX_LENGTH = 100f;
@@ -30,10 +29,6 @@ namespace GeometryGenerators {
             Center,
             Bottom
         }
-
-        [Header("Gizmos")]
-        [SerializeField] bool drawGizmos = true;
-        [SerializeField] Color gizmoColor = Color.cyan;
 
         [Header("Settings")]
         [SerializeField]                                            OriginMode originMode = OriginMode.Top;
@@ -158,17 +153,7 @@ namespace GeometryGenerators {
             }
         }
 
-        void OnDrawGizmosSelected () {
-            if(!drawGizmos){
-                return;
-            }
-            #if UNITY_EDITOR
-            if(UnityEditor.Selection.activeGameObject != this.gameObject){
-                return;
-            }
-            #endif
-            var colCache = Gizmos.color;
-            Gizmos.color = gizmoColor;
+        protected override void DrawGizmos () {
             var points = GetPoints();
             for(int i=0; i<points.Length; i+=2){
                 var a = transform.TransformPoint(points[i]);

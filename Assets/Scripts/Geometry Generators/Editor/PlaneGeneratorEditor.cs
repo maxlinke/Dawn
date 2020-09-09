@@ -3,27 +3,15 @@
 namespace GeometryGenerators {
 
     [CustomEditor(typeof(PlaneGenerator))]
-    public class PlaneGeneratorEditor : Editor {
+    public class PlaneGeneratorEditor : GeometryGeneratorEditor {
 
-        public override void OnInspectorGUI () {
-            EditorTools.DrawScriptReference(target);
-
-            serializedObject.Update();
-
-            GeometryGenerator.DrawInspectorTargets(serializedObject);
+        protected override void DrawOwnProperties () {
             EditorGUILayout.PropertyField(serializedObject.FindProperty("xTiles"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("zTiles"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("tileSize"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("uvMode"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("uvScale"));
-            DrawAdditionalProperties();
-
-            serializedObject.ApplyModifiedProperties();
-
-            GeometryGenerator.DrawButtons((GeometryGenerator)target);
         }
-
-        protected virtual void DrawAdditionalProperties () { }
         
     }
 

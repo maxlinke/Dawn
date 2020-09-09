@@ -1,14 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
-    public class StairGenerator : GeometryGenerator {
+    public class StairGenerator : GeometryGeneratorWithGizmos {
 
         const int MIN_STEP_COUNT = 0;
         const int MAX_STEP_COUNT = 20;
@@ -21,10 +17,6 @@ namespace GeometryGenerators {
 
         const float MIN_WIDTH = 0f;
         const float MAX_WIDTH = 10f;
-
-        [Header("Gizmos")]
-        [SerializeField] bool drawGizmos = true;
-        [SerializeField] Color gizmoColor = Color.cyan;
 
         [Header("Settings")]
         [SerializeField, Range(MIN_STEP_COUNT, MAX_STEP_COUNT)] int stepCount = 10;
@@ -114,17 +106,7 @@ namespace GeometryGenerators {
             return output;
         }
 
-        void OnDrawGizmosSelected () {
-            if(!drawGizmos){
-                return;
-            }
-            #if UNITY_EDITOR
-            if(UnityEditor.Selection.activeGameObject != this.gameObject){
-                return;
-            }
-            #endif
-            var cc = Gizmos.color;
-            Gizmos.color = gizmoColor;
+        protected override void DrawGizmos () {
             var points = Make3DPoints(Get2DPoints());
             var s0 = transform.TransformPoint(points[0]);
             var s1 = transform.TransformPoint(points[1]);
@@ -141,29 +123,8 @@ namespace GeometryGenerators {
                 l0 = p0;
                 l1 = p1;
             }
-            Gizmos.color = cc;
         }
         
     }
-
-    #if UNITY_EDITOR
-    [CustomEditor(typeof(StairGenerator))]
-    public class StairGeneratorEditor : Editor {
-            
-            StairGenerator sg;
-
-            void OnEnable () {
-                sg = target as StairGenerator;
-            }
-
-            public override void OnInspectorGUI () {
-                DrawDefaultInspector();
-                if(GUILayout.Button("Generate")){
-                    sg.Generate();
-                }
-            }
-            
-    }
-    #endif
 
 }

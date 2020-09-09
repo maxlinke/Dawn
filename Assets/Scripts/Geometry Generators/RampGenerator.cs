@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
-    public class RampGenerator : GeometryGenerator {
+    public class RampGenerator : GeometryGeneratorWithGizmos {
 
         const float MIN_FRONT_ANGLE = 1f;
         const float MAX_FRONT_ANGLE = 90f;
@@ -20,10 +17,6 @@ namespace GeometryGenerators {
 
         const float MIN_WIDTH = 0f;
         const float MAX_WIDTH = 10f;
-
-        [Header("Gizmos")]
-        [SerializeField] bool drawGizmos = true;
-        [SerializeField] Color gizmoColor = Color.cyan;
 
         [Header("Settings")]
         [SerializeField] bool multiMaterial = false;
@@ -135,17 +128,7 @@ namespace GeometryGenerators {
             return output;
         }
 
-        void OnDrawGizmosSelected () {
-            if(!drawGizmos){
-                return;
-            }
-            #if UNITY_EDITOR
-            if(UnityEditor.Selection.activeGameObject != this.gameObject){
-                return;
-            }
-            #endif
-            var cc = Gizmos.color;
-            Gizmos.color = gizmoColor;
+        protected override void DrawGizmos () {
             var points = Make3DPoints(Get2DPoints());
             var l = points.Length / 2;
             for(int i=0; i<l; i++){
@@ -159,29 +142,8 @@ namespace GeometryGenerators {
                 Gizmos.DrawLine(a, a2);
                 Gizmos.DrawLine(b, b2);
             }
-            Gizmos.color = cc;
         }
         
     }
-
-    #if UNITY_EDITOR
-    [CustomEditor(typeof(RampGenerator))]
-    public class RampGeneratorEditor : Editor {
-            
-            RampGenerator rg;
-
-            void OnEnable () {
-                rg = target as RampGenerator;
-            }
-
-            public override void OnInspectorGUI () {
-                DrawDefaultInspector();
-                if(GUILayout.Button("Generate")){
-                    rg.Generate();
-                }
-            }
-            
-    }
-    #endif
 
 }
