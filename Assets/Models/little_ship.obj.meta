@@ -1,19 +1,24 @@
 fileFormatVersion: 2
-guid: 2d3a0a152987f8041945e8101d93f8ff
+guid: 9959bf1097da0474e8d66078ce2e8fc4
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: default
     100002: //RootNode
+    100004: little_ship
     400000: default
     400002: //RootNode
+    400004: little_ship
     2100000: defaultMat
     2300000: default
+    2300002: little_ship
     3300000: default
+    3300002: little_ship
     4300000: default
+    4300002: little_ship
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -51,17 +56,17 @@ ModelImporter:
     importCameras: 1
     importLights: 1
     swapUVChannels: 0
-    generateSecondaryUV: 1
+    generateSecondaryUV: 0
     useFileUnits: 1
     optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
     preserveHierarchy: 0
     indexFormat: 0
-    secondaryUVAngleDistortion: 5
-    secondaryUVAreaDistortion: 15
-    secondaryUVHardAngle: 45
-    secondaryUVPackMargin: 15
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
     useFileScale: 1
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
@@ -73,7 +78,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2

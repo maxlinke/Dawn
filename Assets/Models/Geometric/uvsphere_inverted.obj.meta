@@ -1,15 +1,16 @@
 fileFormatVersion: 2
-guid: a2d22ccfbe5c67843b6c36efb1696d37
+guid: 9cc820c3f6a160049b5b4ac966b91d3a
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: //RootNode
-    400000: //RootNode
-    2100000: Default OBJ
-    2300000: //RootNode
-    3300000: //RootNode
-    4300000: Cube_Cube.001
-    4300002: little ship
+    100000: UV-Sphere_(Inverted)
+    100002: //RootNode
+    400000: UV-Sphere_(Inverted)
+    400002: //RootNode
+    2100000: UV-Sphere_(Inverted)Mat
+    2300000: UV-Sphere_(Inverted)
+    3300000: UV-Sphere_(Inverted)
+    4300000: UV-Sphere_(Inverted)
   externalObjects: {}
   materials:
     importMaterials: 0
@@ -61,7 +62,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 0
+    useFileScale: 1
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
   tangentSpace:

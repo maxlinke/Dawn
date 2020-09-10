@@ -1,19 +1,19 @@
 fileFormatVersion: 2
-guid: d18132bf947f690489eb717a0b1a7396
+guid: 232cbc3f4a465fc4e99aed05f8ea737a
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: default
+    100000: Suzanne
     100002: //RootNode
-    400000: default
+    400000: Suzanne
     400002: //RootNode
-    2100000: defaultMat
-    2300000: default
-    3300000: default
-    4300000: default
+    2100000: SuzanneMat
+    2300000: Suzanne
+    3300000: Suzanne
+    4300000: Suzanne
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -73,7 +73,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2

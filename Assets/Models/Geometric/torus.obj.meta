@@ -1,19 +1,25 @@
 fileFormatVersion: 2
-guid: b14c126ac6c0edc4ebfbd63ee3d07d26
+guid: 0ec6d44ab0f89934d97dc9ed03f3e18e
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: default
     100002: //RootNode
+    100004: Torus
     400000: default
     400002: //RootNode
+    400004: Torus
     2100000: defaultMat
+    2100002: TorusMat
     2300000: default
+    2300002: Torus
     3300000: default
+    3300002: Torus
     4300000: default
+    4300002: Torus
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -73,7 +79,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2

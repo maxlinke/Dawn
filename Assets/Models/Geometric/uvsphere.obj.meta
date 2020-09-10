@@ -1,19 +1,25 @@
 fileFormatVersion: 2
-guid: cffaa923d0c41494581a63f3715320f0
+guid: 0bd40787c8358bd44962f7e4c0e87129
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
-    100000: default
+    100000: UV-Sphere_(Smooth)
     100002: //RootNode
-    400000: default
+    100004: UV-Sphere
+    400000: UV-Sphere_(Smooth)
     400002: //RootNode
-    2100000: defaultMat
-    2300000: default
-    3300000: default
-    4300000: default
+    400004: UV-Sphere
+    2100000: UV-Sphere_(Smooth)Mat
+    2100002: UV-SphereMat
+    2300000: UV-Sphere_(Smooth)
+    2300002: UV-Sphere
+    3300000: UV-Sphere_(Smooth)
+    3300002: UV-Sphere
+    4300000: UV-Sphere_(Smooth)
+    4300002: UV-Sphere
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -73,7 +79,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
