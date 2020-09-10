@@ -13,6 +13,7 @@ namespace GeometryGenerators {
                 DrawGizmoProperties();
             }
             DrawOwnProperties();
+            serializedObject.ApplyModifiedProperties();
             DrawButtons();
         }
 

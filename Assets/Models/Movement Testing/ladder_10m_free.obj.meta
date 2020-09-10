@@ -5,12 +5,17 @@ ModelImporter:
   fileIDToRecycleName:
     100000: default
     100002: //RootNode
+    100004: ladder_10m_free
     400000: default
     400002: //RootNode
+    400004: ladder_10m_free
     2100000: defaultMat
     2300000: default
+    2300002: ladder_10m_free
     3300000: default
+    3300002: ladder_10m_free
     4300000: default
+    4300002: ladder_10m_free
   externalObjects: {}
   materials:
     importMaterials: 0

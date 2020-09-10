@@ -5,15 +5,21 @@ ModelImporter:
   fileIDToRecycleName:
     100000: default
     100002: //RootNode
+    100004: Swimming_Pool
     400000: default
     400002: //RootNode
+    400004: Swimming_Pool
     2100000: defaultMat
+    2100002: Swimming_PoolMat
     2300000: default
+    2300002: Swimming_Pool
     3300000: default
+    3300002: Swimming_Pool
     4300000: default
+    4300002: Swimming_Pool
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -73,7 +79,7 @@ ModelImporter:
     legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
     blendShapeNormalImportMode: 1
     normalSmoothingSource: 0
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
