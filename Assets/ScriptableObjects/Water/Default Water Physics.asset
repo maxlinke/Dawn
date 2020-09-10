@@ -12,13 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4407e2e7ba18d445971e5655376cf15, type: 3}
   m_Name: Default Water Physics
   m_EditorClassIdentifier: 
-  fogSettings:
-    fogEnabled: 1
-    fogMode: 1
-    fogColor: {r: 0.24007654, g: 0.3764901, b: 0.6132076, a: 1}
-    fogDensity: 0.01
-    fogStartDistance: 1
-    fogEndDistance: 20
   minWaterDrag: 4
   maxWaterDrag: 8
   waterDragRBDragNormalizer: 2
@@ -27,4 +20,4 @@ MonoBehaviour:
   standardBuoyancy: 1
   minBuoyancyRBDrag: 0
   standardBuoyancyRBDrag: 0.8
-  buoyancyNeutralizationDepth: 1
+  buoyancyNeutralizationDepth: 0.5

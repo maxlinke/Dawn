@@ -6,6 +6,8 @@ public class WaterBody : MonoBehaviour {
     public const float CONTAINS_THRESHOLD_DIST = 0.01f;
     public const float CONTAINS_THRESHOLD_DIST_SQR = CONTAINS_THRESHOLD_DIST * CONTAINS_THRESHOLD_DIST;
 
+    public const float MAX_RIGIDBODY_SIZE_ASSUMPTION = 100f;
+
     [Header("Components")]
     [SerializeField] WaterPhyicsSettings physics = default;
     [SerializeField] WaterFog fog = default;
@@ -120,8 +122,12 @@ public class WaterBody : MonoBehaviour {
         if(ownRB != null){
             ownVelocity = ownRB.velocity;
         }
+        bool gravityPresent = Physics.gravity.sqrMagnitude > 0;
+        Vector3 gravityDir = Physics.gravity.normalized;
         foreach(var rb in rbs){
-            AddBuoyancy(rb);
+            if(gravityPresent){     // use this? if(rb.useGravity && gravityPresent){
+                AddBuoyancy(rb, gravityDir);
+            }
             AddDrag(rb, ownVelocity);
         }
         rbs.Clear();
@@ -151,34 +157,63 @@ public class WaterBody : MonoBehaviour {
         }
     }
 
-    void AddBuoyancy (Rigidbody rb) {
-        if(Physics.gravity.sqrMagnitude <= 0f){
-            return;
-        }
-        var gravityDir = Physics.gravity.normalized;
-        var worldCOM = rb.worldCenterOfMass;
+    void AddBuoyancy (Rigidbody rb, Vector3 gravityDir) {
+        var rbPos = rb.position;
         bool applyBuoyancy = false;
         float depth = 0f;
+        // i need dedicated surface colliders to figure out depth easily
+        // not even colliders... point, normal and 2d-size are enough...
+        // just have to figure out the math
+
+        var boundsTestOffset = gravityDir * MAX_RIGIDBODY_SIZE_ASSUMPTION;
+        var rbTop = rb.ClosestPointOnBounds(rbPos - boundsTestOffset);
+        var rbBottom = rb.ClosestPointOnBounds(rbPos + boundsTestOffset);
+        // find depth of top, bottom and position
+        // use that for the lerping
+        // TODO additional field(s) in physics to determine how high an object can float depending on its drag
+        // TODO import beach ball and texture (no center of mass fudgery!)
+        // TODO also test a log (should just about float, and flat!)
+        // TODO plank (should float well and flat)
+        // TODO other things
         foreach(var col in cols){
-            var rl = 2f * col.bounds.extents.magnitude;
-            var ro = worldCOM - (gravityDir * rl);
+            var colSize = col.bounds.size.magnitude;
+            var rl = 1.2f * colSize;
+            var ro = rbPos - (gravityDir * 1.1f * colSize);
             var rd = gravityDir;
             if(col.Raycast(new Ray(ro, rd), out var hit, rl)){
-                depth = (hit.point - worldCOM).magnitude;
+                depth = (hit.point - rbPos).magnitude;
                 applyBuoyancy = true;
-                break;
+                break;                  // this isn't right. best-case: use a surface to determine depth
             }
         }
         if(!applyBuoyancy){
             return;
         }
+        // TODO instead of the set neutralization depth value, use the size of the rigidbody (closestpointonbounds?)
+        // to determine the start of the lerp towards 1 and if above the surface, towards 0!
+        // this could also allow the beach ball to float higher than 0
+        // if i make the 1-depth dependent on the drag...
+
+        // if top and bottom are in the water, add at center of mass
+        // otherwise, lerp to position ? or is this too much complexity?
         var lerp = (rb.drag - physics.MinBuoyancyRBDrag) / (physics.StandardBuoyancyRBDrag - physics.MinBuoyancyRBDrag);
         var buoyancy = Mathf.LerpUnclamped(physics.MinBuoyancy, physics.StandardBuoyancy, lerp);
         if(buoyancy > 1){
             buoyancy = Mathf.Lerp(1f, buoyancy, depth / physics.BuoyancyNeutralizationDepth);
-        }        
-        Debug.DrawRay(rb.position, Vector3.up * buoyancy, Color.green, Time.fixedDeltaTime);
-        rb.velocity -= Physics.gravity * buoyancy * Time.fixedDeltaTime;
+        }
+
+        // TODO clear labels on waterbodyphyics
+        // maybe even get the hints from consts here?
+        // that e.g. at drag = 1 the object will float exactly at its position (if that's how i do it)
+
+        // zero lerp test point -> closest to center of water body.. i guess active trigger will have to do?
+        // lerp to one only if greater
+        // lerp to zero always
+        rb.AddForceAtPosition(
+            force: -Physics.gravity * buoyancy,
+            position: rb.transform.position,
+            mode: ForceMode.Force
+        );
     }
 
     void OnDrawGizmosSelected () {
