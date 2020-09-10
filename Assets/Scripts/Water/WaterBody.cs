@@ -1,31 +1,29 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class WaterBody : MonoBehaviour {
+public abstract class WaterBody : MonoBehaviour {
 
     public const float CONTAINS_THRESHOLD_DIST = 0.01f;
     public const float CONTAINS_THRESHOLD_DIST_SQR = CONTAINS_THRESHOLD_DIST * CONTAINS_THRESHOLD_DIST;
 
     public const float MAX_RIGIDBODY_SIZE_ASSUMPTION = 100f;
 
-    [Header("Components")]
+    [Header("Water Properties")]
     [SerializeField] WaterPhyicsSettings physics = default;
     [SerializeField] WaterFog fog = default;
-    [SerializeField] Collider[] cols = default;
-
-    [Header("Settings")]
-    [SerializeField] bool runtimeStatic = false;
-    [SerializeField] bool showBoundingVolume = false;
 
     static List<WaterBody> waterBodies = new List<WaterBody>();
 
     bool initialized = false;
     List<Rigidbody> rbs;
-    Bounds worldBounds;
 
     public WaterFog Fog => fog;
 
-    void Start () {
+    protected abstract bool CollidersPresent { get; }
+    protected abstract Collider MainCollider { get; }
+    public abstract IEnumerator<Collider> GetEnumerator ();
+
+    protected virtual void Start () {
         if(!AllImportantThingsOK()){
             return;
         }
@@ -39,17 +37,13 @@ public class WaterBody : MonoBehaviour {
         }
         rbs = new List<Rigidbody>();
         waterBodies.Add(this);
-        if(runtimeStatic){
-            worldBounds = CalculateWorldBounds();
-        }else{
-            Debug.LogAssertion($"{nameof(WaterBody)} \"{this.gameObject.name}\" is not marked \"{nameof(runtimeStatic)}\". You should have a good reason for that. It's much more efficient!");
-        }
+        AdditionalStartChecks();
         initialized = true;
 
         bool AllImportantThingsOK () {
             bool physicsOk = (physics != null);
             bool fogOk = (fog != null);
-            bool colsOk = (cols != null && cols.Length > 0);
+            bool colsOk = CollidersPresent;
             var output = true;
             if(!physicsOk || !fogOk || !colsOk){
                 if(!physicsOk){
@@ -83,7 +77,7 @@ public class WaterBody : MonoBehaviour {
 
         bool ValidateTriggers (out string message) {
             message = string.Empty;
-            foreach(var col in cols){
+            foreach(var col in this){
                 bool colOK = true;
                 string temp = $"{col.GetType()} \"{col.name}\" ";
                 if(col == null){
@@ -107,6 +101,8 @@ public class WaterBody : MonoBehaviour {
         }
     }
 
+    protected virtual void AdditionalStartChecks () { }
+
     void OnDestroy () {
         if(waterBodies.Contains(this)){
             waterBodies.Remove(this);
@@ -118,7 +114,7 @@ public class WaterBody : MonoBehaviour {
             return;
         }
         Vector3 ownVelocity = Vector3.zero;
-        var ownRB = cols[0].attachedRigidbody;
+        var ownRB = MainCollider.attachedRigidbody;
         if(ownRB != null){
             ownVelocity = ownRB.velocity;
         }
@@ -175,7 +171,7 @@ public class WaterBody : MonoBehaviour {
         // TODO also test a log (should just about float, and flat!)
         // TODO plank (should float well and flat)
         // TODO other things
-        foreach(var col in cols){
+        foreach(var col in this){
             var colSize = col.bounds.size.magnitude;
             var rl = 1.2f * colSize;
             var ro = rbPos - (gravityDir * 1.1f * colSize);
@@ -216,61 +212,14 @@ public class WaterBody : MonoBehaviour {
         );
     }
 
-    void OnDrawGizmosSelected () {
-        if(!showBoundingVolume){
-            return;
-        }
-        var gc = Gizmos.color;
-        Gizmos.color = Color.cyan;
-        var wb = CalculateWorldBounds();
-        Gizmos.DrawWireCube(wb.center, wb.extents * 2f);
-        Gizmos.color = gc;
-    }
-
-    Bounds CalculateWorldBounds () {
-        var output = new Bounds(this.transform.position, Vector3.zero);
-        if(cols == null || cols.Length == 0){
-            return output;
-        }
-        var encapsulate = false;
-        for(int i=0; i<cols.Length; i++){
-            if(cols[i] == null){
-                continue;
-            }
-            if(!encapsulate){
-                output = cols[i].bounds;
-                encapsulate = true;
-            }else{
-                output.Encapsulate(cols[i].bounds);
-            }
-        }
-        return output;
-    }
-
-    bool CanDoContainsCheck (Collider col) {
+    protected bool CanDoContainsCheck (Collider col) {
         if(col is MeshCollider mc){
             return mc.convex;
         }
         return true;
     }
 
-    public bool ContainsPoint (Vector3 worldPoint) {
-        if(cols.Length > 1){
-            var bounds = (runtimeStatic ? worldBounds : CalculateWorldBounds());
-            if(!bounds.Contains(worldPoint)){
-                return false;
-            }
-        }
-        foreach(var col in cols){
-            if(!CanDoContainsCheck(col)){
-                continue;
-            }
-            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR){
-                return true;
-            }
-        }
-        return false;
-    }
+    public abstract bool ContainsPoint (Vector3 worldPoint);
 
     public static bool IsInAnyWaterBody (Vector3 worldPoint, out WaterBody outputWB) {
         foreach(var wb in waterBodies){

@@ -1682,15 +1682,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 450938636}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 6ef95c6259731714eade960150c69348, type: 2}
-  cols:
-  - {fileID: 450938637}
-  runtimeStatic: 1
-  showBoundingVolume: 0
+  col: {fileID: 450938637}
 --- !u!1 &452972046
 GameObject:
   m_ObjectHideFlags: 0
@@ -2593,15 +2590,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 689266324}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  physics: {fileID: 0}
-  fog: {fileID: 0}
-  cols:
-  - {fileID: 689266326}
-  runtimeStatic: 0
-  showBoundingVolume: 0
+  physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
+  fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
+  col: {fileID: 689266326}
 --- !u!1 &724222603
 GameObject:
   m_ObjectHideFlags: 0
@@ -6890,15 +6884,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1943731628}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  physics: {fileID: 0}
-  fog: {fileID: 0}
-  cols:
-  - {fileID: 1943731631}
-  runtimeStatic: 0
-  showBoundingVolume: 0
+  physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
+  fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
+  col: {fileID: 1943731631}
 --- !u!65 &1943731631
 BoxCollider:
   m_ObjectHideFlags: 0
