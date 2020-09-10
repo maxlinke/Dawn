@@ -5,12 +5,17 @@ ModelImporter:
   fileIDToRecycleName:
     100000: //RootNode
     100002: default
+    100004: Cube_(Inverted)
     400000: //RootNode
     400002: default
+    400004: Cube_(Inverted)
     2100000: defaultMat
     2300000: default
+    2300002: Cube_(Inverted)
     3300000: default
+    3300002: Cube_(Inverted)
     4300000: default
+    4300002: Cube_(Inverted)
   externalObjects: {}
   materials:
     importMaterials: 0
