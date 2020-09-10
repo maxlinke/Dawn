@@ -23,6 +23,9 @@ public abstract class RuntimeMethodButtonEditor : Editor {
             if(methods == null){
                 FindAppropriateMethods();
             }
+            if(methods.Length > 0){
+                GUILayout.Space(10f);
+            }
             foreach(var method in methods){
                 if(GUILayout.Button(method.Name)){
                     method.Invoke(target, new object[method.GetParameters().Length]);

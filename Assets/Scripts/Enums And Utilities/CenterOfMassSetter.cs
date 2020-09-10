@@ -20,6 +20,7 @@ public class CenterOfMassSetter : MonoBehaviour {
         }
     }
 
+    [RuntimeMethodButton]
     public void UpdateCenterOfMass () {
         var rb = GetComponent<Rigidbody>();
         if(rb != null){
@@ -52,17 +53,6 @@ public class CenterOfMassSetter : MonoBehaviour {
 #if UNITY_EDITOR
 
 [CustomEditor(typeof(CenterOfMassSetter))]
-public class CenterOfMassSetterEditor : Editor {
-
-    public override void OnInspectorGUI () {
-        DrawDefaultInspector();
-        if(EditorApplication.isPlaying){
-            if(GUILayout.Button("Update Center Of Mass")){
-                ((CenterOfMassSetter)target).UpdateCenterOfMass();
-            }
-        }
-    }
-
-}
+public class CenterOfMassSetterEditor : RuntimeMethodButtonEditor { }
 
 #endif
