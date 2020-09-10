@@ -1817,7 +1817,7 @@ Transform:
   m_GameObject: {fileID: 1204281178}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 1373583206}
   m_RootOrder: 1
@@ -1866,7 +1866,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1204281178}
-  m_Mesh: {fileID: 4300000, guid: 66bf04ee34a12a04aa5e110216872846, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 232cbc3f4a465fc4e99aed05f8ea737a, type: 3}
 --- !u!1 &1206493285
 GameObject:
   m_ObjectHideFlags: 0
@@ -2632,7 +2632,7 @@ Transform:
   m_GameObject: {fileID: 1628890628}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 2011325034}
   m_RootOrder: 0
@@ -2681,7 +2681,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1628890628}
-  m_Mesh: {fileID: 4300000, guid: 66bf04ee34a12a04aa5e110216872846, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 232cbc3f4a465fc4e99aed05f8ea737a, type: 3}
 --- !u!1 &1630053091
 GameObject:
   m_ObjectHideFlags: 0
@@ -3128,7 +3128,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1969655068}
-  m_Mesh: {fileID: 4300000, guid: 66bf04ee34a12a04aa5e110216872846, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 232cbc3f4a465fc4e99aed05f8ea737a, type: 3}
 --- !u!4 &1969295676
 Transform:
   m_ObjectHideFlags: 0
@@ -3138,7 +3138,7 @@ Transform:
   m_GameObject: {fileID: 1969655068}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 1201778769}
   m_RootOrder: 1
@@ -3155,7 +3155,7 @@ GameObject:
   - component: {fileID: 1968525596}
   - component: {fileID: 1967395804}
   m_Layer: 0
-  m_Name: suzanne_split
+  m_Name: Suzanne
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3287,7 +3287,7 @@ Transform:
   m_GameObject: {fileID: 2097471111}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 1344884737}
   m_RootOrder: 0
@@ -3354,7 +3354,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2097471111}
-  m_Mesh: {fileID: 4300000, guid: 66bf04ee34a12a04aa5e110216872846, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 232cbc3f4a465fc4e99aed05f8ea737a, type: 3}
 --- !u!1 &2111683500
 GameObject:
   m_ObjectHideFlags: 0
