@@ -28,9 +28,11 @@ namespace DebugTools {
         public Color DebugExceptionColor => debugExceptionColor;
 
         [Header("Framerate Display")]
-        [SerializeField] Color framerateLineColor = Color.black;
+        [SerializeField] Color framerateLineColor = Color.white;
+        [SerializeField] Color framerateLinePrevCycleColor = Color.grey;
 
         public Color FramerateLineColor => framerateLineColor;
+        public Color FramerateLinePrevCycleColor => framerateLinePrevCycleColor;
 
         [Header("Player Controller Debug")]
         [SerializeField] Color pcDebugForeground = Color.white;

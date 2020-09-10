@@ -43,6 +43,13 @@ public class FramerateAndTimeScaleSetter : MonoBehaviour {
     }
 
     [RuntimeMethodButton]
+    public void Set60FPS () {
+        targetFrameRate = 60;
+        vSync = false;
+        SetFrameRate();
+    }
+
+    [RuntimeMethodButton]
     public void UnlockFrameRate () {
         Application.targetFrameRate = -1;
         targetFrameRate = Application.targetFrameRate;

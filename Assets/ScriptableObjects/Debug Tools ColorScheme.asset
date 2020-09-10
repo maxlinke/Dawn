@@ -21,3 +21,6 @@ MonoBehaviour:
   debugErrorColor: {r: 1, g: 0.32820654, b: 0.1745283, a: 1}
   debugExceptionColor: {r: 1, g: 0, b: 0.24407196, a: 1}
   framerateLineColor: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
+  framerateLinePrevCycleColor: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 0.4}
+  pcDebugForeground: {r: 1, g: 1, b: 1, a: 1}
+  pcDebugBackground: {r: 0, g: 0, b: 0, a: 1}
