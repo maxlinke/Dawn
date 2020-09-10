@@ -3339,15 +3339,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 681126783}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: dc3d223ee2a3fcd45ad8869a986b757a, type: 2}
-  cols:
-  - {fileID: 681126786}
-  runtimeStatic: 1
-  showBoundingVolume: 0
+  col: {fileID: 681126786}
 --- !u!65 &681126786
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3860,14 +3857,15 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
-  seed: Dawn
   xTiles: 16
   zTiles: 16
-  tileSize: 2
+  tileSize: {x: 1, y: 1}
   uvMode: 0
-  uvScale: 1
-  deformationDirection: 0
-  deformationStrength: 1
+  uvScale: {x: 1, y: 1}
+  useSeed: 0
+  seed: Dawn
+  noiseOffset: 0
+  noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
   - scale: 4
@@ -4949,15 +4947,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 922064408}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
-  cols:
-  - {fileID: 922064410}
-  runtimeStatic: 1
-  showBoundingVolume: 0
+  col: {fileID: 922064410}
 --- !u!1 &970986768
 GameObject:
   m_ObjectHideFlags: 0
@@ -6789,14 +6784,15 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
-  seed: Dawn
   xTiles: 32
   zTiles: 32
-  tileSize: 1
+  tileSize: {x: 1, y: 1}
   uvMode: 0
-  uvScale: 1
-  deformationDirection: 0
-  deformationStrength: 1
+  uvScale: {x: 1, y: 1}
+  useSeed: 0
+  seed: Dawn
+  noiseOffset: 0
+  noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
   - scale: 4
@@ -8442,14 +8438,15 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
-  seed: Dawn
   xTiles: 8
   zTiles: 8
-  tileSize: 4
+  tileSize: {x: 1, y: 1}
   uvMode: 0
-  uvScale: 1
-  deformationDirection: 0
-  deformationStrength: 1
+  uvScale: {x: 1, y: 1}
+  useSeed: 0
+  seed: Dawn
+  noiseOffset: 0
+  noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
   - scale: 4
@@ -10069,15 +10066,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1752105265}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b5b294f444132a043be0f34667d6c596, type: 3}
+  m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
-  cols:
-  - {fileID: 1752105268}
-  runtimeStatic: 1
-  showBoundingVolume: 0
+  col: {fileID: 1752105268}
 --- !u!65 &1752105268
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -13334,7 +13328,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7539212970680283698}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 100, z: 0}
+  m_LocalPosition: {x: 0, y: 50, z: 0}
   m_LocalScale: {x: 8, y: 8, z: 8}
   m_Children: []
   m_Father: {fileID: 1601145174}
