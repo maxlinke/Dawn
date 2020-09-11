@@ -20,4 +20,5 @@ MonoBehaviour:
   standardBuoyancy: 1
   minBuoyancyRBDrag: 0
   standardBuoyancyRBDrag: 0.8
-  buoyancyNeutralizationDepth: 0.5
+  useBetterBuoyancy: 0
+  simpleBuoyancyNeutralizationRange: 0.1

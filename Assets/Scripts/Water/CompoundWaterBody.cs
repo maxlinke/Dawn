@@ -12,8 +12,24 @@ public class CompoundWaterBody : WaterBody {
 
     Bounds worldBounds;
 
-    protected override bool CollidersPresent => (cols != null && cols.Length > 0);
     protected override Collider MainCollider => cols[0];
+    protected override bool CollidersNotNull { get {
+        if(cols != null && cols.Length > 0){
+            return false;
+        }
+        foreach(var col in cols){
+            if(col == null){
+                return false;
+            }
+        }
+        return true;
+    } } 
+
+    // TODO subtractive volumes too!
+    // that's a different type. main collider and then the subtractions!
+    // if the rigidbody is fully inside a subtractive trigger
+    // or in combination fully inside, don't add to the list of rigidbodies
+    // don't forget about containspoint tho
 
     public override IEnumerator<Collider> GetEnumerator () {
         foreach(var col in cols){
@@ -58,14 +74,30 @@ public class CompoundWaterBody : WaterBody {
             }
         }
         foreach(var col in cols){
-            if(!CanDoContainsCheck(col)){
-                continue;
-            }
             if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR){
                 return true;
             }
         }
         return false;
+    }
+    
+    // TODO basically use containspoint but do it the other way round?
+    public override bool ContainsAnyPoint (IEnumerable<Vector3> worldPoints) {
+        foreach(var point in worldPoints){
+            if(this.ContainsPoint(point)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public override bool ContainsAllPoints (IEnumerable<Vector3> worldPoints) {
+        foreach(var point in worldPoints){
+            if(!this.ContainsPoint(point)){
+                return false;
+            }
+        }
+        return true;
     }
 
     void OnDrawGizmosSelected () {
