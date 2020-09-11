@@ -14,7 +14,7 @@ public class SimpleWaterBody : WaterBody {
     }
 
     public override bool ContainsPoint (Vector3 worldPoint) {
-        return ((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR);
+        return ColliderContainsPoint(col, worldPoint);
     }
 
     public override bool ContainsAnyPoint (IEnumerable<Vector3> worldPoints) {

@@ -122,9 +122,7 @@ namespace PlayerController {
                 return false;
             }
             foreach(var waterTrigger in waterTriggers){
-                var hPos = head.position;
-                var cPos = waterTrigger.ClosestPoint(hPos);
-                if((hPos - cPos).sqrMagnitude < WaterBody.CONTAINS_THRESHOLD_DIST_SQR){
+                if(WaterBody.ColliderContainsPoint(waterTrigger, head.position)){
                     return true;
                 }
             }

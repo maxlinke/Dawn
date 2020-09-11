@@ -74,7 +74,7 @@ public class CompoundWaterBody : WaterBody {
             }
         }
         foreach(var col in cols){
-            if((col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR){
+            if(ColliderContainsPoint(col, worldPoint)){
                 return true;
             }
         }

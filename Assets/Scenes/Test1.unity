@@ -160,28 +160,6 @@ MonoBehaviour:
   rayLength: 1
   gizmoColor: {r: 0, g: 1, b: 0, a: 1}
   debugOutput: 0.44338536
---- !u!1 &34433568 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3332757448009729809, guid: d30c2b3e57cd1e64f86650b1f5c8ffcf,
-    type: 3}
-  m_PrefabInstance: {fileID: 3332757447975972145}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &34433569
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 34433568}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 458dbc367c6be944792b85fc19a64165, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  size: {x: 0.5, y: 0.5, z: 0.5}
-  count: 10
-  gizmoColor: {r: 0, g: 1, b: 0, a: 0.5019608}
-  gizmoSize: 0.01
 --- !u!1 &58932118
 GameObject:
   m_ObjectHideFlags: 0
@@ -7704,6 +7682,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 3332757448009729814, guid: d30c2b3e57cd1e64f86650b1f5c8ffcf,
+        type: 3}
+      propertyPath: m_Drag
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d30c2b3e57cd1e64f86650b1f5c8ffcf, type: 3}

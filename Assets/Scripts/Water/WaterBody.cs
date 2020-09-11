@@ -3,8 +3,9 @@ using UnityEngine;
 
 public abstract class WaterBody : MonoBehaviour {
 
-    public const float CONTAINS_THRESHOLD_DIST = 0.01f;
-    public const float CONTAINS_THRESHOLD_DIST_SQR = CONTAINS_THRESHOLD_DIST * CONTAINS_THRESHOLD_DIST;
+    // public const float CONTAINS_DIST = 0.01f;
+    public const float CONTAINS_DIST = 0f;  // this seems to work much better but i'm afraid the preciseness will cause issues...
+    public const float CONTAINS_DIST_SQR = CONTAINS_DIST * CONTAINS_DIST;
 
     public const float MAX_RIGIDBODY_SIZE_ASSUMPTION = 100f;
 
@@ -156,13 +157,20 @@ public abstract class WaterBody : MonoBehaviour {
         }
     }
 
+    // i want low drag things to carry their momentum but high velocity things to be decelerated
+    // rb.drag affects all rigidbodies the same, regardless of mass
+    // therefore as mass increases, the same drag means a much less dense object
+    // i really need those props to dial in my stuff visually...
     void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
-        var deltaV = ownVelocity - rb.velocity;
-        var deltaVDragAccel = deltaV / Time.fixedDeltaTime;
+        var localRBVelocity = rb.velocity - ownVelocity;
+        var localRBSpeed = localRBVelocity.magnitude;
+        var deltaVDragAccel = -localRBVelocity / Time.fixedDeltaTime;
         var drag = Mathf.Lerp(physics.MinWaterDrag, physics.MaxWaterDrag, rb.drag / physics.WaterDragRBDragNormalizer);
-        drag *= (rb.velocity.magnitude / physics.WaterDragRBVelocityNormalizer);
+        var mul = (localRBSpeed / physics.WaterDragRBVelocityNormalizer);
+        // drag *= mul * mul;
+        drag *= mul;
         if(deltaVDragAccel.sqrMagnitude > (drag * drag)){
-            rb.velocity += deltaV.normalized * drag * Time.fixedDeltaTime;
+            rb.velocity += deltaVDragAccel.normalized * drag * Time.fixedDeltaTime;
         }else{
             rb.velocity += deltaVDragAccel * Time.fixedDeltaTime;
         }
@@ -174,6 +182,10 @@ public abstract class WaterBody : MonoBehaviour {
     // use trigger-mesh collider for surfaces?
 
     void AddBetterBuoyancy (Rigidbody rb, Vector3 gravityDir) {
+        float buoyancy = Mathf.Max(0, RawRigidbodyBuoyancy(rb));
+        if(buoyancy == 0f){
+            return;
+        }
         var rbPos = rb.position;
         bool applyBuoyancy = false;
         float depth = 0f;
@@ -182,8 +194,8 @@ public abstract class WaterBody : MonoBehaviour {
         // just have to figure out the math
 
         var boundsTestOffset = gravityDir * MAX_RIGIDBODY_SIZE_ASSUMPTION;
-        var rbTop = rb.ClosestPointOnBounds(rbPos - boundsTestOffset);
-        var rbBottom = rb.ClosestPointOnBounds(rbPos + boundsTestOffset);
+        var rbTop = rb.ClosestPointOnBounds(rbPos - boundsTestOffset);      // i could just use this to determine the size?
+        var rbBottom = rb.ClosestPointOnBounds(rbPos + boundsTestOffset);   // and use the average as the check position?
         // find depth of top, bottom and position
         // use that for the lerping
         // TODO additional field(s) in physics to determine how high an object can float depending on its drag
@@ -192,6 +204,8 @@ public abstract class WaterBody : MonoBehaviour {
         // TODO plank (should float well and flat)
         // TODO other things
         foreach(var col in this){
+            var topInside = ColliderContainsPoint(col, rbTop);
+            var bottomInside = ColliderContainsPoint(col, rbBottom);
             if(DepthCast(col, rbPos, gravityDir, out depth)){
                 applyBuoyancy = true;
                 break;  // break here is wrong, this is just legacy code
@@ -207,7 +221,7 @@ public abstract class WaterBody : MonoBehaviour {
 
         // if top and bottom are in the water, add at center of mass
         // otherwise, lerp to position ? or is this too much complexity?
-        var buoyancy = RawRigidbodyBuoyancy(rb);
+        
         if(buoyancy > 1){
             // buoyancy = Mathf.Lerp(1f, buoyancy, depth / physics.BuoyancyNeutralizationDepth);
         }
@@ -218,13 +232,16 @@ public abstract class WaterBody : MonoBehaviour {
         AddBuoyancyForce(rb, buoyancy);
     }
 
-    // if it's buoyant enough to be buoyant, then move the position to the surface. very simple.
     void AddSimpleBuoyancy (Rigidbody rb, Vector3 gravityDir) {
+        float buoyancy = Mathf.Max(0, RawRigidbodyBuoyancy(rb));
+        if(buoyancy == 0f){
+            return;
+        }
         var rbPos = rb.position;
-        float maxInDepth = 0f;
-        float maxOutDepth = 0f;
+        float maxInDepth = float.NegativeInfinity;
+        float maxOutDepth = float.NegativeInfinity;
         foreach(var col in this){
-            var inside = ((col.ClosestPoint(rbPos) - rbPos).sqrMagnitude < CONTAINS_THRESHOLD_DIST_SQR);
+            var inside = ColliderContainsPoint(col, rbPos);
             if(DepthCast(col, rbPos, gravityDir, out var depth)){
                 if(inside){
                     maxInDepth = Mathf.Max(maxInDepth, depth);
@@ -233,22 +250,19 @@ public abstract class WaterBody : MonoBehaviour {
                 }
             }
         }
-        float buoyancy = RawRigidbodyBuoyancy(rb);
-        // meh...
-        // buoyancy *= (1f - Mathf.Clamp01(maxOutDepth));
-        buoyancy *= Mathf.Clamp01(maxInDepth);
-
-        // VVV jittery and dependent on neutralization range... VVV
-        // if((maxInDepth > 0)){
-        //     if(buoyancy > 1){
-        //         buoyancy = Mathf.Lerp(1, buoyancy, maxInDepth / physics.SimpleBuoyancyNeutralizationRange);
-        //     }
-        // }else if(maxOutDepth > 0){
-        //     buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / physics.SimpleBuoyancyNeutralizationRange));
-        // }else{
-        //     buoyancy = 0f;
-        // }
-        
+        if((maxInDepth == maxOutDepth) && (float.IsNegativeInfinity(maxInDepth))){
+            return;
+        }
+        if(maxInDepth > 0){
+            if(buoyancy > 1){
+                buoyancy = Mathf.Lerp(1, buoyancy, maxInDepth / physics.SimpleBuoyancyNeutralizationRange);
+            }
+        }else{
+            buoyancy = Mathf.Min(buoyancy, 1f);
+            if(maxOutDepth > 0){
+                buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / physics.SimpleBuoyancyNeutralizationRange));
+            }
+        }
         AddBuoyancyForce(rb, buoyancy);
     }
 
@@ -279,13 +293,17 @@ public abstract class WaterBody : MonoBehaviour {
         var rd = gravityDir;
         if(col.Raycast(new Ray(ro, rd), out var hit, rl)){
             depth = (hit.point - rbPos).magnitude;
+            // depth *= Mathf.Sign(Vector3.Dot(gravityDir, hit.normal));
+            // depth = Mathf.Max(0, depth);
             return true;
         }
         depth = float.NaN;
         return false;
     }
 
-    // TODO variants for ienumerables with allpoints and anypoint?
+    public static bool ColliderContainsPoint (Collider col, Vector3 worldPoint) {
+        return (col.ClosestPoint(worldPoint) - worldPoint).sqrMagnitude <= CONTAINS_DIST;
+    }
 
     public abstract bool ContainsPoint (Vector3 worldPoint);
     public abstract bool ContainsAnyPoint (IEnumerable<Vector3> worldPoints);
