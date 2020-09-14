@@ -2,7 +2,7 @@
 
 namespace GeometryGenerators {
 
-    public class PlaneGenerator : GeometryGenerator {
+    public class PlaneGenerator : GeometryGeneratorWithGizmos {
 
         public enum UVMode {
             VERTEXCOORDS,
@@ -17,6 +17,9 @@ namespace GeometryGenerators {
         [Header("UV Settings")]
         [SerializeField] protected UVMode uvMode = UVMode.NORMALIZED;
         [SerializeField] protected Vector2 uvScale = Vector2.one;
+
+        protected Vector3 LocalSize => new Vector3(xTiles * tileSize.x, 0f, zTiles * tileSize.y);
+        protected Vector3 LocalExtents => 0.5f * LocalSize;
 
         protected override Mesh CreateMesh () {
             int xVerts = xTiles + 1;
@@ -87,7 +90,23 @@ namespace GeometryGenerators {
         protected virtual Vector3 GetAdditionalVertexOffset (Vector3 position) {
             return Vector3.zero;
         }
-        
+
+        protected override void DrawGizmos () {
+            var ext = LocalExtents;
+            var last = WorldCorner(0);
+            for(int i=0; i<4; i++){
+                var current = WorldCorner(i+1);
+                Gizmos.DrawLine(last, current);
+                last = current;
+            }
+            
+            Vector3 WorldCorner (int i) {
+                var sx = ((i%4)>1 ? -1 : 1);
+                var sz = (((i+1)%4)>1 ? -1 : 1);
+                return transform.TransformPoint(Vector3.Scale(ext, new Vector3(sx, 0f, sz)));
+            }
+        }
+
     }
 
 }

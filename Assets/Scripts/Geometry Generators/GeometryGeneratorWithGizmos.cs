@@ -4,6 +4,8 @@ namespace GeometryGenerators {
 
     public abstract class GeometryGeneratorWithGizmos : GeometryGenerator {
         
+        protected const float GIZMOSIZE = 0.1f;
+
         [Header("Gizmos")]
         [SerializeField] private bool drawGizmos = true;
         [SerializeField] private Color gizmoColor = Color.cyan;

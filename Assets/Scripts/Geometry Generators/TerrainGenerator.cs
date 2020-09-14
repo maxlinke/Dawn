@@ -7,6 +7,7 @@ namespace GeometryGenerators {
         private const int MAX_RNG_OFFSET = 1024;
 
         public enum NoiseSourceType {
+            NONE,
             PERLIN,
             TEXTURE
         }
@@ -16,7 +17,7 @@ namespace GeometryGenerators {
         [SerializeField] string seed = string.Empty;
         [SerializeField, Range(-1f, 1f)] float noiseOffset = 0f;
         [SerializeField] float noiseStrength = 1f;
-        [SerializeField] NoiseSourceType noiseSourceType = NoiseSourceType.PERLIN;
+        [SerializeField] NoiseSourceType noiseSourceType = NoiseSourceType.NONE;
         [SerializeField] PerlinNoiseSource[] perlinNoiseSources = default;
         [SerializeField] TextureNoiseSource[] textureNoiseSources = default;
 
@@ -40,21 +41,32 @@ namespace GeometryGenerators {
         }
 
         NoiseSource[] GetNoiseSources () {
+            NoiseSource[] output;
             switch(noiseSourceType){
+                case NoiseSourceType.NONE:
+                    output = null;
+                    break;
                 case NoiseSourceType.PERLIN: 
-                    return perlinNoiseSources; 
+                    output = perlinNoiseSources; 
+                    break;
                 case NoiseSourceType.TEXTURE: 
-                    return textureNoiseSources; 
+                    output = textureNoiseSources; 
+                    break;
                 default: 
                     Debug.LogError($"Unsupported {nameof(NoiseSourceType)} \"{noiseSourceType}\"!");
+                    output = null;
                     break;
             }
-            return new NoiseSource[0];
+            if(output == null){
+                output = new NoiseSource[0];
+            }
+            return output;
         }
 
         void InitNoiseSources (NoiseSource[] input) {
             var rng = GetRNG();
             for(int i=0; i<input.Length; i++){
+                input[i].Init();
                 input[i].offset = new Vector2(
                     rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET),
                     rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET)
@@ -70,7 +82,7 @@ namespace GeometryGenerators {
                 }
                 return new System.Random(seed.Trim().GetHashCode());    
             }
-            return new System.Random();
+            return new System.Random(System.DateTime.Now.GetHashCode());
         }
 
     }

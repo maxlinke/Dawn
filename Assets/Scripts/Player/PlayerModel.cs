@@ -20,7 +20,7 @@ namespace PlayerController {
         public void UpdateSpherePositions () {
             var r = movement.LocalColliderRadius;
             bottomSphere.localPosition = new Vector3(0f, r, 0f);
-            topSphere.position = head.position;
+            topSphere.position = head.position - (transform.up * (pcProps.EyeOffset + r));
             var scale = 2f * r * Vector3.one;
             bottomSphere.localScale = scale;
             topSphere.localScale = scale;

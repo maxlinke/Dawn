@@ -130,12 +130,13 @@ namespace GeometryGenerators {
 
         protected override void DrawGizmos () {
             var points = Make3DPoints(Get2DPoints());
+            var cubeSize = Vector3.one * GIZMOSIZE;
             var l = points.Length / 2;
             for(int i=0; i<l; i++){
                 var a = transform.TransformPoint(points[i]);
                 var b = transform.TransformPoint(points[i+l]);
-                Gizmos.DrawCube(a, Vector3.one * 0.1f);
-                Gizmos.DrawCube(b, Vector3.one * 0.1f);
+                Gizmos.DrawCube(a, cubeSize);
+                Gizmos.DrawCube(b, cubeSize);
                 Gizmos.DrawLine(a, b);
                 var a2 = transform.TransformPoint(points[(i+1)%l]);
                 var b2 = transform.TransformPoint(points[((i+1)%l)+l]);

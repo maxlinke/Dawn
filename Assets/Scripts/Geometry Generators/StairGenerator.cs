@@ -112,12 +112,13 @@ namespace GeometryGenerators {
             var s1 = transform.TransformPoint(points[1]);
             var l0 = s0;
             var l1 = s1;
+            var cubeSize = Vector3.one * GIZMOSIZE;
             for(int i=0; i<=points.Length; i+=2){
                 Gizmos.DrawLine(l0, l1);
                 var p0 = transform.TransformPoint(points[(i)%points.Length]);
                 var p1 = transform.TransformPoint(points[(i+1)%points.Length]);
-                Gizmos.DrawCube(p0, Vector3.one * 0.1f);
-                Gizmos.DrawCube(p1, Vector3.one * 0.1f);
+                Gizmos.DrawCube(p0, cubeSize);
+                Gizmos.DrawCube(p1, cubeSize);
                 Gizmos.DrawLine(p0, l0);
                 Gizmos.DrawLine(p1, l1);
                 l0 = p0;
