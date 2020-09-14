@@ -6,50 +6,61 @@ namespace GeometryGenerators {
 
         [System.Flags]                  // enums have to have power of 2 indices! 0, 1, 2, 4, 8, 16, ...
         public enum Randomness {
+            // unity takes care of none = 0
             OFFSET = 1,
             ROTATION = 2
         }
 
-        [SerializeField] public Vector2 scale = Vector2.one;
-        [SerializeField, Range(0f, 1f)] public float strength = 0.5f;
-        [SerializeField, EnumFlags] public Randomness randomness;
+        private const float PI = Mathf.PI;
 
-        [System.NonSerialized] public Vector2 offset;
-        [System.NonSerialized] public float rotation;
-        bool applyRotation;
-        bool applyOffset;
+        [SerializeField]                 public Vector2 position = Vector2.zero;
+        [SerializeField, Range(-PI, PI)] public float angle = 0f;
+        [SerializeField]                 public Vector2 size = Vector2.one;
 
-        public virtual void Init () {
-            applyRotation = (randomness & Randomness.ROTATION) == Randomness.ROTATION;
-            applyOffset = (randomness & Randomness.OFFSET) == Randomness.OFFSET;
-            Debug.Log(applyRotation + " " + applyOffset);
+        [SerializeField, Range(0f, 1f)]  public float strength = 0.5f;
+        [SerializeField, EnumFlags]      public Randomness randomness = 0;
+
+        Matrix4x4 transform;
+
+        public virtual void Init (Vector2 inputOffset, float inputRotation) {            
+            var sx = size.x != 0 ? 1f / size.x : 0f;
+            var sy = size.y != 0 ? 1f / size.y : 0f;
+            var scale = new Matrix4x4(
+                new Vector4(sx, 0f, 0f, 0f),
+                new Vector4(0f, sy, 0f, 0f),
+                new Vector4(0f, 0f, 1f, 0f),
+                new Vector4(0f, 0f, 0f, 1f));
+            var r = angle + (((randomness & Randomness.ROTATION) == Randomness.ROTATION) ? inputRotation : 0f);
+            var cr = Mathf.Cos(r);
+            var sr = Mathf.Sin(r);
+            var rotation = new Matrix4x4(
+                new Vector4(cr,-sr, 0f, 0f),
+                new Vector4(sr, cr, 0f, 0f),
+                new Vector4(0f, 0f, 1f, 0f),
+                new Vector4(0f, 0f, 0f, 1f));
+            var p = position + (((randomness & Randomness.OFFSET) == Randomness.OFFSET) ? inputOffset : Vector2.zero);
+            var translation = new Matrix4x4(
+                new Vector4(1f, 0f, 0f, 0f),
+                new Vector4(0f, 1f, 0f, 0f),
+                new Vector4(0f, 0f, 1f, 0f),
+                new Vector4(p.x, p.y, 0f, 1f));
+            transform = scale * rotation * translation;
+            if(this is TextureNoiseSource){
+                var texDelta = new Matrix4x4(
+                    new Vector4(1f, 0f, 0f, 0f),
+                    new Vector4(0f, 1f, 0f, 0f),
+                    new Vector4(0f, 0f, 1f, 0f),
+                    new Vector4(0.5f, 0.5f, 0f, 1f));
+                transform = texDelta * transform;
+            }
         }
 
         public abstract float Evaluate (float x, float y);
 
         protected void TransformCoords (ref float x, ref float y) {
-            if(scale.x != 0f){
-                x = x / scale.x;
-            }
-            if(scale.y != 0f){
-                y = y / scale.y;
-            }
-            if(this is TextureNoiseSource){
-                x += 0.5f;
-                y += 0.5f;
-            }
-            if(applyRotation){
-                float sin = Mathf.Sin(rotation);
-                float cos = Mathf.Cos(rotation);
-                float ox = x;
-                float oy = y;
-                x = (cos * ox) + (sin * oy);
-                y = (cos * oy) - (sin * ox);
-            }
-            if(applyOffset){
-                x = x + offset.x;
-                y = y + offset.y;
-            }
+            var vec = transform * new Vector4(x, y, 0f, 1f);
+            x = vec.x;
+            y = vec.y;
         }
 
     }

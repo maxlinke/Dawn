@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Test : MonoBehaviour {
 
+    [SerializeField] GeometryGenerators.PerlinNoiseSource pns = default;
+    [SerializeField] GeometryGenerators.TextureNoiseSource tns = default;
+
     void Awake () {
 
     }

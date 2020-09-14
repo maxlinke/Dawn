@@ -66,12 +66,12 @@ namespace GeometryGenerators {
         void InitNoiseSources (NoiseSource[] input) {
             var rng = GetRNG();
             for(int i=0; i<input.Length; i++){
-                input[i].Init();
-                input[i].offset = new Vector2(
-                    rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET),
-                    rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET)
+                input[i].Init(
+                    inputOffset: new Vector2(
+                        rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET) + (float)(rng.NextDouble()),
+                        rng.Next(-MAX_RNG_OFFSET, MAX_RNG_OFFSET) + (float)(rng.NextDouble())),
+                    inputRotation: (float)rng.NextDouble() * Mathf.PI * 2f
                 );
-                input[i].rotation = (float)rng.NextDouble() * Mathf.PI * 2f;
             }
         }
 

@@ -5,17 +5,16 @@ namespace GeometryGenerators {
     [System.Serializable]
     public class TextureNoiseSource : NoiseSource {
 
-        public Texture2D texture;
+        [SerializeField] public Texture2D texture = null;
 
         System.Func<float, float> texWrap;
 
-        public override void Init () {
-            base.Init();
+        public override void Init (Vector2 offset, float rotation) {
+            base.Init(offset, rotation);
             if(texture == null){
                 return;
             }
             texWrap = GetWrapping();
-            Debug.Log($"{randomness:G}");
 
             System.Func<float, float> GetWrapping () {
                 switch(texture.wrapMode){
@@ -47,22 +46,7 @@ namespace GeometryGenerators {
             Color col = texture.GetPixelBilinear(x, y);
             float lum = 0.299f * col.r + 0.587f * col.g + 0.115f * col.b;
             return strength * ((2f * lum) - 1f);
-            // return Mathf.Clamp01(x + y);
-            // return Mathf.Clamp01(Mathf.Abs(x) + Mathf.Abs(y));
         }
-
-        // void ApplyWrapping (ref float x, ref float y) {
-        //     switch(texture.wrapMode){
-        //         case TextureWrapMode.Clamp:
-
-        //             return;
-        //         case TextureWrapMode.Repeat:
-        //             x = Mathf.Repeat(x, 1f);
-        //             y = Mathf.Repeat(y, 1f);
-
-
-        //     }
-        // }
 
     }
 
