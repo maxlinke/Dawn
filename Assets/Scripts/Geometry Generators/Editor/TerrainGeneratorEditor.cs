@@ -7,7 +7,7 @@ namespace GeometryGenerators {
 
         protected override void DrawOwnProperties () {
             base.DrawOwnProperties();
-            var seedProp = serializedObject.FindProperty("useSeed");
+            var seedProp = serializedObject.FindProperty("seededRandomness");
             EditorGUILayout.PropertyField(seedProp);
             if(seedProp.boolValue){
                 EditorGUI.indentLevel++;

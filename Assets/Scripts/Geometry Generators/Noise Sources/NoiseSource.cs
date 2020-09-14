@@ -7,30 +7,33 @@ namespace GeometryGenerators {
         [System.Flags]                  // enums have to have power of 2 indices! 0, 1, 2, 4, 8, 16, ...
         public enum Randomness {
             // unity takes care of none = 0
-            OFFSET = 1,
-            ROTATION = 2
+            RandomOffset = 1,
+            RandomRotation = 2
         }
 
         private const float PI = Mathf.PI;
 
-        [SerializeField]                 public Vector2 position = Vector2.zero;
-        [SerializeField, Range(-PI, PI)] public float angle = 0f;
-        [SerializeField]                 public Vector2 size = Vector2.one;
-
         [SerializeField, Range(0f, 1f)]  public float strength = 0.5f;
         [SerializeField, EnumFlags]      public Randomness randomness = 0;
+        [SerializeField]                 public float size = 1f;
+
+        [SerializeField]                 public Vector2 position = Vector2.zero;
+        [SerializeField, Range(-PI, PI)] public float angle = 0f;
+        [SerializeField]                 public Vector2 vecSize = Vector2.one;
 
         Matrix4x4 transform;
 
-        public virtual void Init (Vector2 inputOffset, float inputRotation) {            
-            var sx = size.x != 0 ? 1f / size.x : 0f;
-            var sy = size.y != 0 ? 1f / size.y : 0f;
+        public virtual void Init (Vector2 inputOffset, float inputRotation) {
+            var sx = size * vecSize.x;
+            if(sx != 0) sx = 1f / sx;
+            var sy = size * vecSize.y;
+            if(sy != 0) sy = 1f / sy;
             var scale = new Matrix4x4(
                 new Vector4(sx, 0f, 0f, 0f),
                 new Vector4(0f, sy, 0f, 0f),
                 new Vector4(0f, 0f, 1f, 0f),
                 new Vector4(0f, 0f, 0f, 1f));
-            var r = angle + (((randomness & Randomness.ROTATION) == Randomness.ROTATION) ? inputRotation : 0f);
+            var r = angle + (((randomness & Randomness.RandomRotation) == Randomness.RandomRotation) ? inputRotation : 0f);
             var cr = Mathf.Cos(r);
             var sr = Mathf.Sin(r);
             var rotation = new Matrix4x4(
@@ -38,7 +41,7 @@ namespace GeometryGenerators {
                 new Vector4(sr, cr, 0f, 0f),
                 new Vector4(0f, 0f, 1f, 0f),
                 new Vector4(0f, 0f, 0f, 1f));
-            var p = position + (((randomness & Randomness.OFFSET) == Randomness.OFFSET) ? inputOffset : Vector2.zero);
+            var p = position + (((randomness & Randomness.RandomOffset) == Randomness.RandomOffset) ? inputOffset : Vector2.zero);
             var translation = new Matrix4x4(
                 new Vector4(1f, 0f, 0f, 0f),
                 new Vector4(0f, 1f, 0f, 0f),

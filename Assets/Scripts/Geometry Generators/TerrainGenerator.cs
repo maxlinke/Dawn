@@ -13,7 +13,7 @@ namespace GeometryGenerators {
         }
 
         [Header("Deformation Settings")]
-        [SerializeField] bool useSeed = false;
+        [SerializeField] bool seededRandomness = false;
         [SerializeField] string seed = string.Empty;
         [SerializeField, Range(-1f, 1f)] float noiseOffset = 0f;
         [SerializeField] float noiseStrength = 1f;
@@ -76,7 +76,7 @@ namespace GeometryGenerators {
         }
 
         System.Random GetRNG () {
-            if(useSeed){
+            if(seededRandomness){
                 if(seed == null){
                     seed = string.Empty;
                 }
