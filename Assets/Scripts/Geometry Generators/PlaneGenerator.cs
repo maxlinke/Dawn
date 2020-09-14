@@ -5,8 +5,8 @@ namespace GeometryGenerators {
     public class PlaneGenerator : GeometryGeneratorWithGizmos {
 
         public enum UVMode {
-            VERTEXCOORDS,
-            NORMALIZED
+            VertexCoordinates,
+            Normalized
         }
 
         [Header("Plane Settings")]
@@ -15,11 +15,18 @@ namespace GeometryGenerators {
         [SerializeField] protected Vector2 tileSize = Vector2.one;
 
         [Header("UV Settings")]
-        [SerializeField] protected UVMode uvMode = UVMode.NORMALIZED;
+        [SerializeField] protected UVMode uvMode = UVMode.Normalized;
         [SerializeField] protected Vector2 uvScale = Vector2.one;
 
-        protected Vector3 LocalSize => new Vector3(xTiles * tileSize.x, 0f, zTiles * tileSize.y);
-        protected Vector3 LocalExtents => 0.5f * LocalSize;
+        protected Vector3 GetVertexCoordinates (int x, int z) {
+            var xOffset = (float)xTiles / 2f;
+            var zOffset = (float)zTiles / 2f;
+            return GetVertexCoordinates(x, z, xOffset, zOffset);
+        }
+
+        protected Vector3 GetVertexCoordinates (int x, int z, float xOffset, float zOffset) {
+            return new Vector3(tileSize.x * (x - xOffset), 0f, tileSize.y * (z - zOffset));
+        }
 
         protected override Mesh CreateMesh () {
             int xVerts = xTiles + 1;
@@ -34,23 +41,22 @@ namespace GeometryGenerators {
             for(int j=0; j<zVerts; j++){
                 for(int i=0; i<xVerts; i++){
                     int index = (j * xVerts) + i;
-                    float x = tileSize.x * (i - iOffset);
-                    float z = tileSize.y * (j - jOffset);
-                    var pos = new Vector3(x, 0f, z);
-                    vertices[index] = pos + GetAdditionalVertexOffset(pos);
+                    var pos = GetVertexCoordinates(i, j, iOffset, jOffset);
+                    pos += GetAdditionalVertexOffset(i , j, pos);
+                    vertices[index] = pos;
                     float fracI = (float)i/xTiles;
                     float fracJ = (float)j/zTiles;
                     normedUVs[index] = new Vector2(fracI, fracJ) / uvScale;
-                    localPosUVs[index] = new Vector2(x, z) / uvScale;
+                    localPosUVs[index] = new Vector2(pos.x, pos.z) / uvScale;
                 }
             }
 
             Vector2[] texcoords;
             switch(uvMode){
-                case UVMode.NORMALIZED:
+                case UVMode.Normalized:
                     texcoords = normedUVs;
                     break;
-                case UVMode.VERTEXCOORDS:
+                case UVMode.VertexCoordinates:
                     texcoords = localPosUVs;
                     break;
                 default:
@@ -87,23 +93,26 @@ namespace GeometryGenerators {
             return output;
         }
 
-        protected virtual Vector3 GetAdditionalVertexOffset (Vector3 position) {
+        protected virtual Vector3 GetAdditionalVertexOffset (int x, int z, Vector3 position) {
             return Vector3.zero;
         }
 
         protected override void DrawGizmos () {
-            var ext = LocalExtents;
-            var last = WorldCorner(0);
+            var points = new Vector3[] { 
+                GetVertexCoordinates(0, 0),
+                GetVertexCoordinates(0, zTiles),
+                GetVertexCoordinates(xTiles, zTiles),
+                GetVertexCoordinates(xTiles, 0) 
+            };
             for(int i=0; i<4; i++){
-                var current = WorldCorner(i+1);
-                Gizmos.DrawLine(last, current);
-                last = current;
+                DrawLine(points[i], points[(i+1)%4]);
             }
-            
-            Vector3 WorldCorner (int i) {
-                var sx = ((i%4)>1 ? -1 : 1);
-                var sz = (((i+1)%4)>1 ? -1 : 1);
-                return transform.TransformPoint(Vector3.Scale(ext, new Vector3(sx, 0f, sz)));
+
+            void DrawLine (Vector3 a, Vector3 b) {
+                Gizmos.DrawLine(
+                    transform.TransformPoint(a),
+                    transform.TransformPoint(b)
+                );
             }
         }
 

@@ -6,8 +6,11 @@ namespace GeometryGenerators {
     public class TextureNoiseSource : NoiseSource {
 
         [SerializeField] public Texture2D texture = null;
+        [SerializeField] public float filterSize = 0f;
 
         System.Func<float, float> texWrap;
+        System.Func<float, float, float> eval;
+        Vector2[] filterOffsets;
 
         public override void Init (Vector2 offset, float rotation) {
             base.Init(offset, rotation);
@@ -15,6 +18,7 @@ namespace GeometryGenerators {
                 return;
             }
             texWrap = GetWrapping();
+            eval = GetEval();
 
             System.Func<float, float> GetWrapping () {
                 switch(texture.wrapMode){
@@ -31,21 +35,41 @@ namespace GeometryGenerators {
                         return (f) => f;
                 }
             }
+
+            System.Func<float, float, float> GetEval () {
+                if(filterSize == 0f){
+                    return EvalTex;
+                }
+                filterOffsets = new Vector2[9];
+                for(int i=0; i<9; i++){
+                    var dx = i%3 - 1;
+                    var dy = i/3 - 1;
+                    filterOffsets[i] = filterSize * new Vector2(dx, dy);
+                }
+                return (x, y) => {
+                    var output = 0f;
+                    for(int f=0; f<filterOffsets.Length; f++){
+                        var delta = filterOffsets[f];
+                        output += EvalTex(x + delta.x, y + delta.y);
+                    }
+                    return output / filterOffsets.Length;
+                };
+            }
         }
 
-        /// <summary>
-        /// Does a texture lookup at the given uv-coordinates. Output is the texture's luminance denormalized to [-1, 1]
-        /// </summary>
-        public override float Evaluate (float x, float y) {
+        protected override float Eval01 (float x, float y) {
             if(texture == null){
                 return 0f;
             }
-            TransformCoords(ref x, ref y);
+            return eval(x, y);
+        }
+
+        private float EvalTex (float x, float y) {
             x = texWrap(x);
             y = texWrap(y);
             Color col = texture.GetPixelBilinear(x, y);
             float lum = 0.299f * col.r + 0.587f * col.g + 0.115f * col.b;
-            return strength * ((2f * lum) - 1f);
+            return lum;
         }
 
     }

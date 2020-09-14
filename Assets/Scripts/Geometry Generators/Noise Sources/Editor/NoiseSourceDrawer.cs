@@ -6,6 +6,8 @@ namespace GeometryGenerators {
     [CustomPropertyDrawer(typeof(NoiseSource))]
     public abstract class NoiseSourceDrawer : PropertyDrawer {
 
+        protected const float LABELWIDTH = 54f;
+
         bool showTransform = false;
 
         public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
@@ -40,11 +42,12 @@ namespace GeometryGenerators {
             }
 
             void DrawStrengthRandomnessAndSize () {
-                var srRect = NextLine();
-                EditorTools.DrawHalfWidthProp(srRect, true, 0.58f, 50f, property.FindPropertyRelative("strength"), "STR");
-                EditorTools.DrawHalfWidthProp(srRect, false, 0.4f, 50f, property.FindPropertyRelative("randomness"), "RNG");
-                var sizeRect = NextLine();
-                EditorTools.DrawHalfWidthProp(sizeRect, true, 0.58f, 50f, property.FindPropertyRelative("size"), "SIZE");
+                var rect1 = NextLine();
+                EditorTools.DrawHalfWidthProp(rect1, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("strength"), "STR");
+                EditorTools.DrawHalfWidthProp(rect1, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("randomness"), "RAND");
+                var rect2 = NextLine();
+                EditorTools.DrawHalfWidthProp(rect2, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("size"), "SIZE");
+                EditorTools.DrawHalfWidthProp(rect2, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("valueRange"), "VAL");
             }
 
             void DrawShowTransform () {

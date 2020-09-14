@@ -7,49 +7,69 @@ namespace GeometryGenerators {
         private const int MAX_RNG_OFFSET = 1024;
 
         public enum NoiseSourceType {
-            NONE,
-            PERLIN,
-            TEXTURE
+            None,
+            Perlin,
+            Texture
+        }
+
+        public enum LowerClampValue {
+            None,
+            MinusOne,
+            Zero
+        }
+
+        public enum UpperClampValue {
+            None,
+            One,
+            Zero
         }
 
         [Header("Deformation Settings")]
-        [SerializeField] bool seededRandomness = false;
-        [SerializeField] string seed = string.Empty;
-        [SerializeField, Range(-1f, 1f)] float noiseOffset = 0f;
-        [SerializeField] float noiseStrength = 1f;
-        [SerializeField] NoiseSourceType noiseSourceType = NoiseSourceType.NONE;
-        [SerializeField] PerlinNoiseSource[] perlinNoiseSources = default;
-        [SerializeField] TextureNoiseSource[] textureNoiseSources = default;
+        [SerializeField]                 bool seededRandomness = false;
+        [SerializeField]                 string seed = string.Empty;
+        [SerializeField]                 bool clampNoise = false;
+        [SerializeField]                 LowerClampValue lowerClamp = default;
+        [SerializeField]                 UpperClampValue upperClamp = default;
+        [SerializeField, Range(-1f, 1f)] float noiseOffsetPre = 0f;
+        [SerializeField, Range(-1f, 1f)] float nosieOffsetPost = 0f;
+        [SerializeField]                 float noiseStrength = 1f;
+        [SerializeField]                 NoiseSourceType noiseSourceType = NoiseSourceType.None;
+        [SerializeField]                 PerlinNoiseSource[] perlinNoiseSources = default;
+        [SerializeField]                 TextureNoiseSource[] textureNoiseSources = default;
 
         NoiseSource[] noiseSources;
+        System.Func<float, float> clampFunc;
 
         protected override Mesh CreateMesh () {
             noiseSources = GetNoiseSources();
-            InitNoiseSources(noiseSources); 
+            InitNoiseSources(noiseSources);
+            clampFunc = GetClampFunc();
             var output = base.CreateMesh();
             output.name = "Custom Terrain";
             return output;
         }
 
-        protected override Vector3 GetAdditionalVertexOffset (Vector3 position) {
+        protected override Vector3 GetAdditionalVertexOffset (int x, int z, Vector3 position) {
             float deformNoise = 0f;
             for(int n=0; n<noiseSources.Length; n++){
                 deformNoise += noiseSources[n].Evaluate(position.x, position.z);
             }
-            float dY = (deformNoise + noiseOffset) * noiseStrength;
-            return new Vector3(0f, dY, 0f);
+            deformNoise += noiseOffsetPre;
+            deformNoise = clampFunc(deformNoise);
+            deformNoise += nosieOffsetPost;
+            return new Vector3(0f, deformNoise * noiseStrength, 0f);
         }
 
         NoiseSource[] GetNoiseSources () {
             NoiseSource[] output;
             switch(noiseSourceType){
-                case NoiseSourceType.NONE:
+                case NoiseSourceType.None:
                     output = null;
                     break;
-                case NoiseSourceType.PERLIN: 
+                case NoiseSourceType.Perlin: 
                     output = perlinNoiseSources; 
                     break;
-                case NoiseSourceType.TEXTURE: 
+                case NoiseSourceType.Texture: 
                     output = textureNoiseSources; 
                     break;
                 default: 
@@ -83,6 +103,30 @@ namespace GeometryGenerators {
                 return new System.Random(seed.Trim().GetHashCode());    
             }
             return new System.Random(System.DateTime.Now.GetHashCode());
+        }
+
+        System.Func<float, float> GetClampFunc () {
+            float min = float.NegativeInfinity;
+            float max = float.PositiveInfinity;
+            if(clampNoise){
+                switch(lowerClamp){
+                    case LowerClampValue.MinusOne:
+                        min = -1f;
+                        break;
+                    case LowerClampValue.Zero:
+                        min = 0f;
+                        break;
+                }
+                switch(upperClamp){
+                    case UpperClampValue.One:
+                        max = 1f;
+                        break;
+                    case UpperClampValue.Zero:
+                        max = 0f;
+                        break;
+                }
+            }
+            return (f) => {return Mathf.Clamp(f, min, max);};
         }
 
     }
