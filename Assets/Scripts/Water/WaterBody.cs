@@ -237,12 +237,12 @@ public abstract class WaterBody : MonoBehaviour {
         if(buoyancy == 0f){
             return;
         }
-        var rbPos = rb.position;
+        var rbCOM = rb.worldCenterOfMass;
         float maxInDepth = float.NegativeInfinity;
         float maxOutDepth = float.NegativeInfinity;
         foreach(var col in this){
-            var inside = ColliderContainsPoint(col, rbPos);
-            if(DepthCast(col, rbPos, gravityDir, out var depth)){
+            var inside = ColliderContainsPoint(col, rbCOM);
+            if(DepthCast(col, rbCOM, gravityDir, out var depth)){
                 if(inside){
                     maxInDepth = Mathf.Max(maxInDepth, depth);
                 }else{
@@ -286,13 +286,13 @@ public abstract class WaterBody : MonoBehaviour {
         );
     }
 
-    bool DepthCast (Collider col, Vector3 rbPos, Vector3 gravityDir, out float depth) {
+    bool DepthCast (Collider col, Vector3 targetPos, Vector3 gravityDir, out float depth) {
         var colSize = col.bounds.size.magnitude;
         var rl = 4f * colSize;
-        var ro = rbPos - (gravityDir * 2f * colSize);
+        var ro = targetPos - (gravityDir * 2f * colSize);
         var rd = gravityDir;
         if(col.Raycast(new Ray(ro, rd), out var hit, rl)){
-            depth = (hit.point - rbPos).magnitude;
+            depth = (hit.point - targetPos).magnitude;
             // depth *= Mathf.Sign(Vector3.Dot(gravityDir, hit.normal));
             // depth = Mathf.Max(0, depth);
             return true;
