@@ -68,7 +68,7 @@ namespace SceneLoading {
             }
 
             void LoadNewScene () {
-                if(newScene == SceneID.NONE){
+                if(newScene == SceneID.None){
                     return;
                 }
                 loadOps.Add(SceneManager.LoadSceneAsync((int)newScene, LoadSceneMode.Additive));

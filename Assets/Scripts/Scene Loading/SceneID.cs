@@ -3,11 +3,10 @@
 namespace SceneLoading {
 
     public enum SceneID {
-
-        NONE = 0,   // synonymous with just the main scene
-        MOVEMENT_TESTING_CC = 1,
-        MOVEMENT_TESTING_RB = 2,
-        TEST_1 = 3,
+        None = 0,   // synonymous with just the main scene
+        MovementTesting = 1,
+        Test1 = 2,
+        TerrainTest
         // MAIN_MENU,
         // E1M1,
         
