@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bba2ec97cff5e034cb35142fad1f79f7, type: 3}
+  m_Name: Test Prop Collection
+  m_EditorClassIdentifier: 
+  props:
+  - {fileID: 476711554245564611, guid: 1a07022c269afa54db17824cf8ef0134, type: 3}
+  - {fileID: 971654111820346239, guid: 86995f5ab72cc8543a023220ce354b14, type: 3}
+  - {fileID: 3746767083595111708, guid: cea1b5e805110a74b9e797d3a37dee50, type: 3}
+  - {fileID: 3332757448009729814, guid: d30c2b3e57cd1e64f86650b1f5c8ffcf, type: 3}
+  - {fileID: 8245739425748011599, guid: 04936a67a2e023845b2b598ab37aea3e, type: 3}
+  - {fileID: 6911217461903398146, guid: 69bde4966155f2146b60ce7570b65b2a, type: 3}
