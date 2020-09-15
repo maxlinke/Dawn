@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace GeometryGenerators {
 
-    public class BoundsSetter : MonoBehaviour {
+    public class MeshBoundsSetter : MonoBehaviour {
 
         [Header("Settings")]
         [SerializeField] Vector3 newCenter = Vector3.zero;
@@ -99,13 +99,13 @@ namespace GeometryGenerators {
     }
 
     #if UNITY_EDITOR
-    [CustomEditor(typeof(BoundsSetter))]
+    [CustomEditor(typeof(MeshBoundsSetter))]
     public class BoundsSetterEditor : Editor {
 
         public override void OnInspectorGUI () {
             DrawDefaultInspector();
             GUILayout.Space(10f);
-            var bs = target as BoundsSetter;
+            var bs = target as MeshBoundsSetter;
             if(GUILayout.Button("Instance Mesh")){
                 bs.InstanceMesh();
             }

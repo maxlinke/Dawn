@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class RigidBodyBoundsVisualizer : MonoBehaviour {
+public class RigidbodyBoundsVisualizer : MonoBehaviour {
 
     [Header("Important")]
     [SerializeField] Vector3 size = Vector3.one;

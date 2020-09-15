@@ -3,7 +3,7 @@
 using UnityEditor;
 #endif
 
-public class CenterOfMassSetter : MonoBehaviour {
+public class RigidbodyCenterOfMassSetter : MonoBehaviour {
 
     [Header("Settings")]
     [SerializeField] Vector3 newCenterOfMass = Vector3.zero;
@@ -52,7 +52,7 @@ public class CenterOfMassSetter : MonoBehaviour {
 
 #if UNITY_EDITOR
 
-[CustomEditor(typeof(CenterOfMassSetter))]
+[CustomEditor(typeof(RigidbodyCenterOfMassSetter))]
 public class CenterOfMassSetterEditor : RuntimeMethodButtonEditor { }
 
 #endif
