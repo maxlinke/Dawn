@@ -42,7 +42,7 @@ namespace GeometryGenerators {
                 for(int i=0; i<xVerts; i++){
                     int index = (j * xVerts) + i;
                     var pos = GetVertexCoordinates(i, j, iOffset, jOffset);
-                    pos += GetAdditionalVertexOffset(i , j, pos);
+                    pos += GetAdditionalVertexOffset(pos);
                     vertices[index] = pos;
                     float fracI = (float)i/xTiles;
                     float fracJ = (float)j/zTiles;
@@ -93,7 +93,7 @@ namespace GeometryGenerators {
             return output;
         }
 
-        protected virtual Vector3 GetAdditionalVertexOffset (int x, int z, Vector3 position) {
+        protected virtual Vector3 GetAdditionalVertexOffset (Vector3 position) {
             return Vector3.zero;
         }
 

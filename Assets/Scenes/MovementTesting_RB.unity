@@ -4952,27 +4952,40 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
+  drawGizmos: 1
+  gizmoColor: {r: 0, g: 1, b: 1, a: 1}
   xTiles: 16
   zTiles: 16
   tileSize: {x: 1, y: 1}
   uvMode: 0
   uvScale: {x: 1, y: 1}
-  useSeed: 0
+  seededRandomness: 0
   seed: Dawn
-  noiseOffset: 0
+  clampNoise: 0
+  lowerClamp: 0
+  upperClamp: 0
+  noiseOffsetPre: 0
+  nosieOffsetPost: 0
   noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
-  - scale: 4
-    strength: 1
-    randomOffset: 1
-    randomRotation: 1
+  - strength: 1
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
   textureNoiseSources:
-  - scale: 0
-    strength: 0
-    randomOffset: 0
-    randomRotation: 0
+  - strength: 0
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
     texture: {fileID: 0}
+    filterSize: 0
 --- !u!64 &747210012
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -8181,27 +8194,40 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
+  drawGizmos: 1
+  gizmoColor: {r: 0, g: 1, b: 1, a: 1}
   xTiles: 32
   zTiles: 32
   tileSize: {x: 1, y: 1}
   uvMode: 0
   uvScale: {x: 1, y: 1}
-  useSeed: 0
+  seededRandomness: 0
   seed: Dawn
-  noiseOffset: 0
+  clampNoise: 0
+  lowerClamp: 0
+  upperClamp: 0
+  noiseOffsetPre: 0
+  nosieOffsetPost: 0
   noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
-  - scale: 4
-    strength: 1
-    randomOffset: 1
-    randomRotation: 1
+  - strength: 1
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
   textureNoiseSources:
-  - scale: 0
-    strength: 0
-    randomOffset: 0
-    randomRotation: 0
+  - strength: 0
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
     texture: {fileID: 0}
+    filterSize: 0
 --- !u!64 &1252372039
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -9822,27 +9848,40 @@ MonoBehaviour:
   targetOnlySelf: 1
   targetMeshFilters: []
   targetMeshColliders: []
+  drawGizmos: 1
+  gizmoColor: {r: 0, g: 1, b: 1, a: 1}
   xTiles: 8
   zTiles: 8
   tileSize: {x: 1, y: 1}
   uvMode: 0
   uvScale: {x: 1, y: 1}
-  useSeed: 0
+  seededRandomness: 0
   seed: Dawn
-  noiseOffset: 0
+  clampNoise: 0
+  lowerClamp: 0
+  upperClamp: 0
+  noiseOffsetPre: 0
+  nosieOffsetPost: 0
   noiseStrength: 1
   noiseSourceType: 0
   perlinNoiseSources:
-  - scale: 4
-    strength: 1
-    randomOffset: 1
-    randomRotation: 1
+  - strength: 1
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
   textureNoiseSources:
-  - scale: 0
-    strength: 0
-    randomOffset: 0
-    randomRotation: 0
+  - strength: 0
+    randomness: 0
+    size: 1
+    valueRange: 0
+    position: {x: 0, y: 0}
+    angle: 0
+    vecSize: {x: 1, y: 1}
     texture: {fileID: 0}
+    filterSize: 0
 --- !u!64 &1520002849
 MeshCollider:
   m_ObjectHideFlags: 0

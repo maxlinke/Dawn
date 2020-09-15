@@ -49,7 +49,7 @@ namespace GeometryGenerators {
             return output;
         }
 
-        protected override Vector3 GetAdditionalVertexOffset (int x, int z, Vector3 position) {
+        protected override Vector3 GetAdditionalVertexOffset (Vector3 position) {
             float deformNoise = 0f;
             for(int n=0; n<noiseSources.Length; n++){
                 deformNoise += noiseSources[n].Evaluate(position.x, position.z);
