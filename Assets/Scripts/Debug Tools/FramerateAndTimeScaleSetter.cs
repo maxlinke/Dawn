@@ -71,5 +71,39 @@ public class FramerateAndTimeScaleSetter : MonoBehaviour {
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(FramerateAndTimeScaleSetter))]
-public class FrameRateSetterEditor : RuntimeMethodButtonEditor {}
+public class FrameRateSetterEditor : RuntimeMethodButtonEditor {
+
+    const int cacheSize = 10;
+    float[] fpsCache = null;
+    int cacheIndex = 0;
+
+    protected override void DrawInspector () {
+        base.DrawInspector();
+        if(!EditorApplication.isPlaying){
+            return;
+        }
+        var currentFPS = 1f / Time.unscaledDeltaTime;
+        if(fpsCache == null || fpsCache.Length != cacheSize){
+            fpsCache = new float[cacheSize];
+            for(int i=0; i<fpsCache.Length; i++){
+                fpsCache[i] = currentFPS;
+            }
+            cacheIndex = 0;
+        }
+        GUILayout.Space(10f);
+        fpsCache[cacheIndex] = currentFPS;
+        cacheIndex = (cacheIndex + 1) % fpsCache.Length;
+        var avgFPS = 0f;
+        for(int i=0; i<fpsCache.Length; i++){
+            avgFPS += fpsCache[i];
+        }
+        avgFPS /= fpsCache.Length;
+        if(GUILayout.Button("Update Values", EditorStyles.miniButton)){ }
+        GUILayout.Label($"{cacheSize} Frame Average FPS: {avgFPS}");
+        GUILayout.Label($"Current DeltaTime: {Time.deltaTime}");
+        GUILayout.Label($"Current Unscaled DeltaTime: {Time.unscaledDeltaTime}");
+        GUILayout.Space(10f);
+    }
+
+}
 #endif
