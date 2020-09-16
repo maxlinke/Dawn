@@ -22,11 +22,11 @@ public class Test : MonoBehaviour {
     }
 
     float GetTerminalVelocity () {
-        var x = (1f - deltaTime * drag);
-        if(x == 1f){
+        if(drag == 0f){
             return float.PositiveInfinity;
         }
-        return (gravity * deltaTime * x) / (1 - x);
+        var x = 1f - deltaTime * drag;
+        return (gravity * x) / drag;
     }
 	
 }

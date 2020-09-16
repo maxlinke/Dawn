@@ -71,7 +71,8 @@ namespace Testing {
         //Apply Linear Damping
         public void ApplyDrag() {
             // acceleration = acceleration * (1 - Time.deltaTime * drag);       // Time.deltaTime is no error, inside FixedUpdate it is the same as Time.fixedDeltaTime!
-            velocity = velocity * (1 - Time.deltaTime * drag);
+            // velocity = velocity * (1 - Time.deltaTime * drag);
+            velocity -= velocity * drag * Time.deltaTime;
         }
     }
            
