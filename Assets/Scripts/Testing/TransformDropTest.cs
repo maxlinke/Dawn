@@ -10,13 +10,14 @@ namespace Testing {
         
         public float mass = 1f;
         public float drag;
-        public Vector3 acceleration = Vector3.zero;
+        // public Vector3 acceleration = Vector3.zero;
+        public Vector3 velocity = Vector3.zero;
         public Vector3 gravity = Physics.gravity;
         
-        private int fixedUpdateTicks = -1;
+        // private int fixedUpdateTicks = -1;
         public bool atRest = false;
 
-        public bool logInfo = true;
+        // public bool logInfo = true;
         
         void FixedUpdate() {
         
@@ -25,14 +26,14 @@ namespace Testing {
                 return;
         
             //Log debugging information
-            fixedUpdateTicks++;
-            if(logInfo){
-                Debug.Log (string.Format (
-                    "Fixed Update Ticks: {0}\n" +
-                    "Position: {1}\n" +
-                    //To derive velocity from acceleration, we need to divide by time
-                    "Velocity: {2}\n", fixedUpdateTicks, transform.position, acceleration.magnitude/Time.fixedDeltaTime));
-            }
+            // fixedUpdateTicks++;
+            // if(logInfo){
+            //     Debug.Log (string.Format (
+            //         "Fixed Update Ticks: {0}\n" +
+            //         "Position: {1}\n" +
+            //         //To derive velocity from acceleration, we need to divide by time
+            //         "Velocity: {2}\n", fixedUpdateTicks, transform.position, acceleration.magnitude/Time.fixedDeltaTime));
+            // }
         
             //Add the force
             AddForce (gravity, ForceMode.Acceleration);
@@ -41,7 +42,8 @@ namespace Testing {
             ApplyDrag ();
         
             //Move the object
-            transform.position += acceleration;
+            // transform.position += acceleration;
+            transform.position += velocity * Time.fixedDeltaTime;
         
         }
         
@@ -53,11 +55,13 @@ namespace Testing {
             switch (forceType) {
             case ForceMode.Force:
                 //Force mode moves an object according to it's mass
-                acceleration = acceleration + force * mass * Time.fixedDeltaTime * Time.fixedDeltaTime;
+                // acceleration = acceleration + force * mass * Time.fixedDeltaTime * Time.fixedDeltaTime;
+                velocity += force * mass * Time.fixedDeltaTime;
                 break;
             case ForceMode.Acceleration:
                 //Acceleration ignores mass
-                acceleration = acceleration + force * Time.fixedDeltaTime * Time.fixedDeltaTime;
+                // acceleration = acceleration + force * Time.fixedDeltaTime * Time.fixedDeltaTime;
+                velocity += force * Time.fixedDeltaTime;
                 break;
             default:
                 throw new UnityException("Force mode not supported!");
@@ -66,7 +70,8 @@ namespace Testing {
         
         //Apply Linear Damping
         public void ApplyDrag() {
-            acceleration = acceleration * (1 - Time.deltaTime * drag);       // Time.deltaTime is no error, inside FixedUpdate it is the same as Time.fixedDeltaTime!
+            // acceleration = acceleration * (1 - Time.deltaTime * drag);       // Time.deltaTime is no error, inside FixedUpdate it is the same as Time.fixedDeltaTime!
+            velocity = velocity * (1 - Time.deltaTime * drag);
         }
     }
            
