@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Prop Collection", menuName = "Prop Collection")]
 public class PropCollection : ScriptableObject {
 
-    [SerializeField] Rigidbody[] props;
+    [SerializeField] Rigidbody[] props = default;
 
     public int Count => props != null ? props.Length : 0;
 

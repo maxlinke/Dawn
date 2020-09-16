@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class PropSpawner : MonoBehaviour {
@@ -9,6 +8,7 @@ public class PropSpawner : MonoBehaviour {
 
     [Header("Settings")]
     [SerializeField] float spacing = 1f;
+    [SerializeField] float zigZag = 0f;
     [SerializeField] Vector3 startEuler = Vector3.zero;
     [SerializeField] Vector3 startVelocity = Vector3.zero;
 
@@ -32,12 +32,14 @@ public class PropSpawner : MonoBehaviour {
     }
 
     public IEnumerable<Vector3> GetSpawnPoints (int count) {
-        var delta = transform.right * spacing;
-        var origin = transform.position - (delta * 0.5f * (count- 1));
+        var spacingDelta = transform.right * spacing;
+        var zigZagDelta = transform.forward * spacing * zigZag;
+        var origin = transform.position - (spacingDelta * 0.5f * (count- 1)) - (zigZagDelta * 0.5f);
         var current = origin;
         for(int i=0; i<count; i++){
             yield return current;
-            current += delta;
+            current += spacingDelta + zigZagDelta;
+            zigZagDelta *= -1f;
         }
     }
 
