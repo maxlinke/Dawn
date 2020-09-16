@@ -25,8 +25,8 @@ namespace PlayerController {
             public float surfaceAngle;
             public float surfaceDot;
             public float surfaceSolidness;
-            public float normedSurfaceFriction;
-            public float clampedNormedSurfaceFriction;
+            public float normedStaticSurfaceFriction;
+            public float normedDynamicSurfaceFriction;
             public bool touchingGround;
             public bool touchingWall;
             public bool isInWater;
@@ -313,8 +313,8 @@ namespace PlayerController {
                 output.surfaceDot = float.NaN;
                 output.surfaceAngle = float.NaN;
                 output.surfaceSolidness = float.NaN;
-                output.normedSurfaceFriction = float.NaN;
-                output.clampedNormedSurfaceFriction = float.NaN;
+                output.normedStaticSurfaceFriction = float.NaN;
+                output.normedDynamicSurfaceFriction = float.NaN;
                 output.surfacePhysicMaterial = null;
                 if(swim){
                     output.moveType = MoveType.WATER;
@@ -343,12 +343,12 @@ namespace PlayerController {
                 }
                 if(sp.otherCollider != null && sp.otherCollider.sharedMaterial != null){
                     var otherPM = sp.otherCollider.sharedMaterial;
-                    output.normedSurfaceFriction = (otherPM.staticFriction + otherPM.dynamicFriction) / (defaultPM.staticFriction + defaultPM.dynamicFriction);
-                    output.clampedNormedSurfaceFriction = Mathf.Clamp01(output.normedSurfaceFriction);;
+                    output.normedStaticSurfaceFriction = otherPM.staticFriction / defaultPM.staticFriction;
+                    output.normedDynamicSurfaceFriction = otherPM.dynamicFriction / defaultPM.dynamicFriction;
                     output.surfacePhysicMaterial = otherPM;
                 }else{
-                    output.normedSurfaceFriction = 1f;
-                    output.clampedNormedSurfaceFriction = 1f;
+                    output.normedStaticSurfaceFriction = 1f;
+                    output.normedDynamicSurfaceFriction = 1f;
                     output.surfacePhysicMaterial = null;
                 }
                 if(sp.otherCollider != null && TagManager.CompareTag(Tag.Slippery, sp.otherCollider.gameObject)){

@@ -158,7 +158,8 @@ namespace PlayerController {
             debugInfo += $"sa:  {currentState.surfaceAngle.ToString()}°\n";
             debugInfo += $"sd:  {currentState.surfaceDot.ToString()}\n";
             debugInfo += $"mt:  {currentState.moveType.ToString()}\n";
-            debugInfo += $"nsf: {currentState.normedSurfaceFriction.ToString()}\n";
+            debugInfo += $"nsf: {currentState.normedStaticSurfaceFriction.ToString()}\n";
+            debugInfo += $"ndf: {currentState.normedDynamicSurfaceFriction.ToString()}\n";
             debugInfo += $"ilv: {currentState.incomingLocalVelocity.magnitude:F3} m/s\n";
             debugInfo += $"c:   {shouldCrouch}\n";
             debugInfo += $"h:   {col.height}\n";
@@ -304,10 +305,15 @@ namespace PlayerController {
                 }
             }
             var localVelocity = currentState.incomingLocalVelocity;
-            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Ground.Drag, currentState.clampedNormedSurfaceFriction);
+            var dragFriction = currentState.normedStaticSurfaceFriction;
+            var moveFriction = currentState.normedDynamicSurfaceFriction;
+            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Ground.Drag, dragFriction);
+            // if(dragFriction > 1){                // TODO revisit this when i do moving platforms (lateral ones) and they slide away from underneath me
+            //     frictionMag *= dragFriction;
+            // }
             ApplyDrag(frictionMag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
-            var targetSpeed = pcProps.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            var targetSpeed = pcProps.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
             targetSpeed = Mathf.Max(targetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
@@ -316,10 +322,10 @@ namespace PlayerController {
                 var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
                 targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
             }
-            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, currentState.clampedNormedSurfaceFriction);
+            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, moveFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(moveInput.jump){
-                var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, currentState.clampedNormedSurfaceFriction);
+                var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
                 moveAccel += PlayerTransform.up * JumpSpeed() * jumpMultiplier / Time.fixedDeltaTime;
                 currentState.jumped = true;
             }
@@ -328,7 +334,7 @@ namespace PlayerController {
                 gravity = Physics.gravity * 0.5f;
             }else{
                 var stickGravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
-                var lerpFactor = currentState.surfaceSolidness * currentState.clampedNormedSurfaceFriction;
+                var lerpFactor = currentState.surfaceSolidness * dragFriction;
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
             }
@@ -346,15 +352,17 @@ namespace PlayerController {
 
         void SlopeMovement (MoveInput moveInput, ref MoveState currentState) {
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
-            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Slope.Drag, currentState.clampedNormedSurfaceFriction);
+            var dragFriction = currentState.normedStaticSurfaceFriction;
+            var moveFriction = currentState.normedDynamicSurfaceFriction;
+            var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Slope.Drag, dragFriction);
             ApplyDrag(frictionMag, ref horizontalLocalVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             var rawInput = moveInput.horizontalInput;
             var rawInputMag = rawInput.magnitude;
-            var targetSpeed = pcProps.Slope.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, currentState.normedSurfaceFriction);
+            var targetSpeed = pcProps.Slope.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
             targetSpeed = Mathf.Max(targetSpeed, horizontalLocalSpeed);
             var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Slope.Accel, currentState.clampedNormedSurfaceFriction);
+            var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Slope.Accel, moveFriction);
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag, Time.fixedDeltaTime);
             if(currentState.isInWater && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
