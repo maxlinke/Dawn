@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7a1e0ab203713c4b8e3c4caa6900dd6, type: 3}
   m_Name: Rigidbody Drag Helper
   m_EditorClassIdentifier: 
-  drag: 0.1777296
+  drag: 1
   gravity: 9.81
   deltaTime: 0.02
-  terminalVelocity: 55
+  terminalVelocity: 100

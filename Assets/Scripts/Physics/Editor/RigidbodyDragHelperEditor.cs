@@ -4,11 +4,9 @@ using UnityEditor;
 [CustomEditor(typeof(RigidbodyDragHelper))]
 public class RigidbodyDragHelperEditor : Editor {
 
-    string label = string.Empty;
+    string label = "output";
 
     public override void OnInspectorGUI () {
-        // EditorTools.DrawScriptReference(this);
-
         GUILayout.Space(10f);
         EditorTools.DrawDisabled(() => {
             EditorTools.DrawCentered(() => {

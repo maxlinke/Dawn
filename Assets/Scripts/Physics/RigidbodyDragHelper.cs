@@ -3,12 +3,15 @@
 // [CreateAssetMenu(fileName = "Rigidbody Drag Helper", menuName = "Rigidbody Drag Helper")]
 public class RigidbodyDragHelper : ScriptableObject {
 
-    #pragma warning disable 0649
     [SerializeField] float drag = 0f;
     [SerializeField] float gravity = 9.81f;
     [SerializeField] float deltaTime = 0.02f;
     [SerializeField] float terminalVelocity = float.PositiveInfinity;
-    #pragma warning restore 0649
+
+    public float Drag => drag;
+    public float Gravity => gravity;
+    public float DeltaTime => deltaTime;
+    public float TerminalVelocity => terminalVelocity;
 
     public static float CalculateTerminalVelocity (Rigidbody rb) {
         return CalculateTerminalVelocity(rb.drag, Physics.gravity.magnitude, Time.fixedDeltaTime);
