@@ -38,16 +38,16 @@ namespace GeometryGenerators {
             EditorGUI.EndProperty();
 
             Rect NextLine () {
-                return EditorTools.NextLine(ref position, manualIndent);
+                return EditorGUITools.NextLine(ref position, manualIndent);
             }
 
             void DrawStrengthRandomnessAndSize () {
                 var rect1 = NextLine();
-                EditorTools.DrawHalfWidthProp(rect1, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("strength"), "STR");
-                EditorTools.DrawHalfWidthProp(rect1, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("randomness"), "RAND");
+                EditorGUITools.DrawHalfWidthProp(rect1, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("strength"), "STR");
+                EditorGUITools.DrawHalfWidthProp(rect1, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("randomness"), "RAND");
                 var rect2 = NextLine();
-                EditorTools.DrawHalfWidthProp(rect2, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("size"), "SIZE");
-                EditorTools.DrawHalfWidthProp(rect2, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("valueRange"), "VAL");
+                EditorGUITools.DrawHalfWidthProp(rect2, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("size"), "SIZE");
+                EditorGUITools.DrawHalfWidthProp(rect2, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("valueRange"), "VAL");
             }
 
             void DrawShowTransform () {
@@ -61,9 +61,9 @@ namespace GeometryGenerators {
             }
 
             void DrawTransform() {
-                EditorTools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("position"), "POS");
-                EditorTools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("angle"), "ROT");
-                EditorTools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("vecSize"), "SIZE");
+                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("position"), "POS");
+                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("angle"), "ROT");
+                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("vecSize"), "SIZE");
             }
 
         }
