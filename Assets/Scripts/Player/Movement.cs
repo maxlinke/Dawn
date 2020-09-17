@@ -212,18 +212,20 @@ namespace PlayerController {
             return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
         }
 
-        protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float timeStep) {
+        // no need for fixedDeltaTime as Time.deltaTime IS fixedDeltaTime when used from within fixedupdate
+        protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration) {
             var dV = targetVelocity - currentVelocity;
-            var dVAccel = dV / timeStep;
+            var dVAccel = dV / Time.deltaTime;
             if(dVAccel.sqrMagnitude > (maxAcceleration * maxAcceleration)){
                 return dV.normalized * maxAcceleration;
             }
             return dVAccel;
         }
 
-        protected void ApplyDrag (float drag, float timestep, ref Vector3 localVelocity) {
-            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag, timestep);
-            dragDeceleration *= timestep;
+        // no need for fixedDeltaTime as Time.deltaTime IS fixedDeltaTime when used from within fixedupdate
+        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
+            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
+            dragDeceleration *= Time.deltaTime;
             Velocity += dragDeceleration;
             localVelocity += dragDeceleration;
         }
