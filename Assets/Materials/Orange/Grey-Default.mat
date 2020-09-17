@@ -86,6 +86,7 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _GridTexVectorScale: {r: 1, g: 1, b: 1, a: 1}
     - _GridTint: {r: 1, g: 1, b: 1, a: 1}
     - _OverlayTint: {r: 1, g: 1, b: 1, a: 1}
     - _TexOffset: {r: 0, g: 0, b: 0, a: 0}
