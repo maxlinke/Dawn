@@ -1,17 +1,7 @@
 ﻿// source: https://answers.unity.com/questions/486694/default-editor-enum-as-flags-.html
 
 using UnityEngine;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
-
-public class EnumFlagsAttribute : PropertyAttribute {
-
-    public EnumFlagsAttribute () {}
-	
-}
-
-#if UNITY_EDITOR
 
 [CustomPropertyDrawer(typeof(EnumFlagsAttribute))]
 public class EnumFlagsAttributeDrawer : PropertyDrawer {
@@ -31,5 +21,3 @@ public class EnumFlagsAttributeDrawer : PropertyDrawer {
     }
 
 }
-
-#endif
