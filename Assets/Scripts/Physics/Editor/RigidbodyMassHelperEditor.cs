@@ -11,7 +11,7 @@ public class RigidbodyMassHelperEditor : Editor {
         var shapeProp = serializedObject.FindProperty("shape");
         EditorGUILayout.PropertyField(shapeProp);
         var shape = (RigidbodyMassHelper.Shape)(shapeProp.enumValueIndex);
-        DrawSize(out var area, out var volume);
+        DrawSize(out var volume, out var faceArea, out var sideArea);
         serializedObject.ApplyModifiedProperties();
 
         DrawCalculatedResults();
@@ -23,52 +23,60 @@ public class RigidbodyMassHelperEditor : Editor {
             return prop.floatValue;
         }
 
-        void DrawSize (out float outputArea, out float outputVolume) {
-            outputArea = 0f;
+        void DrawSize (out float outputVolume, out float outputFaceArea, out float outputSideArea) {
+            outputFaceArea = 0f;
+            outputSideArea = -1f;
             outputVolume = 0f;
-            var prop = serializedObject.FindProperty("size");
-            string displayName;
-            float multiplier;
-            System.Func<float, float> calcArea;
-            System.Func<float, float> calcVolume;
+            float length, radius;
             switch(shape){
                 case RigidbodyMassHelper.Shape.Box:
-                    displayName = "Length";
-                    multiplier = 1f;
-                    calcArea = RigidbodyMassHelper.CalculateSquareArea;
-                    calcVolume = RigidbodyMassHelper.CalculateCubeVolume;
+                    length = GetLength();
+                    outputFaceArea = length * length;
+                    outputVolume = length * outputFaceArea;
                     break;
                 case RigidbodyMassHelper.Shape.Sphere:
-                    displayName = "Diameter";
-                    multiplier = 0.5f;
-                    calcArea = RigidbodyMassHelper.CalculateCircleArea;
-                    calcVolume = RigidbodyMassHelper.CalculateSphereVolume;
+                    radius = GetRadius();
+                    outputFaceArea = Mathf.PI * radius * radius;
+                    outputVolume = (4f / 3f) * outputFaceArea * radius;
+                    break;
+                case RigidbodyMassHelper.Shape.Cylinder:
+                    length = GetLength();
+                    radius = GetRadius();
+                    outputFaceArea = Mathf.PI * radius * radius;
+                    outputSideArea = 2f * radius * length;
+                    outputVolume = outputFaceArea * length;
                     break;
                 default:
-                    displayName = null;
-                    multiplier = 0f;
-                    calcArea = null;
-                    calcVolume = null;
+                    var msg = $"Unknown {nameof(RigidbodyMassHelper.Shape)} \"{shape}\"!";
+                    EditorGUILayout.LabelField(msg);
+                    Debug.LogError(msg);
                     break;
             }
-            if(displayName == null){
-                var msg = $"Unknown {nameof(RigidbodyMassHelper.Shape)} \"{shape}\"!";
-                EditorGUILayout.LabelField(msg);
-                Debug.LogError(msg);
-                return;
+
+            float GetLength () {
+                var lengthProp = serializedObject.FindProperty("length");
+                EditorGUILayout.PropertyField(lengthProp);
+                return lengthProp.floatValue;
             }
-            EditorGUILayout.PropertyField(prop, new GUIContent(displayName), true);
-            var size = multiplier * prop.floatValue;
-            outputArea = calcArea(size);
-            outputVolume = calcVolume(size);
+
+            float GetRadius () {
+                var diameterProp = serializedObject.FindProperty("diameter");
+                EditorGUILayout.PropertyField(diameterProp);
+                return diameterProp.floatValue / 2f;
+            }
         }
 
         void DrawCalculatedResults () {
             GUILayout.Space(4f);
             EditorTools.HeaderLabel("Results");
-            EditorTools.LabelWithLabel("Area", $"{area} m²");
+            if(sideArea == -1f){
+                EditorTools.LabelWithLabel("Area", $"{faceArea} m²");
+            }else{
+                EditorTools.LabelWithLabel("Area (Face)", $"{faceArea} m²");
+                EditorTools.LabelWithLabel("Area (Side)", $"{sideArea} m²");
+            }
             EditorTools.LabelWithLabel("Volume", $"{volume} m³");
-            var mass = RigidbodyMassHelper.CalculateMass(volume, density);
+            var mass = volume * density * 1000f;
             string massString;
             if(mass > 1000f){
                 massString = $"{(mass/1000f):F2} t";

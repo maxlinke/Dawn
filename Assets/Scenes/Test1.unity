@@ -1638,6 +1638,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9631146222eff4409b13a20f4a5fe85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  diameters:
+  - 0.1
+  - 0.5
+  - 1
+  materials:
+  - name: water
+    density: 1
+  - name: wood
+    density: 0.5
+  - name: iron
+    density: 7.8
+  - name: light
+    density: 0.002
 --- !u!4 &452972048
 Transform:
   m_ObjectHideFlags: 0

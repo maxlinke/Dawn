@@ -50,8 +50,7 @@ public class RigidbodyDragHelper : ScriptableObject {
         if(drag == 0f){
             return float.PositiveInfinity;
         }
-        var x = 1f - deltaTime * drag;
-        return (gravity * x) / drag;
+        return gravity * ((1f / drag) - deltaTime);
     }
 
     public static float CalculateDrag (float terminalVelocity, float gravity, float deltaTime) {

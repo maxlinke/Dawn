@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravity: 9.81
   terminalVelocity: 55
-  drag: 0.1
+  drag: 0.5
   deltaTime: 0.02
-  mass: 1
+  mass: 100
   airDensity: 1.27
-  dragCoefficient: 0.47
-  area: 0.012
+  dragCoefficient: 1
+  area: 0.5
