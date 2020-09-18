@@ -18,18 +18,18 @@ public class RigidbodyDragHelper : ScriptableObject {
     const float inf = float.PositiveInfinity;
 
     [Header("General")]
-    [SerializeField, RangedUnit(u_g,          0, inf)] float gravity = 9.81f;
+    [SerializeField, RangedUnit(u_g,  0, inf)] float gravity = 9.81f;
     [SerializeField, RangedUnit(u_vt, 0, inf)] float terminalVelocity = float.PositiveInfinity;
 
-    [Header("Unity")]
-    [SerializeField, RangedUnit(u_d, 0, inf)] float drag = 0f;
-    [SerializeField, RangedUnit(u_dt, 0, inf)] float deltaTime = 0.02f;
+    [Header("Unity Physics")]
+    [SerializeField, RangedUnit(u_d, 0, inf)]       float drag = 0f;
+    [SerializeField, RangedUnit(u_dt, 0.0001f, 1f)] float deltaTime = 0.02f;
 
     [Header("Real Physics")]
-    [SerializeField, RangedUnit(u_m, 0, inf)] float mass = 1f;
-    [SerializeField, RangedUnit(u_da, 0, inf)] float airDensity = 1.27f;
-    [SerializeField, RangedUnit(u_cD, 0, inf)] float dragCoefficient = 0.47f;
-    [SerializeField, RangedUnit(u_a, 0, inf)] float area = 0.012f;
+    [SerializeField, RangedUnit(u_m, 0.0000001f, inf)] float mass = 1f;
+    [SerializeField, RangedUnit(u_da, 0, inf)]       float airDensity = 1.27f;
+    [SerializeField, RangedUnit(u_cD, 0, inf)]       float dragCoefficient = 0.47f;
+    [SerializeField, RangedUnit(u_a, 0, inf)]        float area = 0.012f;
 
     public float Gravity => gravity;
     public float TerminalVelocity => terminalVelocity;

@@ -53,6 +53,13 @@ public static class EditorTools {
         GUILayout.Label(text, EditorStyles.boldLabel);
     }
 
+    public static void LabelWithLabel (string labelText, string contentText) {
+        EditorTools.DrawHorizontal(() => {
+            GUILayout.Label(labelText, GUILayout.Width(EditorGUIUtility.labelWidth));
+            GUILayout.Label(contentText);
+        });
+    }
+
     public static void TextBox (string text) {
         DrawDisabled(() => {
             GUILayout.TextArea(text);
@@ -65,24 +72,6 @@ public static class EditorTools {
                 GUILayout.TextArea(text);
             });
         });
-    }
-
-    public static float FloatField (SerializedProperty prop, float minValue, float maxValue, string labelOverride = null) {
-        EditorGUI.BeginChangeCheck();
-        var newValue = EditorGUILayout.FloatField(labelOverride ?? prop.displayName, Mathf.Clamp(prop.floatValue, minValue, maxValue));
-        if(EditorGUI.EndChangeCheck()){
-            prop.floatValue = Mathf.Clamp(newValue, minValue, maxValue);
-        }
-        return prop.floatValue;
-    }
-
-    public static float FloatFieldWithUnit (SerializedProperty prop, string unit, float minValue, float maxValue, string labelOverride = null, float unitWidth = 40f) {
-        var output = 0f;
-        DrawHorizontal(() => {
-            output = FloatField(prop, minValue, maxValue, labelOverride);
-            GUILayout.Label(unit, GUILayout.Width(unitWidth));
-        });
-        return output;
     }
 	
 }
