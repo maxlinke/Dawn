@@ -266,7 +266,18 @@ namespace PlayerController {
             }
         }
 
-        protected bool CanUncrouch (bool checkUpward) {
+        protected bool CanUncrouch (bool onGround) {
+            if(onGround){
+                return UncrouchPathFree(checkUpward: true);
+            }else{
+                if(!UncrouchPathFree(checkUpward: false)){
+                    return UncrouchPathFree(checkUpward: true);
+                }
+            }
+            return true;
+        }
+
+        protected bool UncrouchPathFree (bool checkUpward) {
             Vector3 rayStart, rayDir;
             if(checkUpward){
                 rayStart = PlayerTransform.TransformPoint(LocalColliderTopSphere);

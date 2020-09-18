@@ -224,7 +224,7 @@ namespace PlayerController {
                 return;
             }
             float targetHeight;
-            if(shouldCrouch || !CanUncrouch(checkUpward: currentState.surfacePoint != null)){
+            if(shouldCrouch || !CanUncrouch(onGround: currentState.surfacePoint != null)){
                 targetHeight = pcProps.CrouchHeight;
             }else{
                 targetHeight = pcProps.NormalHeight;
