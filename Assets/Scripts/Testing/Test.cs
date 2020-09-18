@@ -45,9 +45,11 @@ public class Test : MonoBehaviour {
                     gravity: g,
                     deltaTime: dt
                 );
-                var r = Mathf.Pow(m, 1f / 3f);
-                var dr = d*r;
-                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tradius: {r}\tb?: {dr}");
+                var b = Buoyancy(d, m);
+                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}");
+                // var sqrtD = Mathf.Sqrt(d);
+                // var logM = Mathf.Log(m, 1000f);
+                // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tsqrtD: {sqrtD}\tlogM: {logM}");
             }
             sb.AppendLine();
         }
@@ -56,6 +58,17 @@ public class Test : MonoBehaviour {
 
     void Update () {
         
+    }
+
+    float Buoyancy (float drag, float mass) {
+        // return Mathf.Sqrt(drag);
+        // return Mathf.Log10(mass);
+        // return Mathf.Pow(mass, 0.001f);
+        // return Mathf.Log(mass, 1000f);
+        var sqrtD = Mathf.Sqrt(drag);
+        var logM = Mathf.Log(mass, 1000f);
+        // return sqrtD * logM * logM;
+        return sqrtD * Mathf.Pow(2, logM);
     }
 	
 }

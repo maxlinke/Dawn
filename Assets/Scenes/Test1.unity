@@ -1639,9 +1639,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   diameters:
+  - 0.01
   - 0.1
-  - 0.5
   - 1
+  - 10
+  - 100
   materials:
   - name: water
     density: 1
