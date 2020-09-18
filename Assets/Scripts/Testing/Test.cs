@@ -56,10 +56,10 @@ public class Test : MonoBehaviour {
         Debug.Log(sb.ToString());
     }
 
-    void Update () {
-        
-    }
-
+    // good approximation, albeit a but wasteful with its functions...
+    // what exactly does the value represent?
+    // lower mass end is lower output than higher mass end
+    // however the higher this value, the more buoyant the result should be
     float Buoyancy (float drag, float mass) {
         // return Mathf.Sqrt(drag);
         // return Mathf.Log10(mass);
@@ -68,7 +68,11 @@ public class Test : MonoBehaviour {
         var sqrtD = Mathf.Sqrt(drag);
         var logM = Mathf.Log(mass, 1000f);
         // return sqrtD * logM * logM;
-        return sqrtD * Mathf.Pow(2, logM);
+        return sqrtD * Mathf.Pow(1.78f, logM);      // 1.78 is 1/0.56. 0.56 is the approx limit of the ratio between drag values for every 1000x increase in mass...
+    }
+
+    void Update () {
+        
     }
 	
 }
