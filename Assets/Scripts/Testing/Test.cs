@@ -46,7 +46,8 @@ public class Test : MonoBehaviour {
                     deltaTime: dt
                 );
                 var b = Buoyancy(d, m);
-                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}");
+                var bd = b / mat.density;
+                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}\tratio: {bd}");
                 // var sqrtD = Mathf.Sqrt(d);
                 // var logM = Mathf.Log(m, 1000f);
                 // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tsqrtD: {sqrtD}\tlogM: {logM}");
@@ -56,19 +57,12 @@ public class Test : MonoBehaviour {
         Debug.Log(sb.ToString());
     }
 
-    // good approximation, albeit a but wasteful with its functions...
-    // what exactly does the value represent?
-    // lower mass end is lower output than higher mass end
-    // however the higher this value, the more buoyant the result should be
-    float Buoyancy (float drag, float mass) {
-        // return Mathf.Sqrt(drag);
-        // return Mathf.Log10(mass);
-        // return Mathf.Pow(mass, 0.001f);
-        // return Mathf.Log(mass, 1000f);
+    float Buoyancy (float drag, float mass) {    
         var sqrtD = Mathf.Sqrt(drag);
-        var logM = Mathf.Log(mass, 1000f);
-        // return sqrtD * logM * logM;
-        return sqrtD * Mathf.Pow(1.78f, logM);      // 1.78 is 1/0.56. 0.56 is the approx limit of the ratio between drag values for every 1000x increase in mass...
+        var sizeDelta = 2f;
+        var logM = Mathf.Log(mass, sizeDelta * sizeDelta * sizeDelta);
+        var powBase = Mathf.Pow(sizeDelta, 0.25f);
+        return sqrtD * Mathf.Pow(powBase, logM);
     }
 
     void Update () {
