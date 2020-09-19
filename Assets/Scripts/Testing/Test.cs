@@ -45,39 +45,25 @@ public class Test : MonoBehaviour {
                     gravity: g,
                     deltaTime: dt
                 );
-                // var b = Buoyancy(d, m);
-                // var bd = b / mat.density;
-                // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}\tratio: {bd}");
-                var r = Radius(d, m);
-                // var v = (4f / 3f) * Mathf.PI * r * r * r;
-                var v = r * r * r * 150f;
-                var dens = m / v;
+                var dens = ApproxDensity(d, m);
                 var rd = dens / mat.density;
-                // var rr = r / diameters[i];
                 sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\td?: {dens}\tratio: {rd}");
-                // var sqrtD = Mathf.Sqrt(d);
-                // var logM = Mathf.Log(m, 1000f);
-                // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tsqrtD: {sqrtD}\tlogM: {logM}");
             }
             sb.AppendLine();
         }
         Debug.Log(sb.ToString());
     }
 
-    float Radius (float drag, float mass) {
-        // float consts = 9.81f * 1.27f * 0.47f;
-        // var d = (1f / drag) - 0.02f;
-        // float area = (2f * mass) / (consts * d * d);
-        // return Mathf.Sqrt(area) / Mathf.PI;
+    // returns approximated density in g/cm³
+    float ApproxDensity (float drag, float mass) {
+        var consts = 9.81f * 1.27f * 0.47f;
         var d = (1f / drag) - 0.02f;
-        return Mathf.Sqrt(mass / (d * d));
+        var area = (2f * mass) / (consts * d * d);
+        var radius = Mathf.Sqrt(area / Mathf.PI);
+        var volume = (4f / 3f) * Mathf.PI * radius * radius * radius;
+        var density = mass / volume;
+        return density / 1000f;
     }
-
-    // float Buoyancy (float drag, float mass) {    
-    //     var sqrtD = Mathf.Sqrt(drag);
-    //     var logM = Mathf.Log(mass);
-    //     return sqrtD * Mathf.Pow(Mathf.Exp(1f/12f), logM);
-    // }
 
     void Update () {
         
