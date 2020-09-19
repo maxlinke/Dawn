@@ -45,9 +45,15 @@ public class Test : MonoBehaviour {
                     gravity: g,
                     deltaTime: dt
                 );
-                var b = Buoyancy(d, m);
-                var bd = b / mat.density;
-                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}\tratio: {bd}");
+                // var b = Buoyancy(d, m);
+                // var bd = b / mat.density;
+                // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}\tratio: {bd}");
+                var r = Radius(d, m);
+                var v = (4f / 3f) * Mathf.PI * r * r * r;
+                var dens = m / v;
+                var rd = dens / mat.density;
+                // var rr = r / diameters[i];
+                sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\td?: {dens}\tratio: {rd}");
                 // var sqrtD = Mathf.Sqrt(d);
                 // var logM = Mathf.Log(m, 1000f);
                 // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tsqrtD: {sqrtD}\tlogM: {logM}");
@@ -57,12 +63,17 @@ public class Test : MonoBehaviour {
         Debug.Log(sb.ToString());
     }
 
+    float Radius (float drag, float mass) {
+        float consts = 9.81f * 1.27f * 0.47f;
+        var d = (1f / drag) - 0.02f;
+        float area = (2f * mass) / (consts * d * d);
+        return Mathf.Sqrt(area) / Mathf.PI;
+    }
+
     float Buoyancy (float drag, float mass) {    
         var sqrtD = Mathf.Sqrt(drag);
-        var sizeDelta = 2f;
-        var logM = Mathf.Log(mass, sizeDelta * sizeDelta * sizeDelta);
-        var powBase = Mathf.Pow(sizeDelta, 0.25f);
-        return sqrtD * Mathf.Pow(powBase, logM);
+        var logM = Mathf.Log(mass);
+        return sqrtD * Mathf.Pow(Mathf.Exp(1f/12f), logM);
     }
 
     void Update () {
