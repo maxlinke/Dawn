@@ -29,6 +29,7 @@ namespace PlayerController {
             public float normedDynamicSurfaceFriction;
             public bool touchingGround;
             public bool touchingWall;
+            public WaterBody waterBody;
             public bool isInWater;
             public bool canCrouchInWater;
             public bool canJump;
@@ -212,22 +213,28 @@ namespace PlayerController {
             return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
         }
 
-        // no need for fixedDeltaTime as Time.deltaTime IS fixedDeltaTime when used from within fixedupdate
-        protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration) {
+        protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float deltaTime) {
             var dV = targetVelocity - currentVelocity;
-            var dVAccel = dV / Time.deltaTime;
+            var dVAccel = dV / deltaTime;
             if(dVAccel.sqrMagnitude > (maxAcceleration * maxAcceleration)){
                 return dV.normalized * maxAcceleration;
             }
             return dVAccel;
         }
 
-        // no need for fixedDeltaTime as Time.deltaTime IS fixedDeltaTime when used from within fixedupdate
-        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
+        protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration) {
+            return ClampedDeltaVAcceleration(currentVelocity, targetVelocity, maxAcceleration, Time.deltaTime);
+        }
+
+        protected void ApplyDrag (float drag, ref Vector3 localVelocity, float deltaTime) {
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
-            dragDeceleration *= Time.deltaTime;
+            dragDeceleration *= deltaTime;
             Velocity += dragDeceleration;
             localVelocity += dragDeceleration;
+        }
+
+        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
+            ApplyDrag(drag, ref localVelocity, Time.deltaTime);
         }
 
         protected Quaternion GetGravityRotation (Transform referenceTransform) {
@@ -310,12 +317,18 @@ namespace PlayerController {
             output.ladderPoint = lp;
             output.touchingGround = sp != null;
             output.touchingWall = colResult.touchingWall;
+            output.waterBody = null;
             output.isInWater = false;
             output.canCrouchInWater = true;
             var swim = false;
             Vector3 averageTriggerVelocity = Vector3.zero;
             foreach(var trigger in triggerStays){
-                output.isInWater |= CheckTriggerForWater(trigger, out var canSwimInTrigger, out var canCrouchInTrigger);
+                if(CheckTriggerForWater(trigger, out var canSwimInTrigger, out var canCrouchInTrigger)){
+                    output.isInWater = true;
+                    if(output.waterBody == null){
+                        output.waterBody = trigger.GetComponent<WaterBody>();
+                    }
+                }
                 output.canCrouchInWater &= canCrouchInTrigger;
                 if(canSwimInTrigger){
                     swim = true;

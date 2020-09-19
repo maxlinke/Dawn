@@ -278,7 +278,7 @@ namespace PlayerController {
             }
             var gravityRotation = GetGravityRotation(smoothRotationParent);
             var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.JumpCalcGravity);
-            var degreesPerSecond = pcProps.GravityTurnDegreesPerSecond * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
+            var degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
             var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * degreesPerSecond);
             smoothRotationParent.rotation = newRotation;
         }
@@ -404,7 +404,11 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(pcProps.Water.Speed * RawSpeedMultiplier(moveInput.run), localSpeed);
             var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Water.Accel);
-            Velocity += moveAcceleration * Time.deltaTime; // no gravity in water.
+            Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            if(currentState.waterBody != null){
+                var buoyancy = currentState.waterBody.PhysicsSettings.BuoyancyFromDensity(pcProps.PlayerDensity);
+                currentState.waterBody.AddBuoyancy(rb, buoyancy);
+            }
         }
 
         void LadderMovement (MoveInput moveInput, ref MoveState currentState) {

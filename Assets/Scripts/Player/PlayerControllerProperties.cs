@@ -32,12 +32,12 @@ public class PlayerControllerProperties : ScriptableObject {
     }
 
     [Header("Dimensions")]
-    [SerializeField] float normalHeight = 1.8f;
-    [SerializeField] float crouchHeight = 0.9f;
-    [SerializeField] float crouchUncrouchTime = 0.25f;
-    [SerializeField, Tooltip("From collider top")] float eyeOffset = -0.15f;
-    [SerializeField, Tooltip("From collider top")] float swimOffset = -0.4f;
-    [SerializeField] float colliderRadius = 0.4f;
+    [SerializeField, Unit("m")] float normalHeight = 1.8f;
+    [SerializeField, Unit("m")] float crouchHeight = 0.9f;
+    [SerializeField, Unit("s")] float crouchUncrouchTime = 0.25f;
+    [SerializeField, Unit("m"), Tooltip("From collider top")] float eyeOffset = -0.15f;
+    [SerializeField, Unit("m"), Tooltip("From collider top")] float swimOffset = -0.4f;
+    [SerializeField, Unit("m")] float colliderRadius = 0.4f;
 
     public float NormalHeight => normalHeight;
     public float CrouchHeight => crouchHeight;
@@ -49,36 +49,38 @@ public class PlayerControllerProperties : ScriptableObject {
     public float HeightChangeSpeed => (normalHeight - crouchHeight) / crouchUncrouchTime;
 
     [Header("Phyics")]
-    [SerializeField] float playerMass = 80f;
+    [SerializeField, Unit("kg")]    float playerMass = 80f;
+    [SerializeField, Unit("g/cm³")] float playerDensity = 1f;
     [SerializeField] CollisionDetectionMode collisionDetection = CollisionDetectionMode.ContinuousDynamic;
     [SerializeField] PhysicMaterial physicMaterial = null;
-    [SerializeField] float footRBNonSolidMass = 160f;
-    [SerializeField] float footRBSolidMass = 400f;
-    [SerializeField] float gravityTurnDegreesPerSecond = 360f;
+    [SerializeField, Unit("kg")]    float footRBNonSolidMass = 160f;
+    [SerializeField, Unit("kg")]    float footRBSolidMass = 400f;
+    [SerializeField, Unit("°/s")]   float gravityTurnSpeed = 360f;
     [SerializeField, Range(0f, 1f)] float minGravityTurnSpeedMultiplier = 0f;
 
     public float PlayerMass => playerMass;
+    public float PlayerDensity => playerDensity;
     public CollisionDetectionMode CollisionDetection => collisionDetection;
     public PhysicMaterial PhysicMaterial => physicMaterial;
     public float FootRBNonSolidMass => footRBNonSolidMass;
     public float FootRBSolidMass => footRBSolidMass;
-    public float GravityTurnDegreesPerSecond => gravityTurnDegreesPerSecond;
+    public float GravityTurnSpeed => gravityTurnSpeed;
     public float MinGravityTurnSpeedMultiplier => minGravityTurnSpeedMultiplier;
 
     [Header("Camera")]
-    [SerializeField] float nearClipDist = 0.15f;
-    [SerializeField] float farClipDist = 1000f;
+    [SerializeField, Unit("m")] float nearClipDist = 0.15f;
+    [SerializeField, Unit("m")] float farClipDist = 1000f;
 
     public float NearClipDist => nearClipDist;
     public float FarClipDist => farClipDist;
 
     [Header("Movement")]
-    [SerializeField] float hardSlopeLimit = 60f;
+    [SerializeField, Unit("°")] float hardSlopeLimit = 60f;
     [SerializeField] float runSpeedMultiplier = 1f;
     [SerializeField] float walkSpeedMultiplier = 0.5f;
     [SerializeField] float crouchSpeedMultiplier = 0.5f;
-    [SerializeField] float jumpHeight = 1f;
-    [SerializeField] float jumpCalcGravity = 29.43f;
+    [SerializeField, Unit("m")] float jumpHeight = 1f;
+    [SerializeField, Unit("m/s²")] float jumpCalcGravity = 29.43f;
     [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
     [SerializeField] MovementProperties slope = MovementProperties.SlopeDefault;
     [SerializeField] MovementProperties air = MovementProperties.AirDefault;
@@ -100,19 +102,8 @@ public class PlayerControllerProperties : ScriptableObject {
     public MovementProperties Water => water;
     public MovementProperties Ladder => ladder;
 
-    [Header("Dodge Move")]
-    [SerializeField] float dodgeSpeed = 12f;
-    [SerializeField] float dodgeStartTime = 0.125f;
-    [SerializeField] float dodgeEndTime = 0.125f;
-    [SerializeField] float dodgeDuration = 0.5f;
-
-    public float DodgeSpeed => dodgeSpeed;
-    public float DodgeStartTime => dodgeStartTime;
-    public float DodgeEndTime => dodgeEndTime;
-    public float DodgeDuration => dodgeDuration;
-
     [Header("Interaction")]
-    [SerializeField] float interactRange = 1.5f;
+    [SerializeField, Unit("m")] float interactRange = 1.5f;
 
     public float InteractRange => interactRange;
 

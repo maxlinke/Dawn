@@ -19,6 +19,7 @@ public abstract class WaterBody : MonoBehaviour {
     List<Rigidbody> rbs;
 
     public WaterFog Fog => fog;
+    public WaterPhyicsSettings PhysicsSettings => physics;
 
     protected abstract bool CollidersNotNull { get; }
     protected abstract Collider MainCollider { get; }
@@ -120,14 +121,15 @@ public abstract class WaterBody : MonoBehaviour {
 
         void DoBuoyancy () {
             if(Physics.gravity.sqrMagnitude > 0){
+                float densityNormalizer = physics.GetApproxDensityNormalizer();
                 Vector3 gravityDir = Physics.gravity.normalized;
                 if(physics.UseSimpleBuoyancy){
                     foreach(var rb in rbs){
-                        AddSimpleBuoyancy(rb, gravityDir);
+                        AddSimpleBuoyancy(rb, gravityDir, densityNormalizer);
                     }
                 }else{
                     foreach(var rb in rbs){
-                        AddBetterBuoyancy(rb, gravityDir);
+                        AddBetterBuoyancy(rb, gravityDir, densityNormalizer);
                     }
                 }
             }
@@ -161,19 +163,19 @@ public abstract class WaterBody : MonoBehaviour {
     // rb.drag affects all rigidbodies the same, regardless of mass
     // therefore as mass increases, the same drag means a much less dense object
     // i really need those props to dial in my stuff visually...
-    void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
+    public void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
         var localRBVelocity = rb.velocity - ownVelocity;
-        var localRBSpeed = localRBVelocity.magnitude;
-        // var deltaVDragAccel = -localRBVelocity / Time.fixedDeltaTime;
-        // var drag = Mathf.Lerp(physics.MinWaterDrag, physics.MaxWaterDrag, rb.drag / physics.WaterDragRBDragNormalizer);
-        // var mul = (localRBSpeed / physics.WaterDragRBVelocityNormalizer);
-        // // drag *= mul * mul;
-        // drag *= mul;
-        // if(deltaVDragAccel.sqrMagnitude > (drag * drag)){
-        //     rb.velocity += deltaVDragAccel.normalized * drag * Time.fixedDeltaTime;
-        // }else{
-        //     rb.velocity += deltaVDragAccel * Time.fixedDeltaTime;
-        // }
+        localRBVelocity -= localRBVelocity * (rb.drag + PhysicsSettings.Viscosity) * Time.deltaTime;
+        rb.velocity = ownVelocity + localRBVelocity;
+        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * PhysicsSettings.Viscosity) * Time.deltaTime;
+    }
+
+    public void AddBuoyancy (Rigidbody rb, float buoyancy) {
+        rb.AddForceAtPosition(
+            force: -Physics.gravity * buoyancy,
+            position: rb.transform.position,
+            mode: ForceMode.Acceleration
+        );
     }
 
     // for subtractive?
@@ -181,8 +183,9 @@ public abstract class WaterBody : MonoBehaviour {
 
     // use trigger-mesh collider for surfaces?
 
-    void AddBetterBuoyancy (Rigidbody rb, Vector3 gravityDir) {
-        float buoyancy = Mathf.Max(0, RawRigidbodyBuoyancy(rb));
+    void AddBetterBuoyancy (Rigidbody rb, Vector3 gravityDir, float densityNormalizer) {
+        float rbDensity = densityNormalizer * physics.FastApproxDensity(rb);
+        float buoyancy = physics.BuoyancyFromDensity(rbDensity);
         if(buoyancy == 0f){
             return;
         }
@@ -229,11 +232,12 @@ public abstract class WaterBody : MonoBehaviour {
         // zero lerp test point -> closest to center of water body.. i guess active trigger will have to do?
         // lerp to one only if greater
         // lerp to zero always
-        AddBuoyancyForce(rb, buoyancy);
+        AddBuoyancy(rb, buoyancy);
     }
 
-    void AddSimpleBuoyancy (Rigidbody rb, Vector3 gravityDir) {
-        float buoyancy = Mathf.Max(0, RawRigidbodyBuoyancy(rb));
+    void AddSimpleBuoyancy (Rigidbody rb, Vector3 gravityDir, float densityNormalizer) {
+        float rbDensity = densityNormalizer * physics.FastApproxDensity(rb);
+        float buoyancy = physics.BuoyancyFromDensity(rbDensity);
         if(buoyancy == 0f){
             return;
         }
@@ -263,28 +267,7 @@ public abstract class WaterBody : MonoBehaviour {
                 buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / physics.SimpleBuoyancyNeutralizationRange));
             }
         }
-        AddBuoyancyForce(rb, buoyancy);
-    }
-
-    // maybe modify this?
-    // drag ~ area
-    // mass ~ volume
-    // so heavy thing with same drag as light thing is less dense
-    // ...
-    // i really need some props to test this with. things that will float, things that wont
-    // things that have drag, things that dont
-    float RawRigidbodyBuoyancy (Rigidbody rb) {
-        return 0f;
-        // var lerp = (rb.drag - physics.MinBuoyancyRBDrag) / (physics.StandardBuoyancyRBDrag - physics.MinBuoyancyRBDrag);
-        // return Mathf.LerpUnclamped(physics.MinBuoyancy, physics.StandardBuoyancy, lerp);
-    }
-
-    void AddBuoyancyForce (Rigidbody rb, float buoyancy) {
-        rb.AddForceAtPosition(
-            force: -Physics.gravity * buoyancy,
-            position: rb.transform.position,
-            mode: ForceMode.Force
-        );
+        AddBuoyancy(rb, buoyancy);
     }
 
     bool DepthCast (Collider col, Vector3 targetPos, Vector3 gravityDir, out float depth) {
