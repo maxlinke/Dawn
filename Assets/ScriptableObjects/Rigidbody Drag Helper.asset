@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Rigidbody Drag Helper
   m_EditorClassIdentifier: 
   gravity: 9.81
-  terminalVelocity: 55
-  drag: 0.5
+  terminalVelocity: 100
+  drag: 0.1
   deltaTime: 0.02
   mass: 100
   airDensity: 1.27
-  dragCoefficient: 1
+  dragCoefficient: 0.47
   area: 0.5

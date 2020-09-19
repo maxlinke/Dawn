@@ -14,7 +14,7 @@ public class UnitAttributeDrawer : PropertyDrawer {
         EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
         var unit = attribute as UnitAttribute;
         GetRects(position, unit.labelWidth, out var propRect, out var unitRect);
-        EditorGUI.PropertyField(propRect, property, new GUIContent(property.displayName), true);
+        EditorGUI.PropertyField(propRect, property, label, true);
         EditorGUI.LabelField(unitRect, unit.name);
     }
 

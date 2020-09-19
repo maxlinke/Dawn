@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e58d0df5f943fbb4cacd21456885bc9a, type: 3}
   m_Name: Rigidbody Mass Helper
   m_EditorClassIdentifier: 
-  materialDensity: 1
+  materialDensity: 0.8
   percentSolid: 100
   shape: 1
-  diameter: 0.01
+  diameter: 0.6
   length: 1

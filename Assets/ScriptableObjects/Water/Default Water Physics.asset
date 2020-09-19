@@ -12,13 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c4407e2e7ba18d445971e5655376cf15, type: 3}
   m_Name: Default Water Physics
   m_EditorClassIdentifier: 
-  minWaterDrag: 4
-  maxWaterDrag: 8
-  waterDragRBDragNormalizer: 2
-  waterDragRBVelocityNormalizer: 1
-  minBuoyancy: 0
-  standardBuoyancy: 1
-  minBuoyancyRBDrag: 0
-  standardBuoyancyRBDrag: 0.8
-  useBetterBuoyancy: 0
-  simpleBuoyancyNeutralizationRange: 0.1
+  m_density: 1
+  m_viscosity: 1
+  m_useSimpleBuoyancy: 0
+  m_simpleBuoyancyNeutralizationRange: 1
+  m_densityCalcGravity: 9.81
+  m_densityCalcAirDensity: 1.27
+  m_densityCalcFixedDeltaTime: 0.02

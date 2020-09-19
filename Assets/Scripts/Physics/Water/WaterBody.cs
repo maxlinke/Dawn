@@ -121,13 +121,13 @@ public abstract class WaterBody : MonoBehaviour {
         void DoBuoyancy () {
             if(Physics.gravity.sqrMagnitude > 0){
                 Vector3 gravityDir = Physics.gravity.normalized;
-                if(physics.UseBetterBuoyancy){
+                if(physics.UseSimpleBuoyancy){
                     foreach(var rb in rbs){
-                        AddBetterBuoyancy(rb, gravityDir);
+                        AddSimpleBuoyancy(rb, gravityDir);
                     }
                 }else{
                     foreach(var rb in rbs){
-                        AddSimpleBuoyancy(rb, gravityDir);
+                        AddBetterBuoyancy(rb, gravityDir);
                     }
                 }
             }
@@ -164,16 +164,16 @@ public abstract class WaterBody : MonoBehaviour {
     void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
         var localRBVelocity = rb.velocity - ownVelocity;
         var localRBSpeed = localRBVelocity.magnitude;
-        var deltaVDragAccel = -localRBVelocity / Time.fixedDeltaTime;
-        var drag = Mathf.Lerp(physics.MinWaterDrag, physics.MaxWaterDrag, rb.drag / physics.WaterDragRBDragNormalizer);
-        var mul = (localRBSpeed / physics.WaterDragRBVelocityNormalizer);
-        // drag *= mul * mul;
-        drag *= mul;
-        if(deltaVDragAccel.sqrMagnitude > (drag * drag)){
-            rb.velocity += deltaVDragAccel.normalized * drag * Time.fixedDeltaTime;
-        }else{
-            rb.velocity += deltaVDragAccel * Time.fixedDeltaTime;
-        }
+        // var deltaVDragAccel = -localRBVelocity / Time.fixedDeltaTime;
+        // var drag = Mathf.Lerp(physics.MinWaterDrag, physics.MaxWaterDrag, rb.drag / physics.WaterDragRBDragNormalizer);
+        // var mul = (localRBSpeed / physics.WaterDragRBVelocityNormalizer);
+        // // drag *= mul * mul;
+        // drag *= mul;
+        // if(deltaVDragAccel.sqrMagnitude > (drag * drag)){
+        //     rb.velocity += deltaVDragAccel.normalized * drag * Time.fixedDeltaTime;
+        // }else{
+        //     rb.velocity += deltaVDragAccel * Time.fixedDeltaTime;
+        // }
     }
 
     // for subtractive?
@@ -274,8 +274,9 @@ public abstract class WaterBody : MonoBehaviour {
     // i really need some props to test this with. things that will float, things that wont
     // things that have drag, things that dont
     float RawRigidbodyBuoyancy (Rigidbody rb) {
-        var lerp = (rb.drag - physics.MinBuoyancyRBDrag) / (physics.StandardBuoyancyRBDrag - physics.MinBuoyancyRBDrag);
-        return Mathf.LerpUnclamped(physics.MinBuoyancy, physics.StandardBuoyancy, lerp);
+        return 0f;
+        // var lerp = (rb.drag - physics.MinBuoyancyRBDrag) / (physics.StandardBuoyancyRBDrag - physics.MinBuoyancyRBDrag);
+        // return Mathf.LerpUnclamped(physics.MinBuoyancy, physics.StandardBuoyancy, lerp);
     }
 
     void AddBuoyancyForce (Rigidbody rb, float buoyancy) {

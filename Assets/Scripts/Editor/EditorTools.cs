@@ -73,5 +73,17 @@ public static class EditorTools {
             });
         });
     }
+
+    public static bool ButtonCentered (string text, float width, bool miniButton = false) {
+        var output = false;
+        DrawCentered(() => {
+            if(miniButton){
+                output = GUILayout.Button(text, EditorStyles.miniButton, GUILayout.Width(width));
+            }else{
+                output = GUILayout.Button(text, GUILayout.Width(width));
+            }
+        });
+        return output;
+    }
 	
 }
