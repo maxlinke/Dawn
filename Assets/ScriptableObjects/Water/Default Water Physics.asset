@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Default Water Physics
   m_EditorClassIdentifier: 
   m_density: 1
-  m_viscosity: 1
-  m_useSimpleBuoyancy: 0
+  m_viscosity: 4
+  m_useSimpleBuoyancy: 1
   m_simpleBuoyancyNeutralizationRange: 1
   m_densityCalcGravity: 9.81
   m_densityCalcAirDensity: 1.27

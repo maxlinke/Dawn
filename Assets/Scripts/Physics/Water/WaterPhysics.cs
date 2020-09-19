@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "Water/Phyics Settings", fileName = "New WaterPhyicsSettings")]
-public class WaterPhyicsSettings : ScriptableObject {
+[CreateAssetMenu(menuName = "Water/Physics Settings", fileName = "New WaterPhyicsSettings")]
+public class WaterPhysics : ScriptableObject {
 
     const string viscosityTip = "Analogous to Rigidbody drag, applied to the velocities of all Rigidbodies in the water.";
     const string buoyancyTypeTip = "Simple buoyancy is meant to be cheaper to compute but less \"accurate\" than the alternative.";

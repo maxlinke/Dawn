@@ -12,14 +12,14 @@ public abstract class WaterBody : MonoBehaviour {
     private static List<WaterBody> waterBodies = new List<WaterBody>();
 
     [Header("Water Properties")]
-    [SerializeField] WaterPhyicsSettings physics = default;
+    [SerializeField] WaterPhysics physics = default;
     [SerializeField] WaterFog fog = default;
 
     bool initialized = false;
     List<Rigidbody> rbs;
 
     public WaterFog Fog => fog;
-    public WaterPhyicsSettings PhysicsSettings => physics;
+    public WaterPhysics WaterPhysics => physics;
 
     protected abstract bool CollidersNotNull { get; }
     protected abstract Collider MainCollider { get; }
@@ -52,7 +52,7 @@ public abstract class WaterBody : MonoBehaviour {
                 if(!physicsOk || !fogOk || !colsOk){
                     outputMsg = string.Empty;
                     if(!physicsOk){
-                        outputMsg += $"No {nameof(WaterPhyicsSettings)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!\n";
+                        outputMsg += $"No {(nameof(WaterPhysics))} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!\n";
                     }
                     if(!fogOk){
                         outputMsg += $"No {nameof(WaterFog)} assigned on {nameof(WaterBody)} \"{gameObject.name}\"!\n";
@@ -165,9 +165,9 @@ public abstract class WaterBody : MonoBehaviour {
     // i really need those props to dial in my stuff visually...
     public void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
         var localRBVelocity = rb.velocity - ownVelocity;
-        localRBVelocity -= localRBVelocity * (rb.drag + PhysicsSettings.Viscosity) * Time.deltaTime;
+        localRBVelocity -= localRBVelocity * (rb.drag + WaterPhysics.Viscosity) * Time.deltaTime;
         rb.velocity = ownVelocity + localRBVelocity;
-        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * PhysicsSettings.Viscosity) * Time.deltaTime;
+        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * WaterPhysics.Viscosity) * Time.deltaTime;
     }
 
     public void AddBuoyancy (Rigidbody rb, float buoyancy) {

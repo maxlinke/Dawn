@@ -406,7 +406,7 @@ namespace PlayerController {
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * pcProps.Water.Accel);
             Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
             if(currentState.waterBody != null){
-                var buoyancy = currentState.waterBody.PhysicsSettings.BuoyancyFromDensity(pcProps.PlayerDensity);
+                var buoyancy = currentState.waterBody.WaterPhysics.BuoyancyFromDensity(pcProps.PlayerDensity);
                 currentState.waterBody.AddBuoyancy(rb, buoyancy);
             }
         }

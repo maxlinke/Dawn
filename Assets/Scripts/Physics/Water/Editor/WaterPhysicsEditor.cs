@@ -1,18 +1,18 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(WaterPhyicsSettings))]
-public class WaterPhysicsSettingsEditor : Editor {
+[CustomEditor(typeof(WaterPhysics))]
+public class WaterPhysicsEditor : Editor {
 
     bool enableDensityCalcEditing = false;
     Rigidbody testRB = null;
     float testMass = 1f;
     float testDrag = 1f;
 
-    WaterPhyicsSettings wps;
+    WaterPhysics wps;
 
     void OnEnable () {
-        wps = target as WaterPhyicsSettings;
+        wps = target as WaterPhysics;
     }
 
     public override void OnInspectorGUI () {
@@ -40,13 +40,13 @@ public class WaterPhysicsSettingsEditor : Editor {
 
         void DrawReset () {
             if(EditorTools.ButtonCentered("Reset", 200f, true)){
-                densProp.floatValue = WaterPhyicsSettings.DEFAULT_DENSITY;
-                viscProp.floatValue = WaterPhyicsSettings.DEFAULT_VISCOSITY;
-                buoyTypeProp.boolValue = WaterPhyicsSettings.DEFAULT_SIMPLE_BUOYANCY;
-                buoyDepthProp.floatValue = WaterPhyicsSettings.DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
-                densGravProp.floatValue = WaterPhyicsSettings.DEFAULT_GRAVITY;
-                densAirProp.floatValue = WaterPhyicsSettings.DEFAULT_AIR_DENSITY;
-                densTimeProp.floatValue = WaterPhyicsSettings.DEFAULT_FIXED_DELTA_TIME;
+                densProp.floatValue = WaterPhysics.DEFAULT_DENSITY;
+                viscProp.floatValue = WaterPhysics.DEFAULT_VISCOSITY;
+                buoyTypeProp.boolValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY;
+                buoyDepthProp.floatValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
+                densGravProp.floatValue = WaterPhysics.DEFAULT_GRAVITY;
+                densAirProp.floatValue = WaterPhysics.DEFAULT_AIR_DENSITY;
+                densTimeProp.floatValue = WaterPhysics.DEFAULT_FIXED_DELTA_TIME;
             }
         }
 

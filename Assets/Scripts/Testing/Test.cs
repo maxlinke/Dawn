@@ -30,7 +30,7 @@ public class Test : MonoBehaviour {
             volumes[i] = (4f / 3f) * r * areas[i];
         }
         System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        var norm = WaterPhyicsSettings.GetApproxDensityNormalizer(g, dA);
+        var norm = WaterPhysics.GetApproxDensityNormalizer(g, dA);
         sb.AppendLine($"norm: {norm}");
         for(int i=0; i<materials.Length; i++){
             var mat = materials[i];
@@ -50,7 +50,7 @@ public class Test : MonoBehaviour {
                     deltaTime: dT
                 );
                 // var dens = ApproxDensity(d, m);
-                var dens = norm * WaterPhyicsSettings.FastApproxDensity(m, d, dT);
+                var dens = norm * WaterPhysics.FastApproxDensity(m, d, dT);
                 // var dens = WaterPhyicsSettings.ApproxDensity(m, d, g, dA, dT);
                 var rd = dens / mat.density;
                 sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\td?: {dens}\tratio: {rd}");
