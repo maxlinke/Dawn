@@ -49,7 +49,8 @@ public class Test : MonoBehaviour {
                 // var bd = b / mat.density;
                 // sb.AppendLine($"dia: {diameters[j]}\tmass: {m},\tvt: {vt},\tdrag: {d}\tb?: {b}\tratio: {bd}");
                 var r = Radius(d, m);
-                var v = (4f / 3f) * Mathf.PI * r * r * r;
+                // var v = (4f / 3f) * Mathf.PI * r * r * r;
+                var v = r * r * r * 150f;
                 var dens = m / v;
                 var rd = dens / mat.density;
                 // var rr = r / diameters[i];
@@ -64,17 +65,19 @@ public class Test : MonoBehaviour {
     }
 
     float Radius (float drag, float mass) {
-        float consts = 9.81f * 1.27f * 0.47f;
+        // float consts = 9.81f * 1.27f * 0.47f;
+        // var d = (1f / drag) - 0.02f;
+        // float area = (2f * mass) / (consts * d * d);
+        // return Mathf.Sqrt(area) / Mathf.PI;
         var d = (1f / drag) - 0.02f;
-        float area = (2f * mass) / (consts * d * d);
-        return Mathf.Sqrt(area) / Mathf.PI;
+        return Mathf.Sqrt(mass / (d * d));
     }
 
-    float Buoyancy (float drag, float mass) {    
-        var sqrtD = Mathf.Sqrt(drag);
-        var logM = Mathf.Log(mass);
-        return sqrtD * Mathf.Pow(Mathf.Exp(1f/12f), logM);
-    }
+    // float Buoyancy (float drag, float mass) {    
+    //     var sqrtD = Mathf.Sqrt(drag);
+    //     var logM = Mathf.Log(mass);
+    //     return sqrtD * Mathf.Pow(Mathf.Exp(1f/12f), logM);
+    // }
 
     void Update () {
         
