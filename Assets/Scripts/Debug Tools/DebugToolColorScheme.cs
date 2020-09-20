@@ -21,11 +21,13 @@ namespace DebugTools {
         [SerializeField] Color debugWarningColor = Color.black;
         [SerializeField] Color debugErrorColor = Color.black;
         [SerializeField] Color debugExceptionColor = Color.black;
+        [SerializeField] Color debugUnknownColor = Color.magenta;
 
         public Color DebugLogColor => debugLogColor;
         public Color DebugWarningColor => debugWarningColor;
         public Color DebugErrorColor => debugErrorColor;
         public Color DebugExceptionColor => debugExceptionColor;
+        public Color DebugUnknownColor => debugUnknownColor;
 
         [Header("Framerate Display")]
         [SerializeField] Color framerateLineColor = Color.white;

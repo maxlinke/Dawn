@@ -315,7 +315,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
-  m_PixelPerfect: 1
+  m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -385,6 +385,10 @@ MonoBehaviour:
   colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
   leftLogMargin: 2
   topLogMargin: 2
+  openOnLog: 0
+  openOnWarning: 0
+  openOnError: 1
+  openOnException: 1
 --- !u!1 &4984440591362190459
 GameObject:
   m_ObjectHideFlags: 0

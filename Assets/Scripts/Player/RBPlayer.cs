@@ -19,6 +19,7 @@ public class RBPlayer : Player {
     [SerializeField] KeyCode gravityFlipKey = KeyCode.G;
     [SerializeField] KeyCode viewLockKey = KeyCode.V;
     [SerializeField] Transform debugViewTarget = default;
+    [SerializeField] bool numberKeysDoDebugLogs = false;
 
     protected override Movement MovementSystem => rbMovement;
 
@@ -153,6 +154,20 @@ public class RBPlayer : Player {
         if(Input.GetKeyUp(viewLockKey)){
             rbView.viewTarget = null;
             rbView.controlMode = View.ControlMode.FULL;
+        }
+        if(numberKeysDoDebugLogs){
+            if(Input.GetKeyDown(KeyCode.Alpha1)){
+                Debug.Log(Time.frameCount);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha2)){
+                Debug.LogWarning(Time.frameCount);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha3)){
+                Debug.LogError(Time.frameCount);
+            }
+            if(Input.GetKeyDown(KeyCode.Alpha4)){
+                Debug.LogException(new System.Exception(Time.frameCount.ToString()));
+            }
         }
     }
 	

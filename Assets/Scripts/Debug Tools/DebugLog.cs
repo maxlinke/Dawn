@@ -25,6 +25,10 @@ namespace DebugTools {
         [Header("Other Settings")]
         [SerializeField] float leftLogMargin = default;
         [SerializeField] float topLogMargin = default;
+        [SerializeField] bool openOnLog = false;
+        [SerializeField] bool openOnWarning = false;
+        [SerializeField] bool openOnError = false;
+        [SerializeField] bool openOnException = false;
 
         bool visible {
             get {
@@ -60,6 +64,7 @@ namespace DebugTools {
         string hexWarningColor;
         string hexErrorColor;
         string hexExceptionColor;
+        string hexUnknownColor;
 
         void Awake () {
             if(instance != null){
@@ -78,6 +83,7 @@ namespace DebugTools {
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
             hexErrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
             hexExceptionColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugExceptionColor);
+            hexUnknownColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugUnknownColor);
             Clear();
             visible = false;
             Application.logMessageReceived += HandleLog;
@@ -137,22 +143,27 @@ namespace DebugTools {
                     case LogType.Log:
                         logCount++;
                         coloredString = FormatWithColor(logLabel, hexLogColor);
+                        visible |= openOnLog;
                         break;
                     case LogType.Warning:
                         warningCount++;
                         coloredString = FormatWithColor(logLabel, hexWarningColor);
+                        visible |= openOnWarning;
                         break;
                     case LogType.Error:
                         errorCount++;
                         coloredString = FormatWithColor(logLabel, hexErrorColor);
+                        visible |= openOnError;
                         break;
                     case LogType.Exception:
                         exceptionCount++;
                         coloredString = FormatWithColor(logLabel, hexExceptionColor);
+                        visible |= openOnException;
                         break;
                     default:
                         otherCount++;
-                        coloredString = FormatWithColor(logLabel, hexLogColor);
+                        coloredString = FormatWithColor(logLabel, hexUnknownColor);
+                        visible = true;
                         break;
                 }
             }
