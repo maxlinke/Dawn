@@ -12,6 +12,7 @@ public class WaterPhysics : ScriptableObject {
     public const float DEFAULT_DENSITY = 1f;
     public const float DEFAULT_VISCOSITY = 1f;
 
+    public const float DEFAULT_BUOYANCY_LIMIT = 20f;
     public const bool DEFAULT_SIMPLE_BUOYANCY = false;
     public const float DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE = 1f;
 
@@ -24,6 +25,7 @@ public class WaterPhysics : ScriptableObject {
     [SerializeField, Unit(""), Tooltip(viscosityTip)] float m_viscosity = DEFAULT_VISCOSITY;
 
     [Header("Buoyancy")]
+    [SerializeField]                            float m_buoyancyLimit = DEFAULT_BUOYANCY_LIMIT;
     [SerializeField, Tooltip(buoyancyTypeTip)]  bool  m_useSimpleBuoyancy = DEFAULT_SIMPLE_BUOYANCY;
     [SerializeField, Tooltip(buoyancyDepthTip)] float m_simpleBuoyancyNeutralizationRange = DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
 
@@ -35,11 +37,16 @@ public class WaterPhysics : ScriptableObject {
     public float Density => m_density;
     public float Viscosity => m_viscosity;
 
+    public float BuoyancyLimit => m_buoyancyLimit;
     public bool UseSimpleBuoyancy => m_useSimpleBuoyancy;
     public float SimpleBuoyancyNeutralizationRange => m_simpleBuoyancyNeutralizationRange;
 
-    public float BuoyancyFromDensity (float density) {
+    public float UnclampedBuoyancyFromDensity (float density) {
         return Mathf.Sqrt(m_density / density);
+    }
+
+    public float BuoyancyFromDensity (float density) {
+        return Mathf.Min(m_buoyancyLimit, Mathf.Sqrt(m_density / density));
     }
 
     public float ApproxDensity (Rigidbody rb) {

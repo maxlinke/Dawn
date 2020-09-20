@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_density: 1
   m_viscosity: 4
+  m_buoyancyLimit: 10
   m_useSimpleBuoyancy: 1
   m_simpleBuoyancyNeutralizationRange: 1
   m_densityCalcGravity: 9.81
