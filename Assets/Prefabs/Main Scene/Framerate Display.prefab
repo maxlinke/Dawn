@@ -52,7 +52,7 @@ Canvas:
   m_RenderMode: 0
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
-  m_PixelPerfect: 1
+  m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
@@ -112,6 +112,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74a75236aecb5f944a11d1aeb47710cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hideAfterInit: 1
+  colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
   canvas: {fileID: 2596352589241916807}
   image: {fileID: 2596352589604887845}
   background: {fileID: 2596352590439499574}
@@ -119,7 +121,6 @@ MonoBehaviour:
   avgFPSText: {fileID: 2596352589457404087}
   minFPSText: {fileID: 2596352590679351393}
   maxFPSText: {fileID: 2596352590839577682}
-  colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
 --- !u!1 &2596352589457403977
 GameObject:
   m_ObjectHideFlags: 0
