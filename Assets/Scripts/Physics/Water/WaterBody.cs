@@ -17,6 +17,7 @@ public abstract class WaterBody : MonoBehaviour {
 
     bool initialized = false;
     List<Rigidbody> rbs;
+    Vector3 torqueNoise;
 
     public WaterFog Fog => fog;
     public WaterPhysics WaterPhysics => physics;
@@ -112,9 +113,10 @@ public abstract class WaterBody : MonoBehaviour {
     }
 
     void FixedUpdate () {
-        if(!initialized){
+        if(!initialized || !(rbs.Count > 0)){
             return;
         }
+        torqueNoise = Random.insideUnitSphere;
         DoDrag();
         DoBuoyancy();
         rbs.Clear();
@@ -163,28 +165,37 @@ public abstract class WaterBody : MonoBehaviour {
         var localRBVelocity = rb.velocity - ownVelocity;
         localRBVelocity -= localRBVelocity * (rb.drag + WaterPhysics.Viscosity) * Time.deltaTime;
         rb.velocity = ownVelocity + localRBVelocity;
-        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * WaterPhysics.Viscosity) * Time.deltaTime;  // very hacky. i don't like this. 
-        // TODO tags for float direction (axis/normal)
-        // no tag = doesn't matter
-        // one tag for any cardinal direction
-        // one tag for one axis flat
-        // one tag for one axis up  
-        // or just three tags for a preferred axis each? stuff that really wants multi axis can use multitag
-        // also cache stuff here. no need to do triggerstays. enter and exit are enough plus i can calculate stuff there and not worry about it every fixed update
     }
 
-    public void AddBuoyancy (Rigidbody rb, float buoyancy) {
-        rb.AddForceAtPosition(
+    public void AddBuoyancy (Rigidbody rb, float buoyancy, Vector3 gravityDir) {
+        rb.AddForce(
             force: -Physics.gravity * buoyancy,
-            position: rb.transform.position,
             mode: ForceMode.Acceleration
         );
+        var torque = GetBuoyancyTorque(rb, gravityDir);
+        // TODO look at this at a later time
+        // unity automatically limits the maximum angular velocity, so i don't have to worry about that
+        // but how to i treat massive objects? 
+        rb.AddTorque(torque * 1000f / rb.mass, ForceMode.Acceleration);
     }
 
-    // for subtractive?
-    // protected abstract bool IsNotActuallyInWater (Vector3 point);
-
-    // use trigger-mesh collider for surfaces?
+    public Vector3 GetBuoyancyTorque (Rigidbody rb, Vector3 gravityDir) {
+        var rbUp = rb.transform.up;
+        switch(rb.tag){             // TODO this isn't multi tag safe, but i don't think it needs to be?
+            case Tag.FloatYUp:
+                return Vector3.Cross(gravityDir, rb.transform.up);
+            case Tag.FloatYVertical:
+                rbUp *= Mathf.Sign(Vector3.Dot(-gravityDir, rbUp));
+                rbUp += torqueNoise * Mathf.Clamp01(0.01f - rbUp.sqrMagnitude);
+                return Vector3.Cross(gravityDir, rbUp);
+            case Tag.FloatYHorizontal:
+                var flatUp = rbUp.ProjectOnPlane(gravityDir).normalized;
+                flatUp += torqueNoise * Mathf.Clamp01(0.01f - flatUp.sqrMagnitude);
+                return Vector3.Cross(rb.transform.up, flatUp);
+            default:
+                return Vector3.zero;
+        }
+    }
 
     void AddBetterBuoyancy (Rigidbody rb, Vector3 gravityDir, float densityNormalizer) {
         float rbDensity = densityNormalizer * physics.FastApproxDensity(rb);
@@ -235,7 +246,7 @@ public abstract class WaterBody : MonoBehaviour {
         // zero lerp test point -> closest to center of water body.. i guess active trigger will have to do?
         // lerp to one only if greater
         // lerp to zero always
-        AddBuoyancy(rb, buoyancy);
+        AddBuoyancy(rb, buoyancy, gravityDir);
     }
 
     void AddSimpleBuoyancy (Rigidbody rb, Vector3 gravityDir, float densityNormalizer) {
@@ -262,15 +273,15 @@ public abstract class WaterBody : MonoBehaviour {
         }
         if(maxInDepth > 0){
             if(buoyancy > 1){
-                buoyancy = Mathf.Lerp(1, buoyancy, maxInDepth / physics.SimpleBuoyancyNeutralizationRange);
+                buoyancy = Mathf.Lerp(1, buoyancy, maxInDepth / physics.LowerBuoyancyNeutralizationRange);
             }
         }else{
             buoyancy = Mathf.Min(buoyancy, 1f);
             if(maxOutDepth > 0){
-                buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / physics.SimpleBuoyancyNeutralizationRange));
+                buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / physics.UpperBuoyancyNeutralizationRange));
             }
         }
-        AddBuoyancy(rb, buoyancy);
+        AddBuoyancy(rb, buoyancy, gravityDir);
     }
 
     bool DepthCast (Collider col, Vector3 targetPos, Vector3 gravityDir, out float depth) {

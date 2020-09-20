@@ -5,7 +5,6 @@ public class WaterPhysics : ScriptableObject {
 
     const string viscosityTip = "Analogous to Rigidbody drag, applied to the velocities of all Rigidbodies in the water.";
     const string buoyancyTypeTip = "Simple buoyancy is meant to be cheaper to compute but less \"accurate\" than the alternative.";
-    const string buoyancyDepthTip = "Depth at which buoyancy will be lerped towards 1 at the surface.";
 
     const float objectDragCoefficient = 0.47f;
 
@@ -27,7 +26,8 @@ public class WaterPhysics : ScriptableObject {
     [Header("Buoyancy")]
     [SerializeField]                            float m_buoyancyLimit = DEFAULT_BUOYANCY_LIMIT;
     [SerializeField, Tooltip(buoyancyTypeTip)]  bool  m_useSimpleBuoyancy = DEFAULT_SIMPLE_BUOYANCY;
-    [SerializeField, Tooltip(buoyancyDepthTip)] float m_simpleBuoyancyNeutralizationRange = DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
+    [SerializeField] float m_lowerBuoyancyNeutralizationRange = DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
+    [SerializeField] float m_upperBuoyancyNeutralizationRange = DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
 
     [Header("Object Density Calculation (Edit at your own risk)")]
     [SerializeField, Unit("m/s²")]  float m_densityCalcGravity = DEFAULT_GRAVITY;
@@ -39,7 +39,8 @@ public class WaterPhysics : ScriptableObject {
 
     public float BuoyancyLimit => m_buoyancyLimit;
     public bool UseSimpleBuoyancy => m_useSimpleBuoyancy;
-    public float SimpleBuoyancyNeutralizationRange => m_simpleBuoyancyNeutralizationRange;
+    public float LowerBuoyancyNeutralizationRange => m_lowerBuoyancyNeutralizationRange;
+    public float UpperBuoyancyNeutralizationRange => m_upperBuoyancyNeutralizationRange;
 
     public float UnclampedBuoyancyFromDensity (float density) {
         return Mathf.Sqrt(m_density / density);

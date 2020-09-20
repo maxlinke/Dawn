@@ -7,6 +7,9 @@ TagManager:
   - MultiTag
   - Ladder
   - Slippery
+  - FloatYUp
+  - FloatYVertical
+  - FloatYHorizontal
   layers:
   - Default
   - TransparentFX

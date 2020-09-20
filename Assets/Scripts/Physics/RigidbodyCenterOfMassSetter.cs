@@ -8,6 +8,7 @@ public class RigidbodyCenterOfMassSetter : MonoBehaviour {
     [Header("Settings")]
     [SerializeField] Vector3 newCenterOfMass = Vector3.zero;
     [SerializeField] bool setOnStart = true;
+    [SerializeField] bool destroyThisAfterSetOnStart = false;
 
     [Header("Gizmos")]
     [SerializeField] bool drawGizmos = true;
@@ -17,6 +18,9 @@ public class RigidbodyCenterOfMassSetter : MonoBehaviour {
     void Start () {
         if(setOnStart){
             UpdateCenterOfMass();
+            if(destroyThisAfterSetOnStart){
+                Destroy(this);
+            }
         }
     }
 

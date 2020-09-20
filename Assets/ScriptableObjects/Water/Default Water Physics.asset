@@ -16,7 +16,8 @@ MonoBehaviour:
   m_viscosity: 4
   m_buoyancyLimit: 10
   m_useSimpleBuoyancy: 1
-  m_simpleBuoyancyNeutralizationRange: 1
+  m_lowerBuoyancyNeutralizationRange: 1
+  m_upperBuoyancyNeutralizationRange: 0.1
   m_densityCalcGravity: 9.81
   m_densityCalcAirDensity: 1.27
   m_densityCalcFixedDeltaTime: 0.02

@@ -1,7 +1,10 @@
 ﻿public static class Tag  {
 
-    public static readonly string MultiTag = "MultiTag";
-    public static readonly string Ladder = "Ladder";
-    public static readonly string Slippery = "Slippery";
+    public const string MultiTag = "MultiTag";
+    public const string Ladder = "Ladder";
+    public const string Slippery = "Slippery";
+    public const string FloatYUp = "FloatYUp";
+    public const string FloatYVertical = "FloatYVertical";
+    public const string FloatYHorizontal = "FloatYHorizontal";
 	
 }

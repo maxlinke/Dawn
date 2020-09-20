@@ -35,74 +35,95 @@ public class FramerateAndTimeScaleSetter : MonoBehaviour {
         wasSimulatingLag = simulateLag;
     }
 
-    [RuntimeMethodButton]
     public void SetFrameRate () {
         Application.targetFrameRate = Mathf.Max(1, targetFrameRate);
         targetFrameRate = Application.targetFrameRate;
         QualitySettings.vSyncCount = (vSync ? 1 : 0);
     }
 
-    [RuntimeMethodButton]
     public void Set60FPS () {
         targetFrameRate = 60;
         vSync = false;
         SetFrameRate();
     }
 
-    [RuntimeMethodButton]
     public void UnlockFrameRate () {
         Application.targetFrameRate = -1;
         targetFrameRate = Application.targetFrameRate;
         QualitySettings.vSyncCount = 0;
     }
 
-    [RuntimeMethodButton]
     public void SetTimeScale () {
         Time.timeScale = targetTimeScale;
     }
 
-    [RuntimeMethodButton]
+    public void SlowMoTimeScale () {
+        targetTimeScale = 0.1f;
+        SetTimeScale();
+    }
+
     public void NormalizeTimeScale () {
         targetTimeScale = 1f;
-        Time.timeScale = targetTimeScale;
+        SetTimeScale();
     }
 
 }
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(FramerateAndTimeScaleSetter))]
-public class FrameRateSetterEditor : RuntimeMethodButtonEditor {
+public class FrameRateSetterEditor : Editor {
 
     const int cacheSize = 10;
     float[] fpsCache = null;
     int cacheIndex = 0;
+    FramerateAndTimeScaleSetter setter;
 
-    protected override void DrawInspector () {
-        base.DrawInspector();
+    void OnEnable () {
+        setter = target as FramerateAndTimeScaleSetter;
+    }
+
+    public override void OnInspectorGUI () {
+        DrawDefaultInspector();
         if(!EditorApplication.isPlaying){
             return;
         }
-        var currentFPS = 1f / Time.unscaledDeltaTime;
-        if(fpsCache == null || fpsCache.Length != cacheSize){
-            fpsCache = new float[cacheSize];
-            for(int i=0; i<fpsCache.Length; i++){
-                fpsCache[i] = currentFPS;
+        DrawInfo();
+        GUILayout.Space(10f);
+        DrawButtons();
+
+        void DrawInfo () {
+            var currentFPS = 1f / Time.unscaledDeltaTime;
+            if(fpsCache == null || fpsCache.Length != cacheSize){
+                fpsCache = new float[cacheSize];
+                for(int i=0; i<fpsCache.Length; i++){
+                    fpsCache[i] = currentFPS;
+                }
+                cacheIndex = 0;
             }
-            cacheIndex = 0;
+            GUILayout.Space(10f);
+            fpsCache[cacheIndex] = currentFPS;
+            cacheIndex = (cacheIndex + 1) % fpsCache.Length;
+            var avgFPS = 0f;
+            for(int i=0; i<fpsCache.Length; i++){
+                avgFPS += fpsCache[i];
+            }
+            avgFPS /= fpsCache.Length;
+            if(GUILayout.Button("Update Values", EditorStyles.miniButton)){ }
+            GUILayout.Label($"{cacheSize} Frame Average FPS: {avgFPS}");
+            GUILayout.Label($"Current DeltaTime: {Time.deltaTime}");
+            GUILayout.Label($"Current Unscaled DeltaTime: {Time.unscaledDeltaTime}");
         }
-        GUILayout.Space(10f);
-        fpsCache[cacheIndex] = currentFPS;
-        cacheIndex = (cacheIndex + 1) % fpsCache.Length;
-        var avgFPS = 0f;
-        for(int i=0; i<fpsCache.Length; i++){
-            avgFPS += fpsCache[i];
+        
+        void DrawButtons () {
+            if(GUILayout.Button("Set Frame Rate")) setter.SetFrameRate();
+            if(GUILayout.Button("Set 60Fps")) setter.Set60FPS();
+            if(GUILayout.Button("Unlock Frame Rate")) setter.UnlockFrameRate();
+            GUILayout.Space(10f);
+            if(GUILayout.Button("Set Time Scale")) setter.SetTimeScale();
+            if(GUILayout.Button("Normalize Time Scale")) setter.NormalizeTimeScale();
+            if(GUILayout.Button("Slow Mo Time Scale")) setter.SlowMoTimeScale();
         }
-        avgFPS /= fpsCache.Length;
-        if(GUILayout.Button("Update Values", EditorStyles.miniButton)){ }
-        GUILayout.Label($"{cacheSize} Frame Average FPS: {avgFPS}");
-        GUILayout.Label($"Current DeltaTime: {Time.deltaTime}");
-        GUILayout.Label($"Current Unscaled DeltaTime: {Time.unscaledDeltaTime}");
-        GUILayout.Space(10f);
+
     }
 
 }

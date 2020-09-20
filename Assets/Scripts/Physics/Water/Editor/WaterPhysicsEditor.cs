@@ -22,7 +22,8 @@ public class WaterPhysicsEditor : Editor {
         var viscProp = FindProp("m_viscosity");
         var buoyLimitProp = FindProp("m_buoyancyLimit");
         var buoyTypeProp = FindProp("m_useSimpleBuoyancy");
-        var buoyDepthProp = FindProp("m_simpleBuoyancyNeutralizationRange");
+        var buoyDepth1Prop = FindProp("m_lowerBuoyancyNeutralizationRange");
+        var buoyDepth2Prop = FindProp("m_upperBuoyancyNeutralizationRange");
         var densGravProp = FindProp("m_densityCalcGravity");
         var densAirProp = FindProp("m_densityCalcAirDensity");
         var densTimeProp = FindProp("m_densityCalcFixedDeltaTime");
@@ -45,7 +46,8 @@ public class WaterPhysicsEditor : Editor {
                 viscProp.floatValue = WaterPhysics.DEFAULT_VISCOSITY;
                 buoyLimitProp.floatValue = WaterPhysics.DEFAULT_BUOYANCY_LIMIT;
                 buoyTypeProp.boolValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY;
-                buoyDepthProp.floatValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
+                buoyDepth1Prop.floatValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
+                buoyDepth2Prop.floatValue = WaterPhysics.DEFAULT_SIMPLE_BUOYANCY_NEUTRALIZATION_RANGE;
                 densGravProp.floatValue = WaterPhysics.DEFAULT_GRAVITY;
                 densAirProp.floatValue = WaterPhysics.DEFAULT_AIR_DENSITY;
                 densTimeProp.floatValue = WaterPhysics.DEFAULT_FIXED_DELTA_TIME;
@@ -57,7 +59,8 @@ public class WaterPhysicsEditor : Editor {
             EditorGUILayout.PropertyField(viscProp, new GUIContent($"{viscProp.displayName} (Drag)"));
             EditorGUILayout.PropertyField(buoyLimitProp);
             EditorGUILayout.PropertyField(buoyTypeProp);
-            EditorGUILayout.PropertyField(buoyDepthProp);
+            EditorGUILayout.PropertyField(buoyDepth1Prop);
+            EditorGUILayout.PropertyField(buoyDepth2Prop);
             GUILayout.Space(10f);
             var gc = GUI.enabled;
             GUI.enabled = enableDensityCalcEditing;

@@ -407,7 +407,7 @@ namespace PlayerController {
             Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
             if(currentState.waterBody != null){
                 var buoyancy = currentState.waterBody.WaterPhysics.BuoyancyFromDensity(pcProps.PlayerDensity);
-                currentState.waterBody.AddBuoyancy(rb, buoyancy);
+                currentState.waterBody.AddBuoyancy(rb, buoyancy, Vector3.zero);
             }
         }
 
