@@ -65,19 +65,19 @@ namespace CustomInputSystem {
             public static void SaveToDisk () {
                 var fileName = FileNames.axisConfigs;
                 var fileContents = JsonUtility.ToJson(SaveableAxisConfig.Create(), true);
-                FileHelper.SaveConfigFile(fileName, fileContents);
-                Debug.Log("Saving axis configs to disk");
+                FileHelper.SaveConfigFile(fileName, fileContents, out var path);
+                Debug.Log($"Saving axis configs to disk at\n{path}");
             }
 
             public static bool TryLoadFromDisk () {
-                if(!FileHelper.ConfigFileExists(FileNames.axisConfigs)){
-                    Debug.Log("No axis config file found");
+                if(!FileHelper.ConfigFileExists(FileNames.axisConfigs, out var configPath)){
+                    Debug.Log($"No axis config file found at\n{configPath}");
                     return false;
                 }
                 if(FileHelper.TryLoadConfigFile(FileNames.axisConfigs, out var json)){
                     try{
                         JsonUtility.FromJson<SaveableAxisConfig>(json).Apply();
-                        Debug.Log("Successfully loaded axis configs");
+                        Debug.Log($"Successfully loaded axis configs from\n{configPath}");
                         return true;
                     }catch(System.Exception e){
                         Debug.LogWarning($"Issue loading axis configs \n{e.Message}");

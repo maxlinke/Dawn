@@ -159,13 +159,13 @@ namespace CustomInputSystem {
         }
 
         private static bool TryLoadingBindsFromDisk () {
-            if(!FileHelper.ConfigFileExists(FileNames.keybinds)){
-                Debug.Log("No keybind file found");
+            if(!FileHelper.ConfigFileExists(FileNames.keybinds, out var keybindPath)){
+                Debug.Log($"No keybind file found at\n{keybindPath}");
                 return false;
             }
             if(FileHelper.TryLoadConfigFile(FileNames.keybinds, out var json)){
                 if(json == null || json.Length == 0){
-                    Debug.LogWarning("Keybinds file is empty!");
+                    Debug.LogWarning($"Empty keybinds file at\n{keybindPath}");
                     return false;
                 }
                 try{
@@ -188,10 +188,10 @@ namespace CustomInputSystem {
                         }
                     }
                     if(allIDs.Count > 0){
-                        Debug.LogWarning("Not all binds could be loaded");
+                        Debug.LogWarning($"Not all binds could be loaded from\n{keybindPath}");
                         return false;
                     }else{
-                        Debug.Log("Successfully loaded keybinds");
+                        Debug.Log($"Successfully loaded keybinds from\n{keybindPath}");
                         return true;
                     }
                 }catch(System.Exception e){
@@ -211,8 +211,8 @@ namespace CustomInputSystem {
                 bindsList.Add(new SaveableBind(bind));
             }
             var json = JsonHelper.ToJsonArray<SaveableBind>(bindsList.ToArray(), true);
-            FileHelper.SaveConfigFile(FileNames.keybinds, json);
-            Debug.Log("Saving keybinds to disk");
+            FileHelper.SaveConfigFile(FileNames.keybinds, json, out var path);
+            Debug.Log($"Saving keybinds to disk\n{path}");
         }
 
         public static string GetLog () {

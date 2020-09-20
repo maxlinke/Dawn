@@ -64,7 +64,7 @@ namespace DebugTools {
         string hexWarningColor;
         string hexErrorColor;
         string hexExceptionColor;
-        string hexUnknownColor;
+        string hexOtherColor;
 
         void Awake () {
             if(instance != null){
@@ -83,7 +83,7 @@ namespace DebugTools {
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
             hexErrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
             hexExceptionColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugExceptionColor);
-            hexUnknownColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugUnknownColor);
+            hexOtherColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugOtherColor);
             Clear();
             visible = false;
             Application.logMessageReceived += HandleLog;
@@ -162,7 +162,7 @@ namespace DebugTools {
                         break;
                     default:
                         otherCount++;
-                        coloredString = FormatWithColor(logLabel, hexUnknownColor);
+                        coloredString = FormatWithColor(logLabel, hexOtherColor);
                         visible = true;
                         break;
                 }
@@ -234,7 +234,7 @@ namespace DebugTools {
                 AddCategoryIfCountGreaterZero("Warning", warningCount, hexWarningColor);
                 AddCategoryIfCountGreaterZero("Error", errorCount, hexErrorColor);
                 AddCategoryIfCountGreaterZero("Exception", exceptionCount, hexExceptionColor);
-                AddCategoryIfCountGreaterZero("Other", otherCount, hexLogColor);
+                AddCategoryIfCountGreaterZero("Other", otherCount, hexOtherColor);
                 countDisplayTextField.text = $"{total} | {categorized}";
 
                 void AddCategoryIfCountGreaterZero (string type, int count, string hexColor) {

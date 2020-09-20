@@ -51,34 +51,37 @@ namespace Persistence {
             DeleteAllSaveData();
         }
 
-        public static void SaveConfigFile (string fileName, string fileContents) {
-            SaveToFile(configFilePath, fileName, fileContents);
+        public static void SaveConfigFile (string fileName, string fileContents, out string path) {
+            SaveToFile(configFilePath, fileName, fileContents, out path);
         }
 
-        public static void SaveSaveFile (string fileName, string fileContents) {
-            SaveToFile(saveFilePath, fileName, fileContents);
+        public static void SaveSaveFile (string fileName, string fileContents, out string path) {
+            SaveToFile(saveFilePath, fileName, fileContents, out path);
         }
 
-        public static void SaveToFile (string directoryPath, string fileName, string fileContents) {
+        public static void SaveToFile (string directoryPath, string fileName, string fileContents, out string filePath) {
             try{
                 Directory.CreateDirectory(directoryPath);
-                var filePath = MakeFilePath(directoryPath, fileName);
+                filePath = MakeFilePath(directoryPath, fileName);
                 using(var fs = File.Create(filePath)){
                     var bytes = new UTF8Encoding(true).GetBytes(fileContents);
                     fs.Write(bytes, 0, bytes.Length);
                     fs.Flush(true);
                 }
             }catch(System.Exception e){
+                filePath = string.Empty;
                 Debug.LogWarning($"Problem saving to file: \n{e.Message}");
             }
         }
 
-        public static bool ConfigFileExists (string fileName) {
-            return FileExists(MakeFilePath(configFilePath, fileName));
+        public static bool ConfigFileExists (string fileName, out string path) {
+            path = MakeFilePath(configFilePath, fileName);
+            return FileExists(path);
         }
 
-        public static bool SaveFileExists (string fileName) {
-            return FileExists(MakeFilePath(saveFilePath, fileName));
+        public static bool SaveFileExists (string fileName, out string path) {
+            path = MakeFilePath(saveFilePath, fileName);
+            return FileExists(path);
         }
 
         private static bool FileExists (string filePath) {
