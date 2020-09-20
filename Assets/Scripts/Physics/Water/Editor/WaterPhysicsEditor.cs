@@ -85,10 +85,10 @@ public class WaterPhysicsEditor : Editor {
             var approxBuoy = wps.BuoyancyFromDensity(approxDens);
             var approxBuoyUnclamped = wps.UnclampedBuoyancyFromDensity(approxDens);
             EditorTools.LabelWithLabel("Approx. Density", $"{approxDens} g/cm³");
-            if(approxBuoy == approxBuoyUnclamped){
-                EditorTools.LabelWithLabel("Buoyancy", approxBuoy.ToString());
-            }else{
+            if(approxBuoy > approxBuoyUnclamped){
                 EditorTools.LabelWithLabel("Buoyancy", $"{approxBuoy} (raw: {approxBuoyUnclamped})");
+            }else{
+                EditorTools.LabelWithLabel("Buoyancy", approxBuoy.ToString());
             }
         }
 

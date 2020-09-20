@@ -159,15 +159,18 @@ public abstract class WaterBody : MonoBehaviour {
         }
     }
 
-    // i want low drag things to carry their momentum but high velocity things to be decelerated
-    // rb.drag affects all rigidbodies the same, regardless of mass
-    // therefore as mass increases, the same drag means a much less dense object
-    // i really need those props to dial in my stuff visually...
     public void AddDrag (Rigidbody rb, Vector3 ownVelocity) {
         var localRBVelocity = rb.velocity - ownVelocity;
         localRBVelocity -= localRBVelocity * (rb.drag + WaterPhysics.Viscosity) * Time.deltaTime;
         rb.velocity = ownVelocity + localRBVelocity;
-        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * WaterPhysics.Viscosity) * Time.deltaTime;
+        rb.angularVelocity -= rb.angularVelocity * (rb.angularDrag * WaterPhysics.Viscosity) * Time.deltaTime;  // very hacky. i don't like this. 
+        // TODO tags for float direction (axis/normal)
+        // no tag = doesn't matter
+        // one tag for any cardinal direction
+        // one tag for one axis flat
+        // one tag for one axis up  
+        // or just three tags for a preferred axis each? stuff that really wants multi axis can use multitag
+        // also cache stuff here. no need to do triggerstays. enter and exit are enough plus i can calculate stuff there and not worry about it every fixed update
     }
 
     public void AddBuoyancy (Rigidbody rb, float buoyancy) {
