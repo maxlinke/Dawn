@@ -11,11 +11,11 @@ public abstract class IRangeAttributeDrawer : PropertyDrawer {
         EditorGUI.showMixedValue = property.hasMultipleDifferentValues;
         var lw = EditorGUIUtility.labelWidth;
         var range = attribute as IRangeAttribute;
-        switch(property.type){
-            case "float":
+        switch(property.propertyType){
+            case SerializedPropertyType.Float:
                 FloatField();
                 break;
-            case "int":
+            case SerializedPropertyType.Integer:
                 IntField();
                 break;
             default:

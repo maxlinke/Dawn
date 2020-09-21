@@ -8,7 +8,7 @@ public class ColliderVolumeTest : MonoBehaviour {
     [SerializeField] Color gizmoColor = default;
     [SerializeField] float debugOutput = default;
 
-    void OnDrawGizmosSelected () {
+    void OnDrawGizmos () {
         if(targetCollider == null){
             return;
         }
@@ -22,7 +22,8 @@ public class ColliderVolumeTest : MonoBehaviour {
         if(testClosestPoint){
             var closestPoint = targetCollider.ClosestPoint(origin);
             debugOutput = (closestPoint - origin).magnitude;
-            Gizmos.DrawSphere(closestPoint, 0.1f);
+            Gizmos.DrawLine(origin, closestPoint);
+            Gizmos.DrawSphere(closestPoint, 0.05f);
         }else{
             debugOutput = float.NaN;
         }
