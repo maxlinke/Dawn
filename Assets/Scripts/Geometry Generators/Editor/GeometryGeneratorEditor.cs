@@ -3,28 +3,30 @@ using UnityEditor;
 
 namespace GeometryGenerators {
     
-    public abstract class GeometryGeneratorEditor : Editor {
+    public abstract class GeometryGeneratorEditor : GenericEditor {
+
+        SerializedProperty targetSelfProp;
+
+        protected override void OnEnable () {
+            base.OnEnable();
+            targetSelfProp = serializedObject.FindProperty("targetOnlySelf");
+        }
 
         public override void OnInspectorGUI () {
-            EditorTools.DrawScriptReference(target);
-            serializedObject.Update();
-            DrawInspectorTargets();
-            if(target is GeometryGeneratorWithGizmos){
-                DrawGizmoProperties();
-            }
-            DrawOwnProperties();
-            serializedObject.ApplyModifiedProperties();
+            base.OnInspectorGUI();
             DrawButtons();
         }
 
-        protected abstract void DrawOwnProperties ();
-
-        protected void DrawInspectorTargets () {
-            var selfProp = serializedObject.FindProperty("targetOnlySelf");
-            EditorGUILayout.PropertyField(selfProp);
-            if(!selfProp.boolValue){
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("targetMeshFilters"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("targetMeshColliders"), true);
+        protected override bool DrawPropertyCustom (SerializedProperty property) {
+            switch(property.name){
+                case "targetMeshFilters":
+                    if(!targetSelfProp.boolValue) EditorGUILayout.PropertyField(property);
+                    return true;
+                case "targetMeshColliders":
+                    if(!targetSelfProp.boolValue) EditorGUILayout.PropertyField(property);
+                    return true;
+                default:
+                    return false;
             }
         }
 
@@ -41,12 +43,19 @@ namespace GeometryGenerators {
                 GUILayout.Label($"ERROR! {target.GetType()} is not a {nameof(GeometryGenerator)}!");
             }
         }
-
-        protected void DrawGizmoProperties () {
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("drawGizmos"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("gizmoColor"));
-        }
         
     }
+
+    [CustomEditor(typeof(LadderGenerator))]
+    public class LadderGeneratorEditor : GeometryGeneratorEditor { }
+
+    [CustomEditor(typeof(PlaneGenerator))]
+    public class PlaneGeneratorEditor : GeometryGeneratorEditor { }
+
+    [CustomEditor(typeof(RampGenerator))]
+    public class RampGeneratorEditor : GeometryGeneratorEditor { }
+
+    [CustomEditor(typeof(StairGenerator))]
+    public class StairGeneratorEditor : GeometryGeneratorEditor { }
 	
 }

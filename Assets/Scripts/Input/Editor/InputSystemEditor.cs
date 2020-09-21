@@ -16,13 +16,9 @@ namespace CustomInputSystem {
             GUILayout.Space(20f);
 
             void CenteredButton (string label, float width, System.Action onClick) {
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                if(GUILayout.Button(label, GUILayout.Width(width))){
+                if(EditorTools.ButtonCentered(label, width)){
                     onClick();
                 }
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
             }
         }
         
