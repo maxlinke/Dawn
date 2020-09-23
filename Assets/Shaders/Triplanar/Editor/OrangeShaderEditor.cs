@@ -7,10 +7,13 @@ namespace ShaderEditors {
 
         static MaterialProperty[] emptyProps = new MaterialProperty[0];
 
-        const string kw_bgColor = "BACKGROUND_ORANGE";
+        const string kw_bgOrange = "BACKGROUND_ORANGE";
+        const string kw_bgGrey = "BACKGROUND_GREY";
 
         const string kw_gridWorld = "GRIDCOORDS_TRIPLANAR_WORLD";
         const string kw_gridObject = "GRIDCOORDS_TRIPLANAR_OBJECT";
+
+        const string backgroundColorName = "_BackgroundColor";
 
         const string gridColorName = "_GridTint";
         const string gridTexName = "_GridTex";
@@ -26,7 +29,8 @@ namespace ShaderEditors {
 
         enum BackgroundColor {
             ORANGE,
-            GREY
+            GREY,
+            CUSTOM
         }
 
         enum GridCoords {
@@ -56,12 +60,28 @@ namespace ShaderEditors {
 
             void MainColorSelection () {
                 GUILayout.Label("Background", EditorStyles.boldLabel);
-                var bgCol = GetKeyword(kw_bgColor) ? BackgroundColor.ORANGE : BackgroundColor.GREY;
+                BackgroundColor bgCol;
+                bool differentValues = false;
+                if(GetKeyword(kw_bgOrange, out var diff1)){
+                    bgCol = BackgroundColor.ORANGE;
+                    differentValues |= diff1;
+                }else if(GetKeyword(kw_bgGrey, out var diff2)){
+                    bgCol = BackgroundColor.GREY;
+                    differentValues |= diff2;
+                }else{
+                    bgCol = BackgroundColor.CUSTOM;
+                }
+                EditorGUI.showMixedValue = differentValues;
                 EditorGUI.BeginChangeCheck();
                 bgCol = (BackgroundColor)EditorGUILayout.EnumPopup(new GUIContent("Color"), bgCol);
                 if(EditorGUI.EndChangeCheck()){
                     ManualRecordUndo("Change Background Color");
-                    SetKeyword(kw_bgColor, bgCol == BackgroundColor.ORANGE);
+                    SetKeyword(kw_bgOrange, bgCol == BackgroundColor.ORANGE);
+                    SetKeyword(kw_bgGrey, bgCol == BackgroundColor.GREY);
+                }
+                if(bgCol == BackgroundColor.CUSTOM){
+                    var backgroundColor = FindProperty(backgroundColorName, properties);
+                    editor.ShaderProperty(backgroundColor, backgroundColor.displayName);
                 }
             }
 
@@ -92,13 +112,17 @@ namespace ShaderEditors {
 
                 void DefaultGridCoords (out bool isObject, out bool isUV) {
                     GridCoords gridCoords;
-                    if(GetKeyword(kw_gridWorld)){
+                    var differentValues = false;
+                    if(GetKeyword(kw_gridWorld, out var diff1)){
                         gridCoords = GridCoords.WORLD;
-                    }else if(GetKeyword(kw_gridObject)){
+                        differentValues |= diff1;
+                    }else if(GetKeyword(kw_gridObject, out var diff2)){
                         gridCoords = GridCoords.OBJECT;
+                        differentValues |= diff2;
                     }else{
                         gridCoords = GridCoords.UV;
                     }
+                    EditorGUI.showMixedValue = differentValues;
                     EditorGUI.BeginChangeCheck();
                     gridCoords = (GridCoords)EditorGUILayout.EnumPopup(new GUIContent("Coordinates"), gridCoords);
                     if(EditorGUI.EndChangeCheck()){
@@ -112,11 +136,13 @@ namespace ShaderEditors {
 
                 void OverlayGridCoords (out bool isUV) {
                     GridCoordsOverlay gridCoords;
-                    if(GetKeyword(kw_gridWorld)){
+                    var differentValues = false;
+                    if(GetKeyword(kw_gridWorld, out differentValues)){
                         gridCoords = GridCoordsOverlay.WORLD;
                     }else{
                         gridCoords = GridCoordsOverlay.UV;
                     }
+                    EditorGUI.showMixedValue = differentValues;
                     EditorGUI.BeginChangeCheck();
                     gridCoords = (GridCoordsOverlay)EditorGUILayout.EnumPopup(new GUIContent("Coordinates"), gridCoords);
                     if(EditorGUI.EndChangeCheck()){
@@ -156,8 +182,13 @@ namespace ShaderEditors {
                 return mat.HasProperty(tintColorName);
             }
             
-            bool GetKeyword (string keyword) {
-                return ((Material)(editor.target)).IsKeywordEnabled(keyword);
+            bool GetKeyword (string keyword, out bool differentValues) {
+                var enabledAtMain = ((Material)(editor.target)).IsKeywordEnabled(keyword);
+                differentValues = false;
+                foreach(Material other in editor.targets){
+                    differentValues |= other.IsKeywordEnabled(keyword) != enabledAtMain;
+                }
+                return enabledAtMain;
             }
 
             void SetKeyword (string keyword, bool keywordState) {

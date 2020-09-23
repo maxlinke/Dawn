@@ -1,6 +1,7 @@
 ﻿Shader "Custom/Triplanar/Orange (UV-Overlay)" {
 
     Properties {
+        _BackgroundColor ("Background Color", Color) = (1,1,1,1)
         _GridTint ("Grid Tint", Color) = (1,1,1,1)
         _GridTex ("Grid Texture", 2D) = "black" {}
         _GridTexScale ("Grid Scale", Range(0, 10)) = 1.0
@@ -19,14 +20,13 @@
 		
         #pragma surface surf CustomLambert
         #pragma target 3.0
-        #pragma shader_feature BACKGROUND_ORANGE
+        #pragma shader_feature _ BACKGROUND_ORANGE BACKGROUND_GREY
         #pragma shader_feature GRIDCOORDS_TRIPLANAR_WORLD // can't use object because i'd need additional interpolators and that's not possible with target 3.0
+        #define CUSTOM_PROGRAM
         #include "../CustomLighting.cginc"
         #include "TriplanarUtils.cginc"
+        #include "Orange.cginc"
 
-        fixed4 _GridTint;
-        sampler2D _GridTex;
-        float _GridTexScale;
         fixed4 _OverlayTint;
         sampler2D _OverlayTex;
 
@@ -38,11 +38,7 @@
         };
 
         void surf (Input IN, inout CustomSurfaceOutput o) {
-            #ifdef BACKGROUND_ORANGE
-                fixed4 c = fixed4(1, 0.5, 0, 1);
-            #else
-                fixed4 c = fixed4(0.5, 0.5, 0.5, 1);
-            #endif
+            fixed4 c = GetBaseColor();
             #ifdef GRIDCOORDS_TRIPLANAR_WORLD
                 fixed4 grid = _GridTint * TriplanarSoftCutoff(_GridTex, IN.worldNormal, IN.worldPos, _GridTexScale, float3(0,0,0));
             #else
