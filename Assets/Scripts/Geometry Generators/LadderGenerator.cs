@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
@@ -90,7 +89,7 @@ namespace GeometryGenerators {
             var output = new Mesh();
             output.name = "Generated Ladder";
             output.vertices = vertices.ToArray();
-            output.triangles = MeshUtils.MakeIndexArrayFromTriangles(triangles);
+            output.triangles = Triangle.MakeIndexArrayFromTriangles(triangles);
             output.RecalculateBounds();
             output.RecalculateNormals();
             output.RecalculateTangents();

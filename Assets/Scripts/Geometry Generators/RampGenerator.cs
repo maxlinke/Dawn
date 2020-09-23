@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using Triangle = MeshUtils.Triangle;
 
 namespace GeometryGenerators {
 
@@ -52,7 +51,7 @@ namespace GeometryGenerators {
             output.name = "Generated Ramp";
             output.vertices = vertices.ToArray();
             if(!multiMaterial){
-                output.triangles = MeshUtils.MakeIndexArrayFromTriangles(triangles);
+                output.triangles = Triangle.MakeIndexArrayFromTriangles(triangles);
             }else{
                 var ramp = new List<Triangle>();
                 var rest = new List<Triangle>();
@@ -64,8 +63,8 @@ namespace GeometryGenerators {
                     }
                 }
                 output.subMeshCount = 2;
-                output.SetTriangles(MeshUtils.MakeIndexArrayFromTriangles(ramp), 0, false);
-                output.SetTriangles(MeshUtils.MakeIndexArrayFromTriangles(rest), 1, false);
+                output.SetTriangles(Triangle.MakeIndexArrayFromTriangles(ramp), 0, false);
+                output.SetTriangles(Triangle.MakeIndexArrayFromTriangles(rest), 1, false);
             }
             output.RecalculateBounds();
             output.RecalculateNormals();
