@@ -5,12 +5,17 @@ ModelImporter:
   fileIDToRecycleName:
     100000: Wooden_Log
     100002: //RootNode
+    100004: wooden_log
     400000: Wooden_Log
     400002: //RootNode
+    400004: wooden_log
     2100000: Wooden_LogMat
     2300000: Wooden_Log
+    2300002: wooden_log
     3300000: Wooden_Log
+    3300002: wooden_log
     4300000: Wooden_Log
+    4300002: wooden_log
   externalObjects: {}
   materials:
     importMaterials: 0
