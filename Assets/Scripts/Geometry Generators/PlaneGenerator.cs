@@ -12,7 +12,9 @@ namespace GeometryGenerators {
         public enum TriMode {
             Fixed,
             FixedAlternate,
-            Random
+            Random,
+            ShortestDiagonal,
+            LongestDiagonal
         }
 
         [Header("Plane Settings")]
@@ -82,24 +84,47 @@ namespace GeometryGenerators {
                     int quad = (j * xTiles) + i;
                     int triStart = quad * 6;
                     int vertStart = (j * xVerts) + i;
-                    var bl = vertStart;
-                    var br = vertStart + 1;
-                    var tl = vertStart + xVerts;
-                    var tr = vertStart + xVerts + 1;
-                    if(triMode == TriMode.Fixed || (triMode == TriMode.Random && triRNG.NextDouble() >= 0.5)){
-                        triangles[triStart + 0] = bl;
-                        triangles[triStart + 1] = tl;
-                        triangles[triStart + 2] = tr;
-                        triangles[triStart + 3] = bl;
-                        triangles[triStart + 4] = tr;
-                        triangles[triStart + 5] = br;
+                    var bottomLeft = vertStart;
+                    var bottomRight = vertStart + 1;
+                    var topLeft = vertStart + xVerts;
+                    var topRight = vertStart + xVerts + 1;
+                    var sqrDiag1 = (vertices[bottomLeft] - vertices[topRight]).sqrMagnitude;
+                    var sqrDiag2 = (vertices[topLeft] - vertices[bottomRight]).sqrMagnitude;
+                    bool alternate;
+                    switch(triMode){
+                        case TriMode.Fixed:
+                            alternate = false;
+                            break;
+                        case TriMode.FixedAlternate:
+                            alternate = true;
+                            break;
+                        case TriMode.Random:
+                            alternate = triRNG.NextDouble() < 0.5;
+                            break;
+                        case TriMode.ShortestDiagonal:
+                            alternate = sqrDiag1 > sqrDiag2;
+                            break;
+                        case TriMode.LongestDiagonal:
+                            alternate = sqrDiag1 < sqrDiag2;
+                            break;
+                        default:
+                            Debug.LogError($"Unknown {nameof(TriMode)} \"{triMode}\"!");
+                            return null;
+                    }
+                    if(!alternate){
+                        triangles[triStart + 0] = bottomLeft;
+                        triangles[triStart + 1] = topLeft;
+                        triangles[triStart + 2] = topRight;
+                        triangles[triStart + 3] = bottomLeft;
+                        triangles[triStart + 4] = topRight;
+                        triangles[triStart + 5] = bottomRight;
                     }else{
-                        triangles[triStart + 0] = bl;
-                        triangles[triStart + 1] = tl;
-                        triangles[triStart + 2] = br;
-                        triangles[triStart + 3] = tr;
-                        triangles[triStart + 4] = br;
-                        triangles[triStart + 5] = tl;
+                        triangles[triStart + 0] = bottomLeft;
+                        triangles[triStart + 1] = topLeft;
+                        triangles[triStart + 2] = bottomRight;
+                        triangles[triStart + 3] = topRight;
+                        triangles[triStart + 4] = bottomRight;
+                        triangles[triStart + 5] = topLeft;
                     }
                 }
             }
