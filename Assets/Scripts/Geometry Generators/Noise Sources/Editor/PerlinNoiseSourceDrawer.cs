@@ -1,17 +1,13 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 
 namespace GeometryGenerators {
 
     [CustomPropertyDrawer(typeof(PerlinNoiseSource))]
     public class PerlinNoiseSourceDrawer : NoiseSourceDrawer {
 
-        protected override int AdditionalPropCount => 0;
-        protected override void DrawAdditionalProperty (int index, Rect rect, SerializedProperty property) { }
+        protected override int AdditionalPropLines => 0;
 
-        public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
-            base.OnGUI(position, property, label);
-        }
+        protected override void DrawAdditionalProperty (int index, SerializedProperty property) { }
         
     }
 

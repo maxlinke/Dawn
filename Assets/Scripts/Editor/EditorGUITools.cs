@@ -11,6 +11,11 @@ public static class EditorGUITools {
         return new Rect(position.x + manualIndent, position.y, position.width - manualIndent, SLH);
     }
 
+    public static Rect NextLineWithWidth (ref Rect position, float width, float manualIndent = 0f) {
+        position = new Rect(position.x, position.y + SLH + SVS, position.width, position.height - SLH - SVS);
+        return new Rect(position.x + manualIndent, position.y, Mathf.Min(width, position.width - manualIndent), SLH);
+    }
+
     public static void DrawPropWithManualLabel (Rect baseRect, float labelWidth, SerializedProperty propToDraw, string labelText) {
         var labelRect = new Rect(baseRect.x, baseRect.y, labelWidth, baseRect.height);
         EditorGUI.LabelField(labelRect, labelText);

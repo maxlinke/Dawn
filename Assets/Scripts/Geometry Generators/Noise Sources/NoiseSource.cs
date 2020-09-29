@@ -22,7 +22,8 @@ namespace GeometryGenerators {
         [SerializeField, EnumFlags]      public Randomness randomness = 0;
         [SerializeField]                 public float size = 1f;
         [SerializeField]                 public ValueRange valueRange = default;
-
+        
+        [SerializeField]                 public bool useCustomTransform = false;
         [SerializeField]                 public Vector2 position = Vector2.zero;
         [SerializeField, Range(-PI, PI)] public float angle = 0f;
         [SerializeField]                 public Vector2 vecSize = Vector2.one;
@@ -31,16 +32,17 @@ namespace GeometryGenerators {
         System.Func<float, float> mapToRange;
 
         public virtual void Init (Vector2 inputOffset, float inputRotation) {
-            var sx = size * vecSize.x;
-            if(sx != 0) sx = 1f / sx;
-            var sy = size * vecSize.y;
-            if(sy != 0) sy = 1f / sy;
+            var s = useCustomTransform ? vecSize : Vector2.one;
+            s *= size;
+            var sx = (s.x != 0f) ? 1f / s.x : 0f;
+            var sy = (s.y != 0f) ? 1f / s.y : 0f;
             var scale = new Matrix4x4(
                 new Vector4(sx, 0f, 0f, 0f),
                 new Vector4(0f, sy, 0f, 0f),
                 new Vector4(0f, 0f, 1f, 0f),
                 new Vector4(0f, 0f, 0f, 1f));
-            var r = angle + (((randomness & Randomness.RandomRotation) == Randomness.RandomRotation) ? inputRotation : 0f);
+            var r = useCustomTransform ? angle : 0f;
+            r += (((randomness & Randomness.RandomRotation) == Randomness.RandomRotation) ? inputRotation : 0f);
             var cr = Mathf.Cos(r);
             var sr = Mathf.Sin(r);
             var rotation = new Matrix4x4(
@@ -48,7 +50,8 @@ namespace GeometryGenerators {
                 new Vector4(sr, cr, 0f, 0f),
                 new Vector4(0f, 0f, 1f, 0f),
                 new Vector4(0f, 0f, 0f, 1f));
-            var p = position + (((randomness & Randomness.RandomOffset) == Randomness.RandomOffset) ? inputOffset : Vector2.zero);
+            var p = useCustomTransform ? position : Vector2.zero;
+            p += (((randomness & Randomness.RandomOffset) == Randomness.RandomOffset) ? inputOffset : Vector2.zero);
             var translation = new Matrix4x4(
                 new Vector4(1f, 0f, 0f, 0f),
                 new Vector4(0f, 1f, 0f, 0f),

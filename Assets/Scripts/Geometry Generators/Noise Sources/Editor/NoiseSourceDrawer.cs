@@ -7,63 +7,66 @@ namespace GeometryGenerators {
     public abstract class NoiseSourceDrawer : PropertyDrawer {
 
         protected const float LABELWIDTH = 54f;
+        protected const float LEFT_FRAC_WIDTH = 0.55f;
+        protected const float RIGHT_FRAC_WIDTH = 0.45f;
 
-        bool showTransform = false;
+        private Rect position;
+        private SerializedProperty property;
+        private float manualIndent;
 
         public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
-            var propCount = AdditionalPropCount + (showTransform ? 6 : 3);
+            var propCount = AdditionalPropLines + (property.FindPropertyRelative("useCustomTransform").boolValue ? 5 : 3);
             return (propCount + 1) * EditorGUIUtility.singleLineHeight + propCount * EditorGUIUtility.standardVerticalSpacing;
         }
 
-        protected abstract int AdditionalPropCount { get; }
+        protected abstract int AdditionalPropLines { get; }
 
-        protected abstract void DrawAdditionalProperty (int index, Rect rect, SerializedProperty property);
+        protected abstract void DrawAdditionalProperty (int index, SerializedProperty property);
 
-        public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
+        Rect NextLine () {
+            return EditorGUITools.NextLine(ref position, manualIndent);
+        }
+
+        protected void DoubleProp (string prop1Name, string prop1Label, string prop2Name, string prop2Label) {
+            var rect = NextLine();
+            EditorGUITools.DrawHalfWidthProp(rect, true,  LEFT_FRAC_WIDTH,  LABELWIDTH, property.FindPropertyRelative(prop1Name), prop1Label);
+            if(prop2Name != null){
+                EditorGUITools.DrawHalfWidthProp(rect, false, RIGHT_FRAC_WIDTH, LABELWIDTH, property.FindPropertyRelative(prop2Name), prop2Label);
+            }
+        }
+
+        public override void OnGUI (Rect pos, SerializedProperty prop, GUIContent label) {
+            this.position = pos;
+            this.property = prop;
             EditorGUI.BeginProperty(position, label, property);
             var lw = EditorGUIUtility.labelWidth;
             var slh = EditorGUIUtility.singleLineHeight;
             var svs = EditorGUIUtility.standardVerticalSpacing;
-            EditorGUI.PrefixLabel(position, label);
-            float manualIndent = 10f;
-            DrawStrengthRandomnessAndSize();
-            for(int i=0; i<AdditionalPropCount; i++){
-                DrawAdditionalProperty(i, NextLine(), property);
+            EditorGUI.PrefixLabel(position, label, EditorStyles.boldLabel);
+            manualIndent = 10f;
+            DoubleProp("strength", "STR", "randomness", "RAND");
+            DoubleProp("size", "SIZE", "valueRange", "VAL");
+            for(int i=0; i<AdditionalPropLines; i++){
+                DrawAdditionalProperty(i, property);
             }
-            DrawShowTransform();
+            DrawUseCustomTransformTransform(out var showTransform);
             if(showTransform){
-                DrawTransform();
+                DoubleProp("position", "POS", "angle", "ROT");
+                DoubleProp("vecSize", "SIZE", null, null);
             }
             manualIndent = 0f;
             EditorGUI.EndProperty();
 
-            Rect NextLine () {
-                return EditorGUITools.NextLine(ref position, manualIndent);
-            }
-
-            void DrawStrengthRandomnessAndSize () {
-                var rect1 = NextLine();
-                EditorGUITools.DrawHalfWidthProp(rect1, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("strength"), "STR");
-                EditorGUITools.DrawHalfWidthProp(rect1, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("randomness"), "RAND");
-                var rect2 = NextLine();
-                EditorGUITools.DrawHalfWidthProp(rect2, true, 0.58f, LABELWIDTH, property.FindPropertyRelative("size"), "SIZE");
-                EditorGUITools.DrawHalfWidthProp(rect2, false, 0.4f, LABELWIDTH, property.FindPropertyRelative("valueRange"), "VAL");
-            }
-
-            void DrawShowTransform () {
-                var str = NextLine();
-                var to = 15f;
-                var tr = new Rect(str.x + to, str.y, str.width - to, str.height);
-                showTransform = EditorGUI.Toggle(tr, showTransform, EditorStyles.foldout);
-                var lo = 30f;
-                var lr = new Rect(str.x + lo, str.y, str.width - lo, str.height);
-                EditorGUI.LabelField(lr, "Show Transform");
-            }
-
-            void DrawTransform() {
-                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("position"), "POS");
-                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("angle"), "ROT");
-                EditorGUITools.DrawPropWithManualLabel(NextLine(), 60f, property.FindPropertyRelative("vecSize"), "SIZE");
+            void DrawUseCustomTransformTransform (out bool output) {
+                var customTransformProp = property.FindPropertyRelative("useCustomTransform");
+                var ctr = NextLine();
+                var to = 0;
+                var tr = new Rect(ctr.x + to, ctr.y, ctr.width, ctr.height);
+                customTransformProp.boolValue = EditorGUI.Toggle(tr, customTransformProp.boolValue);
+                var lo = 20f;
+                var lr = new Rect(ctr.x + lo, ctr.y, ctr.width - lo, ctr.height);
+                EditorGUI.LabelField(lr, "USE CUSTOM TRANSFORM");
+                output = customTransformProp.boolValue;
             }
 
         }
