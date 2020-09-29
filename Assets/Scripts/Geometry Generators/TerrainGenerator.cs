@@ -26,7 +26,7 @@ namespace GeometryGenerators {
 
         [Header("Deformation Settings")]
         [SerializeField]                 bool seededRandomness = false;
-        [SerializeField]                 string seed = string.Empty;
+        [SerializeField]                 string terrainSeed = string.Empty;
         [SerializeField]                 bool clampNoise = false;
         [SerializeField]                 LowerClampValue lowerClamp = default;
         [SerializeField]                 UpperClampValue upperClamp = default;
@@ -97,10 +97,10 @@ namespace GeometryGenerators {
 
         System.Random GetRNG () {
             if(seededRandomness){
-                if(seed == null){
-                    seed = string.Empty;
+                if(terrainSeed == null){
+                    terrainSeed = string.Empty;
                 }
-                return new System.Random(seed.Trim().GetHashCode());    
+                return new System.Random(terrainSeed.Trim().GetHashCode());    
             }
             return new System.Random(System.DateTime.Now.GetHashCode());
         }

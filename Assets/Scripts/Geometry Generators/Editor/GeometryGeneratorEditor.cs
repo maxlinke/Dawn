@@ -49,9 +49,6 @@ namespace GeometryGenerators {
     [CustomEditor(typeof(LadderGenerator))]
     public class LadderGeneratorEditor : GeometryGeneratorEditor { }
 
-    [CustomEditor(typeof(PlaneGenerator))]
-    public class PlaneGeneratorEditor : GeometryGeneratorEditor { }
-
     [CustomEditor(typeof(RampGenerator))]
     public class RampGeneratorEditor : GeometryGeneratorEditor { }
 

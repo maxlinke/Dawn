@@ -9,10 +9,18 @@ namespace GeometryGenerators {
             Normalized
         }
 
+        public enum TriMode {
+            Fixed,
+            FixedAlternate,
+            Random
+        }
+
         [Header("Plane Settings")]
         [SerializeField] [Range(1, 254)] protected int xTiles = 32;
         [SerializeField] [Range(1, 254)] protected int zTiles = 32;
         [SerializeField] protected Vector2 tileSize = Vector2.one;
+        [SerializeField] protected TriMode triMode = TriMode.Fixed;
+        [SerializeField] string triSeed = string.Empty;
 
         [Header("UV Settings")]
         [SerializeField] protected UVMode uvMode = UVMode.Normalized;
@@ -33,8 +41,7 @@ namespace GeometryGenerators {
             int zVerts = zTiles + 1;
             int numberOfVerts = xVerts * zVerts;
             Vector3[] vertices = new Vector3[numberOfVerts];
-            Vector2[] normedUVs = new Vector2[numberOfVerts];
-            Vector2[] localPosUVs = new Vector2[numberOfVerts];
+            Vector2[] texcoords = new Vector2[numberOfVerts];
 
             float iOffset = (float)xTiles / 2f;
             float jOffset = (float)zTiles / 2f;
@@ -46,39 +53,54 @@ namespace GeometryGenerators {
                     vertices[index] = pos;
                     float fracI = (float)i/xTiles;
                     float fracJ = (float)j/zTiles;
-                    normedUVs[index] = new Vector2(fracI, fracJ) / uvScale;
-                    localPosUVs[index] = new Vector2(pos.x, pos.z) / uvScale;
+                    switch(uvMode){
+                        case UVMode.Normalized:
+                            texcoords[index] = new Vector2(fracI, fracJ) * uvScale;
+                            break;
+                        case UVMode.VertexCoordinates:
+                            texcoords[i] = new Vector2(pos.x, pos.z) * uvScale;
+                            break;
+                        default:
+                            Debug.LogError($"Unknown {nameof(UVMode)} \"{uvMode}\"!");
+                            return null;
+                    }
                 }
-            }
-
-            Vector2[] texcoords;
-            switch(uvMode){
-                case UVMode.Normalized:
-                    texcoords = normedUVs;
-                    break;
-                case UVMode.VertexCoordinates:
-                    texcoords = localPosUVs;
-                    break;
-                default:
-                    Debug.LogError($"Unknown {nameof(UVMode)} \"{uvMode}\"!");
-                    texcoords = normedUVs;
-                    break;
-            }
+            }            
 
             int numberOfTris = xTiles * zTiles * 2;
             int[] triangles = new int[numberOfTris * 3];
 
+            int rngSeed;
+            if(triSeed == null || triSeed.Length == 0){
+                rngSeed = Random.value.GetHashCode();
+            }else{
+                rngSeed = triSeed.Trim().GetHashCode();
+            }
+            System.Random triRNG = new System.Random(rngSeed);
             for(int j=0; j<zTiles; j++){
                 for(int i=0; i<xTiles; i++){
                     int quad = (j * xTiles) + i;
                     int triStart = quad * 6;
                     int vertStart = (j * xVerts) + i;
-                    triangles[triStart + 0] = vertStart;
-                    triangles[triStart + 1] = vertStart + xVerts;
-                    triangles[triStart + 2] = vertStart + xVerts + 1;
-                    triangles[triStart + 3] = vertStart;
-                    triangles[triStart + 4] = vertStart + 1 + xVerts;
-                    triangles[triStart + 5] = vertStart + 1;
+                    var bl = vertStart;
+                    var br = vertStart + 1;
+                    var tl = vertStart + xVerts;
+                    var tr = vertStart + xVerts + 1;
+                    if(triMode == TriMode.Fixed || (triMode == TriMode.Random && triRNG.NextDouble() >= 0.5)){
+                        triangles[triStart + 0] = bl;
+                        triangles[triStart + 1] = tl;
+                        triangles[triStart + 2] = tr;
+                        triangles[triStart + 3] = bl;
+                        triangles[triStart + 4] = tr;
+                        triangles[triStart + 5] = br;
+                    }else{
+                        triangles[triStart + 0] = bl;
+                        triangles[triStart + 1] = tl;
+                        triangles[triStart + 2] = br;
+                        triangles[triStart + 3] = tr;
+                        triangles[triStart + 4] = br;
+                        triangles[triStart + 5] = tl;
+                    }
                 }
             }
 

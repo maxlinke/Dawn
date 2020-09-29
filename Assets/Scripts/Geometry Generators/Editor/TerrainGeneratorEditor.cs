@@ -21,7 +21,7 @@ namespace GeometryGenerators {
                 return true;
             }
             switch(property.name){
-                case "seed":
+                case "terrainSeed":
                     if(seededRandomness.boolValue) DrawPropIndented();
                     return true;
                 case "lowerClamp":
