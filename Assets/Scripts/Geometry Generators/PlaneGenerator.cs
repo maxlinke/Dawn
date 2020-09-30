@@ -22,10 +22,18 @@ namespace GeometryGenerators {
             IsoTris
         }
 
+        public const int VERTEX_LIMIT = 1 << 16;
+
+        public const int MAX_X_TILES_QUADS = 2 * 254;
+        public const int MAX_Z_TILES_QUADS = 2 * 254;
+        
+        public const int MAX_X_TILES_ISOTRIS = 2 * 474;
+        public const int MAX_Z_TILES_ISOTRIS = 2 * 274;
+
         [Header("Plane Settings")]
         [SerializeField] protected TileMode tileMode = TileMode.Quads;
-        [SerializeField] [Range(1, 254)] protected int xTiles = 32;
-        [SerializeField] [Range(1, 254)] protected int zTiles = 32;
+        [SerializeField] protected int xTiles = 32;
+        [SerializeField] protected int zTiles = 32;
         [SerializeField] protected Vector2 tileSize = Vector2.one;
         [SerializeField] protected TriMode triMode = TriMode.Fixed;
         [SerializeField] protected string triSeed = string.Empty;
@@ -56,6 +64,10 @@ namespace GeometryGenerators {
                 output = new Mesh();
             }
             if(output == null){
+                return null;
+            }
+            if(vertices.Length >= VERTEX_LIMIT){
+                Debug.LogError($"Too many vertices! ({vertices.Length}, max: {VERTEX_LIMIT-1})");
                 return null;
             }
             switch(uvMode){
@@ -118,13 +130,61 @@ namespace GeometryGenerators {
             }
         }
 
+        public static int QuadLineLength (int tiles) {
+            return tiles + 1;
+        }
+
+        public static int IsoBaseLineCount (int tiles) {
+            return 1 + (tiles / 2);
+        }
+
+        public static int IsoOffsetLineCount (int tiles) {
+            return 1 + ((tiles - 1) / 2);;
+        }
+
+        public static int IsoBaseLineLength (int tiles) {
+            return 1 + ((tiles + 1) / 2);
+        }
+
+        public static int IsoOffsetLineLength (int tiles) {
+            return 1 + (tiles / 2);
+        }
+
+        public static int VertexCount (TileMode tileMode, int xTiles, int zTiles) {
+            switch(tileMode){
+                case TileMode.Quads:
+                    return QuadLineLength(xTiles) * QuadLineLength(zTiles);
+                case TileMode.IsoTris:
+                    var baseLineCount = IsoBaseLineCount(zTiles);
+                    var offsetLineCount = IsoOffsetLineCount(zTiles);
+                    var baseLineLength = IsoBaseLineLength(xTiles);
+                    var offsetLineLength = IsoOffsetLineLength(xTiles);
+                    return (baseLineCount * baseLineLength) + (offsetLineCount * offsetLineLength);
+                default:
+                    Debug.LogError($"Unknown {nameof(TileMode)} \"{tileMode}\"!");
+                    return -1;
+            }
+        }
+
+        public static int TriangleCount (TileMode tileMode, int xTiles, int zTiles) {
+            switch(tileMode){
+                case TileMode.Quads:
+                    return xTiles * zTiles * 2;
+                case TileMode.IsoTris:
+                    return xTiles * zTiles;
+                default:
+                    Debug.LogError($"Unknown {nameof(TileMode)} \"{tileMode}\"!");
+                    return -1;
+            }
+        }
+
         private bool TryMakeQuadMesh (out Vector3[] vertices, out Vector2[] texcoords, out int[] triangles) {
-            int xVerts = xTiles + 1;
-            int zVerts = zTiles + 1;
-            int numberOfVerts = xVerts * zVerts;
+            int xVerts = QuadLineLength(xTiles);
+            int zVerts = QuadLineLength(zTiles);
+            int numberOfVerts = VertexCount(TileMode.Quads, xTiles, zTiles);
             vertices = new Vector3[numberOfVerts];
             texcoords = new Vector2[numberOfVerts];
-            int numberOfTris = xTiles * zTiles * 2;
+            int numberOfTris = TriangleCount(TileMode.Quads, xTiles, zTiles);
             triangles = new int[numberOfTris * 3];
             if(!TryMakeVertsAndTexcoords(vertices, texcoords)){
                 return false;
@@ -226,23 +286,21 @@ namespace GeometryGenerators {
 
         private bool TryMakeIsoTriMesh (out Vector3[] vertices, out Vector2[] texcoords, out int[] triangles) {
             var isoDims = GetIsoDimensions();
-            GetXCoordArrays(isoDims.x, out var xCoordsBase, out var xCoordsOffset);
-            var baseLineCount = 1 + (zTiles / 2);
-            var offsetLineCount = 1 + ((zTiles - 1) / 2);
-            vertices = new Vector3[(baseLineCount * xCoordsBase.Length) + (offsetLineCount * xCoordsOffset.Length)];
+            vertices = new Vector3[VertexCount(TileMode.IsoTris, xTiles, zTiles)];
             texcoords = new Vector2[vertices.Length];
-            triangles = new int[3 * (xTiles * zTiles)];
+            triangles = new int[3 * TriangleCount(TileMode.IsoTris, xTiles, zTiles)];
+            GetXCoordArrays(isoDims.x, out var xCoordsBase, out var xCoordsOffset);
             MakeVertAndTexCoords(isoDims.x, isoDims.y, vertices, texcoords);
             MakeTris(vertices, triangles);
             return true;
 
             void GetXCoordArrays (float width, out float[] outputBaseCoords, out float[] outputOffsetCoords) {
-                var baseVertCount = ((xTiles + 1) / 2) + 1;
-                var offsetVertCount = baseVertCount - (xTiles % 2);
-                outputBaseCoords = new float[baseVertCount];
-                outputOffsetCoords = new float[offsetVertCount];
-                for(int i=0; i<(baseVertCount + offsetVertCount); i++){
-                    var fracI = (float)i / (baseVertCount + offsetVertCount - 1);
+                var baseLineLength = IsoBaseLineLength(xTiles);
+                var offsetLineLength = IsoOffsetLineLength(xTiles);
+                outputBaseCoords = new float[baseLineLength];
+                outputOffsetCoords = new float[offsetLineLength];
+                for(int i=0; i<(baseLineLength + offsetLineLength); i++){
+                    var fracI = (float)i / (baseLineLength + offsetLineLength - 1);
                     var x = (fracI - 0.5f) * width;
                     if(i%2 == 0){
                         outputBaseCoords[i/2] = x;
