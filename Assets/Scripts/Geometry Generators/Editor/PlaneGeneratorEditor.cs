@@ -53,7 +53,7 @@ namespace GeometryGenerators {
                     TileSlider(xTiles: false);
                     var verts = PlaneGenerator.VertexCount(tileMode, xTiles, zTiles);
                     var tris = PlaneGenerator.TriangleCount(tileMode, xTiles, zTiles);
-                    var warn = (verts >= PlaneGenerator.VERTEX_LIMIT) ? $"(too many! max {PlaneGenerator.VERTEX_LIMIT})" : "";
+                    var warn = (verts > PlaneGenerator.VERTEX_LIMIT) ? $"(too many! max {PlaneGenerator.VERTEX_LIMIT})" : "";
                     EditorTools.DrawIndented(() => {
                         EditorGUILayout.LabelField($"{verts} vertices {warn}", EditorStyles.miniLabel);
                         EditorGUILayout.LabelField($"{tris} triangles", EditorStyles.miniLabel);

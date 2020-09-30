@@ -22,7 +22,7 @@ namespace GeometryGenerators {
             IsoTris
         }
 
-        public const int VERTEX_LIMIT = 1 << 16;
+        public const int VERTEX_LIMIT = (1 << 16) - 1;
 
         public const int MAX_X_TILES_QUADS = 2 * 254;
         public const int MAX_Z_TILES_QUADS = 2 * 254;
@@ -66,8 +66,8 @@ namespace GeometryGenerators {
             if(output == null){
                 return null;
             }
-            if(vertices.Length >= VERTEX_LIMIT){
-                Debug.LogError($"Too many vertices! ({vertices.Length}, max: {VERTEX_LIMIT-1})");
+            if(vertices.Length > VERTEX_LIMIT){
+                Debug.LogError($"Too many vertices! ({vertices.Length}, max: {VERTEX_LIMIT})");
                 return null;
             }
             switch(uvMode){
