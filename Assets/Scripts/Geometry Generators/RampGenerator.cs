@@ -24,6 +24,7 @@ namespace GeometryGenerators {
         [SerializeField, Range(MIN_LENGTH, MAX_LENGTH)] float frontLength = 5f;
         [SerializeField, Range(MIN_LENGTH, MAX_LENGTH)] float rearLength = 5f;
         [SerializeField, Range(MIN_WIDTH, MAX_WIDTH)] float width = 2f;
+        [SerializeField] bool fillBottom = false;
 
         protected override Mesh CreateMesh () {
             var points = Get2DPoints();
@@ -44,8 +45,11 @@ namespace GeometryGenerators {
             if(rearAngle != 0f){
                 rampEnd = triangles.Count;
             }
-            if(pl > 3){
+            if(pl > 3 || fillBottom){
                 AddSurface(2);
+            }
+            if(pl > 3 && fillBottom){
+                AddSurface(3);
             }
             var output = new Mesh();
             output.name = "Generated Ramp";

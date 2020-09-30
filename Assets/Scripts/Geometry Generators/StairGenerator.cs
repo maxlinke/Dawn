@@ -23,6 +23,7 @@ namespace GeometryGenerators {
         [SerializeField, Range(MIN_STEP_SIZE, MAX_STEP_SIZE)] float stepLength = 0.5f;
         [SerializeField, Range(MIN_END_LENGTH, MAX_END_LENGTH)] float endLength = 2f;
         [SerializeField, Range(MIN_WIDTH, MAX_WIDTH)] float width = 2f;
+        [SerializeField] bool fillBottom = false;
 
         protected override Mesh CreateMesh () {
             var points = Get2DPoints();
@@ -55,8 +56,10 @@ namespace GeometryGenerators {
                     var p1 = protoVerts[j+1];
                     vertices.Add(p0);
                     vertices.Add(p1);
-                    triangles.Add(new Triangle(vc+0, vc+1, vc+2));
-                    triangles.Add(new Triangle(vc+3, vc+2, vc+1));
+                    if(i>1 || fillBottom){
+                        triangles.Add(new Triangle(vc+0, vc+1, vc+2));
+                        triangles.Add(new Triangle(vc+3, vc+2, vc+1));
+                    }
                     l0 = p0;
                     l1 = p1;
                 }
