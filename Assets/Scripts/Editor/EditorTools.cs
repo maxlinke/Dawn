@@ -3,6 +3,8 @@ using UnityEditor;
 
 public static class EditorTools {
 
+    public const float BACKGROUND_TINT_STRENGTH = 0.3f;
+
     public static void DrawScriptReference (UnityEngine.Object obj) {
         if(obj is MonoBehaviour monoBehaviour){
             DrawScriptReference(monoBehaviour);
@@ -28,11 +30,28 @@ public static class EditorTools {
         GUI.enabled = ge;
     }
 
+    public static void DrawProperty (SerializedProperty property) {
+        EditorGUILayout.PropertyField(property, true);
+    }
+
+    public static void DrawObjectFieldWarnIfNull (SerializedProperty property) {
+        var bgCol = GUI.backgroundColor;
+        if(property.objectReferenceValue == null){
+            GUI.backgroundColor = Color.Lerp(bgCol, Color.red, BACKGROUND_TINT_STRENGTH);
+        }
+        EditorGUILayout.PropertyField(property, true);
+        GUI.backgroundColor = bgCol;
+    }
+
     public static void DrawDisabled (System.Action drawAction) {
         var guiOn = GUI.enabled;
         GUI.enabled = false;
         drawAction();
         GUI.enabled = guiOn;
+    }
+
+    public static void DrawDisabled (SerializedProperty property) {
+        DrawDisabled(() => DrawProperty(property));
     }
 
     public static void DrawHorizontal (System.Action drawAction) {
@@ -55,11 +74,19 @@ public static class EditorTools {
         EditorGUI.indentLevel -= indentLevel;
     }
 
-    public static void DrawWithTintedBackground (System.Action drawAction, Color tintColor, float tintStrength) {
+    public static void DrawIndented (SerializedProperty property, int indentLevel = 1) {
+        DrawIndented(() => DrawProperty(property), indentLevel);
+    }
+
+    public static void DrawWithTintedBackground (System.Action drawAction, Color tintColor, float tintStrength = BACKGROUND_TINT_STRENGTH) {
         var bgCol = GUI.backgroundColor;
         GUI.backgroundColor = Color.Lerp(bgCol, tintColor, tintStrength);
         drawAction();
         GUI.backgroundColor = bgCol;
+    }
+
+    public static void DrawWithTintedBackground (SerializedProperty property, Color tintColor, float tintStrength = BACKGROUND_TINT_STRENGTH) {
+        DrawWithTintedBackground(() => DrawProperty(property), tintColor, tintStrength);
     }
 
     public static void HeaderLabel (string text) {
@@ -96,6 +123,12 @@ public static class EditorTools {
                 output = GUILayout.Button(text, GUILayout.Width(width));
             }
         });
+        return output;
+    }
+
+    public static bool ButtonCenteredWithTint (string text, float width, Color tintColor, float tintStrength = BACKGROUND_TINT_STRENGTH, bool miniButton = false) {
+        var output = false;
+        DrawWithTintedBackground(() => {output = ButtonCentered(text, width, miniButton);}, tintColor, tintStrength);
         return output;
     }
 	

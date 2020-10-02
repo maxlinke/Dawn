@@ -1,9 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
 
 public abstract class GenericEditor : Editor{
-
-    public const float BACKGROUND_TINT_STRENGTH = 0.3f;
 
     protected virtual void OnEnable () { }
 
@@ -22,13 +19,6 @@ public abstract class GenericEditor : Editor{
 
     protected abstract bool DrawPropertyCustom (SerializedProperty property);
 
-    protected virtual void ObjectFieldRedBackgroundIfNull (SerializedProperty property) {
-        var bgCol = GUI.backgroundColor;
-        if(property.objectReferenceValue == null){
-            GUI.backgroundColor = Color.Lerp(bgCol, Color.red, BACKGROUND_TINT_STRENGTH);
-        }
-        EditorGUILayout.PropertyField(property, true);
-        GUI.backgroundColor = bgCol;
-    }
+    
 	
 }
