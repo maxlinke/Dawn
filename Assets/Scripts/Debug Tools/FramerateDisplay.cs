@@ -1,19 +1,36 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using CustomInputSystem;
+using System.Collections.Generic;
 
 namespace DebugTools {
 
     public class FramerateDisplay : MonoBehaviour {
 
+        const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
+
+        enum Mode {
+            Hidden,
+            Small,
+            Detailed
+        }
+
         [Header("Settings")]
-        [SerializeField] bool hideAfterInit = true;
+        [SerializeField] Mode mode;
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
-        [SerializeField] RawImage image = default;
-        [SerializeField] Image background = default;
+
+        [Header("Small Mode")]
+        [SerializeField] RectTransform smallParent = default;
+        [SerializeField] Image smallBackground = default;
+        [SerializeField] Text smallFPSText = default;
+
+        [Header("Detailed Mode")]
+        [SerializeField] RectTransform detailedParent = default;
+        [SerializeField] RawImage graphImage = default;
+        [SerializeField] Image detailedBackground = default;
         [SerializeField] Text rawFPSText = default;
         [SerializeField] Text avgFPSText = default;
         [SerializeField] Text minFPSText = default;
@@ -36,15 +53,17 @@ namespace DebugTools {
 
         private static FramerateDisplay instance;
 
-        RectTransform imageRT => image.rectTransform;
+        RectTransform imageRT => graphImage.rectTransform;
         Texture2D tex;
         Color32 lineCol32;
         Color32 prevLineCol32;
         Color32 clearCol32;
 
+        Queue<float> smallModeDeltaTimes;
+        float smallModeDeltaTimeSum;
+
         float[] framerates;
         float[] prevFramerates;
-        float currentFPS;
         float avgFPS;
         float maxFPS;
         float minFPS;
@@ -68,8 +87,10 @@ namespace DebugTools {
             InitUI();
             framerates = new float[tex.width];
             prevFramerates = null;
-            if(hideAfterInit){
-                visible = false;
+            smallModeDeltaTimes = new Queue<float>();
+            ModeUpdated();
+            if(visible){
+                OnShow();
             }
         }
 
@@ -82,20 +103,82 @@ namespace DebugTools {
         void OnShow () {
             currentFrameIndex = 0;
             prevFramerates = null;
+            smallModeDeltaTimeSum = 0f;
+            var dt = Time.unscaledDeltaTime;
+            for(int i=0; i<SMALL_MODE_FPS_AVERAGE_LENGTH; i++){
+                smallModeDeltaTimes.Enqueue(dt);
+                smallModeDeltaTimeSum += dt;
+            }
         }
 
         void OnHide () {
             tex.SetPixels(clearCol32, true, false);
+            smallModeDeltaTimes.Clear();
+        }
+
+        Mode NextMode (Mode input) {
+            switch(input){
+                case Mode.Hidden:
+                    return Mode.Small;
+                case Mode.Small:
+                    return Mode.Detailed;
+                case Mode.Detailed:
+                    return Mode.Hidden;
+                default:
+                    Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
+                    return input;
+            }
+        }
+
+        void ModeUpdated () {
+            switch(mode){
+                case Mode.Hidden:
+                    visible = false;
+                    break;
+                case Mode.Small:
+                    smallParent.gameObject.SetActive(true);
+                    detailedParent.gameObject.SetActive(false);
+                    visible = true;
+                    break;
+                case Mode.Detailed:
+                    smallParent.gameObject.SetActive(false);
+                    detailedParent.gameObject.SetActive(true);
+                    visible = true;
+                    break;
+                default:
+                    Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
+                    break;
+            }
         }
 
         void Update () {
+            bool modeUpdated = false;
             if(Bind.TOGGLE_FRAMERATE_DISPLAY.GetKeyDown()){
-                visible = !visible;
+                mode = NextMode(mode);
+                ModeUpdated();
+                modeUpdated = true;
             }
             if(!visible){
                 return;
             }
-            currentFPS = 1f / Time.unscaledDeltaTime;
+            var currentDeltaTime = Time.unscaledDeltaTime;
+            UpdateSmallParts(currentDeltaTime);
+            UpdateDetailedParts(currentDeltaTime, modeUpdated);
+        }
+
+        void UpdateSmallParts (float currentDeltaTime) {
+            smallModeDeltaTimeSum -= smallModeDeltaTimes.Dequeue();
+            smallModeDeltaTimeSum += currentDeltaTime;
+            smallModeDeltaTimes.Enqueue(currentDeltaTime);
+            if(mode == Mode.Small){
+                var smallAvgDT = smallModeDeltaTimeSum / SMALL_MODE_FPS_AVERAGE_LENGTH;
+                var smallAvgFPS = Mathf.RoundToInt(1f / smallAvgDT);
+                smallFPSText.text = Mathf.Min(smallAvgFPS, 999).ToString();
+            }
+        }
+
+        void UpdateDetailedParts (float currentDeltaTime, bool modeUpdated) {
+            var currentFPS = 1f / currentDeltaTime;
             if(currentFrameIndex == 0){
                 SetupTextureForNextCycle(false);
                 var texDelta = tex.height / 2f;
@@ -111,8 +194,10 @@ namespace DebugTools {
                 maxFPS = Mathf.Max(maxFPS, currentFPS);
             }
             framerates[currentFrameIndex] = currentFPS;
-            UpdateTexture();
-            UpdateTextFields();
+            if(mode == Mode.Detailed){
+                UpdateTexture(currentFPS, startAtZero: modeUpdated);
+                UpdateTextFields(currentFPS);
+            }
             currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;
             if(currentFrameIndex == 0){
                 if(prevFramerates == null){
@@ -122,9 +207,9 @@ namespace DebugTools {
             }
         }
 
-        void UpdateTexture () {
-            int startIndex = currentFrameIndex;
-            bool redrawPrevious = ((currentFrameIndex == 0) && (prevFramerates != null));
+        void UpdateTexture (float currentFPS, bool startAtZero) {
+            int startIndex = startAtZero ? 0 : currentFrameIndex;
+            bool redrawPrevious = ((startIndex == 0) && (prevFramerates != null));
             if(currentFPS < texMin || currentFPS > texMax){
                 texMin = Mathf.Min(texMin, currentFPS);
                 texMax = Mathf.Max(texMax, currentFPS);
@@ -165,7 +250,7 @@ namespace DebugTools {
             }
         }
 
-        void UpdateTextFields () {
+        void UpdateTextFields (float currentFPS) {
             rawFPSText.text = $"Raw: {currentFPS:F1}";
             avgFPSText.text = $"Avg: {avgFPS:F1}";
             minFPSText.text = $"Min: {minFPS:F1}";
@@ -204,8 +289,10 @@ namespace DebugTools {
         }
 
         void InitUI () {
-            image.texture = tex;
-            background.color = colorScheme.BackgroundColor;
+            graphImage.texture = tex;
+            smallBackground.color = colorScheme.BackgroundColor;
+            smallFPSText.color = colorScheme.TextColor;
+            detailedBackground.color = colorScheme.BackgroundColor;
             rawFPSText.color = colorScheme.TextColor;
             avgFPSText.color = colorScheme.TextColor;
             minFPSText.color = colorScheme.TextColor;
