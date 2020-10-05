@@ -61,7 +61,7 @@ public class RBPlayer : Player {
         #if UNITY_EDITOR
             DebugInputs();
         #endif
-        health.InternalHealthUpdate(Time.deltaTime);
+        health.InternalHealthUpdate();
         // TODO what about being dead?
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
@@ -72,7 +72,7 @@ public class RBPlayer : Player {
         }
         rbMovement.UpdateCrouchState(GetCrouchInput(readInput: cursorLocked));
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
-        rbMovement.AlignWithGravityIfAllowed(timeStep: Time.deltaTime);
+        rbMovement.AlignWithGravityIfAllowed();
         CacheSingleFrameInputs();
         model.UpdateSpherePositions();
 

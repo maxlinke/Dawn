@@ -202,15 +202,19 @@ namespace PlayerController {
             return otherRB.isKinematic;
         }
 
+        protected float CrouchLerpFactor () {
+            return Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
+        }
+
         protected float RawSpeedMultiplier (float run) {
             var standingSpeed = Mathf.Lerp(pcProps.WalkSpeedMultiplier, pcProps.RunSpeedMultiplier, Mathf.Clamp01(run));
             var crouchSpeed = pcProps.CrouchSpeedMultiplier;
-            var crouchFactor = Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
-            return Mathf.Lerp(crouchSpeed, standingSpeed, crouchFactor);
+            return Mathf.Lerp(crouchSpeed, standingSpeed, CrouchLerpFactor());
         }
 
         protected float JumpSpeed () {
-            return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * pcProps.JumpHeight);
+            var jumpHeight = Mathf.Lerp(pcProps.CrouchedJumpHeight, pcProps.StandingJumpHeight, CrouchLerpFactor());
+            return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * jumpHeight);
         }
 
         protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float deltaTime) {

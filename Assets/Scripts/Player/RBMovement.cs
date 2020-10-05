@@ -272,14 +272,14 @@ namespace PlayerController {
             }
         }
 
-        public void AlignWithGravityIfAllowed (float timeStep) {
+        public void AlignWithGravityIfAllowed () {
             if(controlMode == ControlMode.ANCHORED){
                 return;
             }
             var gravityRotation = GetGravityRotation(smoothRotationParent);
             var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.JumpCalcGravity);
             var degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
-            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, timeStep * degreesPerSecond);
+            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, Time.deltaTime * degreesPerSecond);
             smoothRotationParent.rotation = newRotation;
         }
 
@@ -301,6 +301,15 @@ namespace PlayerController {
                 }
             }
             var localVelocity = currentState.incomingLocalVelocity;
+            if(!lastState.touchingGround){
+                var fwdLocalVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                var landingDecel = ((fwdLocalVelocity * (1f / pcProps.JumpForwardSpeedMultiplier)) - fwdLocalVelocity);
+                if(pcProps.EnableABH){
+                    landingDecel *= Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward));
+                }
+                Velocity += landingDecel;
+                localVelocity += landingDecel;
+            }
             var dragFriction = currentState.normedStaticSurfaceFriction;
             var moveFriction = currentState.normedDynamicSurfaceFriction;
             var frictionMag = Mathf.Lerp(pcProps.Air.Drag, pcProps.Ground.Drag, dragFriction);
@@ -321,8 +330,14 @@ namespace PlayerController {
             var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, moveFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag);
             if(moveInput.jump){
-                var jumpMultiplier = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
-                moveAccel += PlayerTransform.up * JumpSpeed() * jumpMultiplier / Time.deltaTime;
+                var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
+                moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;
+                var fwdLocalVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                var fwdJumpAccel = ((fwdLocalVelocity * pcProps.JumpForwardSpeedMultiplier) - fwdLocalVelocity) / Time.deltaTime;
+                if(!pcProps.EnableABH){
+                    fwdJumpAccel *= Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
+                }
+                moveAccel += fwdJumpAccel;
                 currentState.jumped = true;
             }
             Vector3 gravity;

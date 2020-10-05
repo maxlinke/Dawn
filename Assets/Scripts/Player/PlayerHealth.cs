@@ -80,12 +80,12 @@ namespace PlayerController {
             Health -= fallDmg;
         }
 
-        public void InternalHealthUpdate (float timeStep) {
+        public void InternalHealthUpdate () {
             float breathDelta;
             if(HeadUnderWater()){
-                breathDelta = -1f * timeStep / healthSettings.BreathTime;
+                breathDelta = -1f * Time.deltaTime / healthSettings.BreathTime;
             }else{
-                breathDelta = timeStep / healthSettings.BreathRecoveryTime;
+                breathDelta = Time.deltaTime / healthSettings.BreathRecoveryTime;
             }
             normedBreath = Mathf.Clamp01(normedBreath + breathDelta);
             // TODO health ticking down from drowning

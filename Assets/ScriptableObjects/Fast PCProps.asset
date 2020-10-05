@@ -19,11 +19,12 @@ MonoBehaviour:
   swimOffset: -0.4
   colliderRadius: 0.4
   playerMass: 80
+  playerDensity: 1
   collisionDetection: 2
   physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
   footRBNonSolidMass: 160
   footRBSolidMass: 400
-  gravityTurnDegreesPerSecond: 360
+  gravityTurnSpeed: 360
   minGravityTurnSpeedMultiplier: 0.5
   nearClipDist: 0.15
   farClipDist: 1000
@@ -31,12 +32,15 @@ MonoBehaviour:
   runSpeedMultiplier: 1
   walkSpeedMultiplier: 0.5
   crouchSpeedMultiplier: 0.5
-  jumpHeight: 1
+  standingJumpHeight: 1
+  crouchedJumpHeight: 0.5
   jumpCalcGravity: 29.43
   ground:
     speed: 12
     accel: 64
     drag: 32
+  jumpForwardSpeedMultiplier: 1.167
+  enableABH: 1
   slope:
     speed: 12
     accel: 32
@@ -54,8 +58,4 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
-  dodgeSpeed: 12
-  dodgeStartTime: 0.125
-  dodgeEndTime: 0.125
-  dodgeDuration: 0.5
   interactRange: 2
