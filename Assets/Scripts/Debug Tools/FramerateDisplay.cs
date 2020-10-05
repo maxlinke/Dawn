@@ -180,10 +180,9 @@ namespace DebugTools {
         void UpdateDetailedParts (float currentDeltaTime, bool modeUpdated) {
             var currentFPS = 1f / currentDeltaTime;
             if(currentFrameIndex == 0){
-                SetupTextureForNextCycle(false);
                 var texDelta = tex.height / 2f;
-                texMin = avgFPS - texDelta;
-                texMax = avgFPS + texDelta;
+                texMin = avgFPS - texDelta;     // TODO roll over from last unless not
+                texMax = avgFPS + texDelta;     // use prev min and maxfps
                 avgFPS = currentFPS;
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
@@ -200,10 +199,12 @@ namespace DebugTools {
             }
             currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;
             if(currentFrameIndex == 0){
-                if(prevFramerates == null){
-                    prevFramerates = new float[framerates.Length];
-                }
-                framerates.CopyTo(prevFramerates, 0);
+                // if(prevFramerates == null){
+                //     prevFramerates = new float[framerates.Length];
+                // }
+                // framerates.CopyTo(prevFramerates, 0);
+                prevFramerates = framerates;
+                framerates = new float[framerates.Length];
             }
         }
 
@@ -211,9 +212,8 @@ namespace DebugTools {
             int startIndex = startAtZero ? 0 : currentFrameIndex;
             bool redrawPrevious = ((startIndex == 0) && (prevFramerates != null));
             if(currentFPS < texMin || currentFPS > texMax){
-                texMin = Mathf.Min(texMin, currentFPS);
-                texMax = Mathf.Max(texMax, currentFPS);
-                tex.SetPixels(clearCol32, false, false);
+                texMin = Mathf.Min(texMin, currentFPS - 10);
+                texMax = Mathf.Max(texMax, currentFPS + 10);
                 startIndex = 0;
                 redrawPrevious |= prevFramerates != null;
             }
@@ -221,7 +221,7 @@ namespace DebugTools {
             if(redrawPrevious){
                 DrawValues(prevFramerates, currentFrameIndex+1, prevFramerates.Length, prevLineCol32);
             }
-            tex.Apply(false);
+            tex.Apply(false, false);
 
             void DrawValues (float[] values, int start, int end, Color32 drawCol32) {
                 float lastValue = (start == 0) ? values[0] : values[start-1];
@@ -231,6 +231,7 @@ namespace DebugTools {
                     int currentY = ToPixelY(currentValue);
                     int minY = Mathf.Min(currentY, lastY);
                     int maxY = Mathf.Max(currentY, lastY);
+                    // tex.GetPixels                    // TODO instead of single sets, maybe get the array, set the values and reapply the array?
                     for(int y=minY; y<=maxY; y++){
                         tex.SetPixel(i, y, drawCol32);
                     }
@@ -273,19 +274,6 @@ namespace DebugTools {
                 );
             }
             tex.SetPixels(clearCol32, true, false);
-        }
-
-        void SetupTextureForNextCycle (bool apply) {
-            var newPixels = new Color32[tex.width * tex.height];
-            var origPixels = tex.GetPixels32();
-            for(int i=0; i<newPixels.Length; i++){
-                var c32 = origPixels[i];
-                newPixels[i] = (c32.Equals(lineCol32) ? prevLineCol32 : clearCol32);
-            }
-            tex.SetPixels32(newPixels);
-            if(apply){
-                tex.Apply(false, false);
-            }
         }
 
         void InitUI () {
