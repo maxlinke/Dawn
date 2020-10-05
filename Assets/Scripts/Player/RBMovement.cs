@@ -304,6 +304,7 @@ namespace PlayerController {
             if(!lastState.touchingGround){
                 var fwdLocalVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                 var landingDecel = ((fwdLocalVelocity * (1f / pcProps.JumpForwardSpeedMultiplier)) - fwdLocalVelocity);
+                // if(pcProps.EnableABH && moveInput.jump){     // <- the much MUCH more difficult version
                 if(pcProps.EnableABH){
                     landingDecel *= Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward));
                 }

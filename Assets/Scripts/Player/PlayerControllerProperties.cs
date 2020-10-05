@@ -82,10 +82,10 @@ public class PlayerControllerProperties : ScriptableObject {
     [SerializeField, Unit("m")] float standingJumpHeight = 1f;
     [SerializeField, Unit("m")] float crouchedJumpHeight = 0.5f;
     [SerializeField, Unit("m/s²")] float jumpCalcGravity = 29.43f;
-    [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
     [SerializeField] float jumpForwardSpeedMultiplier = 1.0f;
     const string abhTip = "Enable HL2-style accelerated back hopping";
     [SerializeField, Tooltip(abhTip)] bool enableABH = false;
+    [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
     [SerializeField] MovementProperties slope = MovementProperties.SlopeDefault;
     [SerializeField] MovementProperties air = MovementProperties.AirDefault;
     const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
@@ -100,9 +100,9 @@ public class PlayerControllerProperties : ScriptableObject {
     public float StandingJumpHeight => standingJumpHeight;
     public float CrouchedJumpHeight => crouchedJumpHeight;
     public float JumpCalcGravity => jumpCalcGravity;
-    public MovementProperties Ground => ground;
     public float JumpForwardSpeedMultiplier => jumpForwardSpeedMultiplier;
     public bool EnableABH => enableABH;
+    public MovementProperties Ground => ground;
     public MovementProperties Slope => slope;
     public MovementProperties Air => air;
     public bool EnableFullFlightParabola => enableFullFlightParabola;
