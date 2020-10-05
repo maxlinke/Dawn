@@ -264,8 +264,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 172871663}
-  m_LocalRotation: {x: 0.19340874, y: -0.31304535, z: 0.06517271, w: 0.9275496}
-  m_LocalPosition: {x: 39.06377, y: 1.7331544, z: -15.927635}
+  m_LocalRotation: {x: 0.094128534, y: -0.42700258, z: 0.044735003, w: 0.8982246}
+  m_LocalPosition: {x: 38.733856, y: 0.46436095, z: -6.422364}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -728,7 +728,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
+  waterPhysics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 6ef95c6259731714eade960150c69348, type: 2}
   col: {fileID: 450938637}
 --- !u!1 &452972046
@@ -747,7 +747,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &452972047
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -969,7 +969,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
+  waterPhysics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
   col: {fileID: 689266326}
 --- !u!1 &743978564
@@ -1473,7 +1473,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dce09965ffd882e44ba399034d89d381, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  physics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
+  waterPhysics: {fileID: 11400000, guid: fd79ca4d0d55708488deeb97b801c2c8, type: 2}
   fog: {fileID: 11400000, guid: 222aeb911e879314a997ea57270221f8, type: 2}
   col: {fileID: 1943731631}
 --- !u!65 &1943731631
