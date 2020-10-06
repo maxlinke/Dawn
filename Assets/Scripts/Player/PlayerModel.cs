@@ -7,11 +7,11 @@ namespace PlayerController {
         [SerializeField] Transform bottomSphere = default;
         [SerializeField] Transform topSphere = default;
 
-        PlayerControllerProperties pcProps;
+        Properties pcProps;
         Movement movement;
         Transform head;
 
-        public void Initialize (PlayerControllerProperties pcProps, Movement movement, Transform head) {
+        public void Initialize (Properties pcProps, Movement movement, Transform head) {
             this.pcProps = pcProps;
             this.movement = movement;
             this.head = head;

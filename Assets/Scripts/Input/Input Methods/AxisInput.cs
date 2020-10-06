@@ -23,8 +23,13 @@ namespace CustomInputSystem.Inputs {
         public void Update () {
             var wasHeld = Hold;
             _hold = Value >= ANALOG_TO_BOOL_THRESHOLD;
-            _down = _hold & !wasHeld;
-            _up = wasHeld & !_hold;
+            if(axis == Axis.MOUSE_SCROLL){
+                _down = _hold;
+                _up = wasHeld;
+            }else{
+                _down = _hold & !wasHeld;
+                _up = wasHeld & !_hold;
+            }
         }
 
         public override bool Down => _down;

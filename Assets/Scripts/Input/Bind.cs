@@ -103,6 +103,28 @@ namespace CustomInputSystem {
             return false;
         }
 
+        public bool UsesKeyCode (KeyCode keyCode) {
+            foreach(var input in inputs){
+                if(input is KeyCodeInput keyCodeInput){
+                    if(keyCodeInput.keyCode == keyCode){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool UsesAxis (Axis axis) {
+            foreach(var input in inputs){
+                if(input is AxisInput axisInput){
+                    if(axisInput.axis == axis){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         public bool GetKeyDown () {
             var output = false;
             foreach(var input in inputs){

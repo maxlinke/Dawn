@@ -4,7 +4,7 @@ using PlayerController;
 public abstract class Player : MonoBehaviour {
 
     [Header("Properties")]
-    [SerializeField] protected PlayerControllerProperties pcProps = default;
+    [SerializeField] protected Properties pcProps = default;
     [SerializeField] protected PlayerHealthSettings healthSettings = default;
     [SerializeField] protected bool selfInit = false;
 

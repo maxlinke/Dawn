@@ -32,15 +32,10 @@ MonoBehaviour:
   runSpeedMultiplier: 1
   walkSpeedMultiplier: 0.5
   crouchSpeedMultiplier: 0.5
-  standingJumpHeight: 1
-  crouchedJumpHeight: 0.5
-  jumpCalcGravity: 29.43
   ground:
     speed: 12
     accel: 64
     drag: 32
-  jumpForwardSpeedMultiplier: 1.167
-  enableABH: 1
   slope:
     speed: 12
     accel: 32
@@ -58,4 +53,11 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
+  standingJumpHeight: 1
+  crouchedJumpHeight: 0.5
+  jumpCalcGravity: 29.43
+  jumpSpeedBoost: 3
+  jumpSpeedBoostMultiplier: 1.25
+  enableOverBoosting: 0
+  enableBunnyHopping: 1
   interactRange: 2

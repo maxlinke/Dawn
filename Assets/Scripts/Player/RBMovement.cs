@@ -64,7 +64,7 @@ namespace PlayerController {
         List<CollisionPoint> contactPoints;
         List<Collider> triggerStays;
 
-        public void Initialize (PlayerControllerProperties pcProps, Transform head, Transform model, Transform smoothRotationParent) {
+        public void Initialize (Properties pcProps, Transform head, Transform model, Transform smoothRotationParent) {
             base.Init(pcProps, head, model);
             this.smoothRotationParent = smoothRotationParent;
             contactPoints = new List<CollisionPoint>();
@@ -238,7 +238,7 @@ namespace PlayerController {
             col.center = new Vector3(0f, col.height / 2f, 0f);
             var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
             smoothRotationParent.localPosition += srpDelta;
-            if(currentState.surfacePoint == null || lastState.jumped){
+            if(currentState.surfacePoint == null || lastState.startedJump){
                 PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
                 head.localPosition += srpDelta;
                 model.localPosition += srpDelta;
@@ -301,15 +301,19 @@ namespace PlayerController {
                 }
             }
             var localVelocity = currentState.incomingLocalVelocity;
-            if(!lastState.touchingGround){
-                var fwdLocalVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
-                var landingDecel = ((fwdLocalVelocity * (1f / pcProps.JumpForwardSpeedMultiplier)) - fwdLocalVelocity);
-                // if(pcProps.EnableABH && moveInput.jump){     // <- the much MUCH more difficult version
-                if(pcProps.EnableABH){
-                    landingDecel *= Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward));
+            if(pcProps.JumpSpeedBoost != Properties.JumpSpeedBoostMode.Off){
+                if(!lastState.touchingGround && (lastState.startedJump || lastState.midJump)){
+                    if(!(pcProps.EnableBunnyHopping && moveInput.jump)){
+                        var mode = Properties.JumpSpeedBoostMode.OmniDirectional;
+                        var mult = 1f / pcProps.JumpSpeedBoostMultiplier;
+                        var decel = GetJumpSpeedBoost(localVelocity, mode, mult);
+                        localVelocity += decel;
+                        Velocity += decel;
+                        Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
+                    }else{
+                        Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
+                    }
                 }
-                Velocity += landingDecel;
-                localVelocity += landingDecel;
             }
             var dragFriction = currentState.normedStaticSurfaceFriction;
             var moveFriction = currentState.normedDynamicSurfaceFriction;
@@ -319,8 +323,8 @@ namespace PlayerController {
             // }
             ApplyDrag(frictionMag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
-            var targetSpeed = pcProps.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
-            targetSpeed = Mathf.Max(targetSpeed, localSpeed);
+            var rawTargetSpeed = pcProps.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
+            var targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
@@ -333,16 +337,13 @@ namespace PlayerController {
             if(moveInput.jump){
                 var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
                 moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;
-                var fwdLocalVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
-                var fwdJumpAccel = ((fwdLocalVelocity * pcProps.JumpForwardSpeedMultiplier) - fwdLocalVelocity) / Time.deltaTime;
-                if(!pcProps.EnableABH){
-                    fwdJumpAccel *= Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
+                if(pcProps.EnableOverBoosting || localSpeed <= rawTargetSpeed){
+                    moveAccel += GetJumpSpeedBoost(localVelocity, pcProps.JumpSpeedBoost, pcProps.JumpSpeedBoostMultiplier) / Time.deltaTime;
                 }
-                moveAccel += fwdJumpAccel;
-                currentState.jumped = true;
+                currentState.startedJump = true;
             }
             Vector3 gravity;
-            if(currentState.jumped){
+            if(currentState.startedJump){
                 gravity = Physics.gravity * 0.5f;
             }else{
                 var stickGravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
@@ -444,7 +445,7 @@ namespace PlayerController {
             Vector3 gravity;
             if(moveInput.jump){
                 moveAcceleration += currentState.ladderPoint.normal * JumpSpeed() / Time.deltaTime;
-                currentState.jumped = true;
+                currentState.startedJump = true;
                 gravity = Physics.gravity * 0.5f;
             }else{
                 var stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;

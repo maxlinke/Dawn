@@ -38,7 +38,8 @@ namespace PlayerController {
             public Vector3 worldPosition;
             public Vector3 incomingWorldVelocity;
             public Vector3 incomingLocalVelocity;
-            public bool jumped;
+            public bool startedJump;
+            public bool midJump;
             public int frame;
         }
 
@@ -65,7 +66,7 @@ namespace PlayerController {
 
         protected abstract Transform PlayerTransform { get; }
 
-        protected PlayerControllerProperties pcProps { get; private set; }
+        protected Properties pcProps { get; private set; }
         protected Transform head  { get; private set; }
         protected Transform model { get; private set; }
 
@@ -111,7 +112,7 @@ namespace PlayerController {
         private PhysicMaterial defaultPM;
         private int collisionCastMask;
 
-        protected virtual void Init (PlayerControllerProperties pcProps, Transform head, Transform model) {
+        protected virtual void Init (Properties pcProps, Transform head, Transform model) {
             this.pcProps = pcProps;
             this.head = head;
             this.model = model;
@@ -313,7 +314,7 @@ namespace PlayerController {
             var colResult = ProcessCollisionPoints(collisionPoints);
             var sp = colResult.flattestPoint;
             var lp = colResult.ladderPoint;
-            if(lastState.jumped){
+            if(lastState.startedJump){
                 sp = null;
                 lp = null;
             }
@@ -392,11 +393,38 @@ namespace PlayerController {
                 }
             }
             output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
+            output.midJump = (lastState.startedJump || lastState.midJump) && output.moveType == MoveType.AIR;
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
-            output.jumped = false;                      // needs to be initialized
+            output.startedJump = false;                      // needs to be initialized
             return output;
+        }
+
+        protected Vector3 GetJumpSpeedBoost (Vector3 localVelocity, Properties.JumpSpeedBoostMode mode, float mult) {
+            localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
+            Vector3 relevantVelocity;
+            float sign;
+            switch(mode){
+                case Properties.JumpSpeedBoostMode.Off:
+                    return Vector3.zero;
+                case Properties.JumpSpeedBoostMode.Forward:
+                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                    sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
+                    break;
+                case Properties.JumpSpeedBoostMode.ForwardAndBack:
+                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                    sign = 1f;
+                    break;
+                case Properties.JumpSpeedBoostMode.OmniDirectional:
+                    relevantVelocity = localVelocity;
+                    sign = 1f;
+                    break;
+                default:
+                    Debug.LogError($"Unknown {nameof(Properties.JumpSpeedBoostMode)} \"{pcProps.JumpSpeedBoost}\"!");
+                    return Vector3.zero;
+            }
+            return sign * ((relevantVelocity * mult) - relevantVelocity);
         }
         
     }

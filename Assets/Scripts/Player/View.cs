@@ -10,7 +10,7 @@ namespace PlayerController {
             TARGETED
         }
 
-        protected PlayerControllerProperties pcProps;
+        protected Properties pcProps;
         protected Player player;
         protected Transform head;
         protected Transform playerTransform => player.transform;
@@ -32,7 +32,7 @@ namespace PlayerController {
             }
         }     // TODO a clearer reset point
 
-        public void Initialize (PlayerControllerProperties pcProps, Player player, Transform head) {
+        public void Initialize (Properties pcProps, Player player, Transform head) {
             this.pcProps = pcProps;
             this.player = player;
             this.head = head;
