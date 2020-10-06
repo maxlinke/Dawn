@@ -66,7 +66,6 @@ namespace DebugTools {
         float smallModeDeltaTimeSum;
 
         float[] framerates;
-        float[] prevFramerates;
         float avgFPS;
         float maxFPS;
         float minFPS;
@@ -83,14 +82,23 @@ namespace DebugTools {
             }
             instance = this;
             canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_FRAMERATE;
-            ResetTexture();
             lineCol32 = colorScheme.FramerateLineColor;
             prevLineCol32 = colorScheme.FramerateLinePrevCycleColor;
             clearCol32 = Color.clear;
-            InitUI();
+            tex = new Texture2D(
+                width: (int)(imageRT.rect.width), 
+                height: (int)(imageRT.rect.height), 
+                textureFormat: TextureFormat.RGBA32,
+                mipChain: false,
+                linear: false
+            );
+            texWidth = tex.width;
+            texHeight = tex.height;
+            tex.SetPixels(clearCol32, true, false);
+            pixels = tex.GetPixels32();
             framerates = new float[texWidth];
-            prevFramerates = null;
             smallModeDeltaTimes = new Queue<float>();
+            InitUI();
             ModeUpdated();
             if(visible){
                 OnShow();
@@ -104,8 +112,10 @@ namespace DebugTools {
         }
 
         void OnShow () {
+            for(int i=0; i<framerates.Length; i++){
+                framerates[i] = 0f;
+            }
             currentFrameIndex = 0;
-            prevFramerates = null;
             smallModeDeltaTimeSum = 0f;
             var dt = Time.unscaledDeltaTime;
             for(int i=0; i<SMALL_MODE_FPS_AVERAGE_LENGTH; i++){
@@ -196,29 +206,27 @@ namespace DebugTools {
                 maxFPS = Mathf.Max(maxFPS, currentFPS);
             }
             framerates[currentFrameIndex] = currentFPS;
+            int nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
             if(mode == Mode.Detailed){
-                UpdateTexture(currentFPS, startAtZero: modeUpdated);
+                UpdateTexture(currentFPS, modeUpdated, nextFrameIndex);
                 UpdateTextFields(currentFPS);
             }
-            currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;
-            if(currentFrameIndex == 0){
-                prevFramerates = framerates;
-                framerates = new float[framerates.Length];
-            }
+            currentFrameIndex = nextFrameIndex;
         }
 
-        void UpdateTexture (float currentFPS, bool startAtZero) {
+        void UpdateTexture (float currentFPS, bool startAtZero, int nextFrameIndex) {
             int startIndex = startAtZero ? 0 : currentFrameIndex;
-            bool redrawPrevious = ((startIndex == 0) && (prevFramerates != null));
+            bool gotPrev = framerates[nextFrameIndex] > 0f;
+            bool redrawPrevious = ((startIndex == 0) && gotPrev);
             if(currentFPS < texMin || currentFPS > texMax){
                 texMin = Mathf.Min(texMin, currentFPS - 10);
                 texMax = Mathf.Max(texMax, currentFPS + 10);
                 startIndex = 0;
-                redrawPrevious |= prevFramerates != null;
+                redrawPrevious |= gotPrev;
             }
             DrawValues(framerates, startIndex, currentFrameIndex+1, lineCol32);
             if(redrawPrevious){
-                DrawValues(prevFramerates, currentFrameIndex+1, prevFramerates.Length, prevLineCol32);
+                DrawValues(framerates, currentFrameIndex+1, framerates.Length, prevLineCol32);
             }
             tex.SetPixels32(pixels);
             tex.Apply(false, false);
@@ -259,27 +267,6 @@ namespace DebugTools {
             avgFPSText.text = $"Avg: {avgFPS:F1}";
             minFPSText.text = $"Min: {minFPS:F1}";
             maxFPSText.text = $"Max: {maxFPS:F1}";
-        }
-
-        void ResetTexture () {
-            if(tex != null){
-                tex.Resize(
-                    width: (int)(imageRT.rect.width), 
-                    height: (int)(imageRT.rect.height)
-                );
-            }else{
-                tex = new Texture2D(
-                    width: (int)(imageRT.rect.width), 
-                    height: (int)(imageRT.rect.height), 
-                    textureFormat: TextureFormat.RGBA32,
-                    mipChain: false,
-                    linear: false
-                );
-            }
-            texWidth = tex.width;
-            texHeight = tex.height;
-            tex.SetPixels(clearCol32, true, false);
-            pixels = tex.GetPixels32();
         }
 
         void InitUI () {
