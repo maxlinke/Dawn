@@ -255,16 +255,8 @@ namespace PlayerController {
             return Quaternion.LookRotation(newFwd, newUp);
         }
 
-        public void SetTryCrouch (bool value) {
-            shouldCrouch = value;
-        }
-
         public void UpdateCrouchState (CrouchControlInput ccInput) {
             if(lastState.isInWater && !lastState.canCrouchInWater){
-                shouldCrouch = false;
-                return;
-            }
-            if(lastState.ladderPoint != null){
                 shouldCrouch = false;
                 return;
             }

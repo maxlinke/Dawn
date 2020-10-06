@@ -202,11 +202,9 @@ namespace PlayerController {
                     SlopeMovement(moveInput, ref currentState);
                     break;
                 case MoveType.WATER:
-                    SetTryCrouch(false);
                     WaterMovement(moveInput, ref currentState);
                     break;
                 case MoveType.LADDER:
-                    SetTryCrouch(false);
                     LadderMovement(moveInput, ref currentState);
                     break;
                 default:
