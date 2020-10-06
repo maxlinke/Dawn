@@ -19,7 +19,7 @@ MonoBehaviour:
   swimOffset: -0.4
   colliderRadius: 0.4
   playerMass: 80
-  playerDensity: 1
+  playerDensity: 2
   collisionDetection: 2
   physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
   footRBNonSolidMass: 160
@@ -47,7 +47,7 @@ MonoBehaviour:
   enableFullFlightParabola: 1
   water:
     speed: 12
-    accel: 24
+    accel: 32
     drag: 0
   ladder:
     speed: 6
@@ -56,6 +56,7 @@ MonoBehaviour:
   standingJumpHeight: 1
   crouchedJumpHeight: 0.5
   jumpCalcGravity: 29.43
+  coyoteTime: 4
   jumpSpeedBoost: 3
   jumpSpeedBoostMultiplier: 1.25
   enableOverBoosting: 0

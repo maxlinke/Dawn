@@ -41,6 +41,7 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
+            public int coyoteTimer;
         }
 
         public struct CrouchControlInput {
@@ -390,6 +391,13 @@ namespace PlayerController {
             }
             output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
             output.midJump = (lastState.startedJump || lastState.midJump) && output.moveType == MoveType.AIR;
+            if(output.moveType != MoveType.AIR || lastState.startedJump){
+                output.coyoteTimer = 0;
+            }else if(!lastState.startedJump && (lastState.moveType == MoveType.GROUND) && (output.moveType == MoveType.AIR)){
+                output.coyoteTimer = pcProps.CoyoteTime;
+            }else{
+                output.coyoteTimer = Mathf.Max(0, lastState.coyoteTimer - 1);
+            }
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;

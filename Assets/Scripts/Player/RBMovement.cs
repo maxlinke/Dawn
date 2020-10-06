@@ -163,6 +163,7 @@ namespace PlayerController {
             debugInfo += $"ilv: {currentState.incomingLocalVelocity.magnitude:F3} m/s\n";
             debugInfo += $"c:   {shouldCrouch}\n";
             debugInfo += $"h:   {col.height}\n";
+            debugInfo += $"coy: {currentState.coyoteTimer}\n";
         }
 
         void FinishMove (MoveState currentState) {Color lineColor;
@@ -390,18 +391,36 @@ namespace PlayerController {
             var targetDirection = PlayerTransform.TransformDirection(rawInput);
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            var drag = pcProps.Air.Drag;
-            if(pcProps.EnableFullFlightParabola && horizontalLocalSpeed > pcProps.Air.Speed){
-                var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
-                drag *= (1f - Mathf.Clamp01(dirDot));
+            float drag;
+            float pcPropsSpeed;
+            float pcPropsAccel;
+            if(currentState.coyoteTimer > 0){
+                drag = pcProps.Ground.Drag;
+                pcPropsSpeed = pcProps.Ground.Speed;
+                pcPropsAccel = pcProps.Ground.Accel;
+            }else{
+                drag = pcProps.Air.Drag;
+                if(pcProps.EnableFullFlightParabola && horizontalLocalSpeed > pcProps.Air.Speed){
+                    var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
+                    drag *= (1f - Mathf.Clamp01(dirDot));
+                }
+                pcPropsSpeed = pcProps.Air.Speed;
+                pcPropsAccel = pcProps.Air.Accel;
             }
             ApplyDrag(drag, ref horizontalLocalVelocity);
             horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            var targetSpeed = Mathf.Max(pcProps.Air.Speed * RawSpeedMultiplier(moveInput.run), horizontalLocalSpeed);
+            var rawTargetSpeed = pcPropsSpeed * RawSpeedMultiplier(moveInput.run);
+            var targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
             var targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel);
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcPropsAccel);
             if(currentState.isInWater && currentState.touchingWall && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
+            }else if(currentState.coyoteTimer > 0 && moveInput.jump){
+                moveAcceleration += PlayerTransform.up * JumpSpeed() / Time.deltaTime;
+                if(pcProps.EnableOverBoosting || horizontalLocalSpeed <= rawTargetSpeed){
+                    moveAcceleration += GetJumpSpeedBoost(horizontalLocalVelocity, pcProps.JumpSpeedBoost, pcProps.JumpSpeedBoostMultiplier) / Time.deltaTime;
+                }
+                currentState.startedJump = true;
             }
             Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
         }

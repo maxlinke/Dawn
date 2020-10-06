@@ -108,6 +108,7 @@ namespace PlayerController {
         [SerializeField, Unit("m")] float standingJumpHeight = 1f;
         [SerializeField, Unit("m")] float crouchedJumpHeight = 0.5f;
         [SerializeField, Unit("m/s²")] float jumpCalcGravity = 29.43f;
+        [SerializeField, RangedUnit("ticks", 0, 10)] int coyoteTime = 0;
         [SerializeField] JumpSpeedBoostMode jumpSpeedBoost = JumpSpeedBoostMode.Off;
         [SerializeField] float jumpSpeedBoostMultiplier = 1.0f;
         const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
@@ -118,6 +119,7 @@ namespace PlayerController {
         public float StandingJumpHeight => standingJumpHeight;
         public float CrouchedJumpHeight => crouchedJumpHeight;
         public float JumpCalcGravity => jumpCalcGravity;
+        public int CoyoteTime => coyoteTime;
         public JumpSpeedBoostMode JumpSpeedBoost => jumpSpeedBoost;
         public float JumpSpeedBoostMultiplier => jumpSpeedBoostMultiplier;
         public bool EnableOverBoosting => enableOverBoosting;
