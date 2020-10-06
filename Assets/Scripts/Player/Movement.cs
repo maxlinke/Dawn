@@ -264,6 +264,10 @@ namespace PlayerController {
                 shouldCrouch = false;
                 return;
             }
+            if(lastState.ladderPoint != null){
+                shouldCrouch = false;
+                return;
+            }
             if(controlMode != ControlMode.FULL){
                 ccInput = CrouchControlInput.None;
             }
