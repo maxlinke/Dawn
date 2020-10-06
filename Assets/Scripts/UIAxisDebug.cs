@@ -14,11 +14,14 @@ public class UIAxisDebug : MonoBehaviour {
     [SerializeField] Color clearColor = Color.black;
     [SerializeField] Color drawColor = Color.magenta;
     [SerializeField] Color referenceColor = Color.cyan;
+    [SerializeField] Color fixedUpdateColor = Color.grey;
     [SerializeField] float scaling = 1.5f;
 
     RectTransform imageRT => image.rectTransform;
     Texture2D tex;
-
+    int texWidth;
+    int texHeight;
+    Color32[] pixels;
     int nextX = 0;
     int lastY = 0;
 
@@ -46,28 +49,42 @@ public class UIAxisDebug : MonoBehaviour {
                 return;
             }
             if(nextX == 0){
-                ClearTexture();
+                for(int i=0; i<pixels.Length; i++){
+                    pixels[i] = clearColor;
+                }
             }
             float drawVal = Axis.GetAxis(axisID).GetUnsmoothed();
             valueField.text = drawVal.ToString();
-            tex.SetPixel(nextX, ToScaledY(0), referenceColor);
-            tex.SetPixel(nextX, ToScaledY(1), referenceColor);
-            tex.SetPixel(nextX, ToScaledY(-1), referenceColor);
+            pixels[ToIndex(nextX, ToScaledY(0))] = referenceColor;
+            pixels[ToIndex(nextX, ToScaledY(1))] = referenceColor;
+            pixels[ToIndex(nextX, ToScaledY(-1))] = referenceColor;
             int currentY = ToScaledY(drawVal);
             int minY = Mathf.Min(currentY, lastY);
             int maxY = Mathf.Max(currentY, lastY);
             for(int y=minY; y<=maxY; y++){
-                if(y >= 0 && y < tex.height){
-                    tex.SetPixel(nextX, y, drawColor);
+                if(y >= 0 && y < texHeight){
+                    pixels[ToIndex(nextX, y)] = drawColor;
                 }
             }
+            tex.SetPixels32(pixels);
             tex.Apply(false);
-            nextX = (nextX + 1) % tex.width;
+            nextX = (nextX + 1) % texWidth;
             lastY = currentY;
 
             int ToScaledY (float inputValue) {
-                return (int)(((inputValue / (2f * scaling)) + 0.5f) * tex.height);
+                return (int)(((inputValue / (2f * scaling)) + 0.5f) * texHeight);
             }
+
+            int ToIndex (int x, int y) {
+                return (y * texWidth) + x;
+            }
+        }
+    }
+
+    void FixedUpdate () {
+        var pl = pixels.Length;
+        for(int i = nextX; i<pl; i+=texWidth){
+            pixels[i] = fixedUpdateColor;
         }
     }
 
@@ -87,12 +104,11 @@ public class UIAxisDebug : MonoBehaviour {
                 linear: false
             );
         }
-        ClearTexture();
+        texWidth = tex.width;
+        texHeight = tex.height;
+        tex.SetPixels(clearColor, false, false);
+        pixels = tex.GetPixels32();
         nextX = 0;
-    }
-
-    void ClearTexture () {
-        tex.SetPixels(clearColor, true, false);
     }
 	
 }
