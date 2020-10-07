@@ -40,6 +40,8 @@ namespace PlayerController {
         [Header("Dimensions")]
         [SerializeField, Unit("m")] float normalHeight = 1.8f;
         [SerializeField, Unit("m")] float crouchHeight = 0.9f;
+        // [SerializeField, Unit("m")] float airHeight = 1.5f;
+        // [SerializeField, Unit("m")] float swimHeight = 1.5f;
         [SerializeField, Unit("s")] float crouchUncrouchTime = 0.25f;
         [SerializeField, Unit("m"), Tooltip("From collider top")] float eyeOffset = -0.15f;
         [SerializeField, Unit("m"), Tooltip("From collider top")] float swimOffset = -0.4f;

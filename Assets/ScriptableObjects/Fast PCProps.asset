@@ -26,9 +26,9 @@ MonoBehaviour:
   footRBSolidMass: 400
   gravityTurnSpeed: 360
   minGravityTurnSpeedMultiplier: 0.5
-  nearClipDist: 0.15
-  farClipDist: 1000
-  hardSlopeLimit: 60
+  nearClipDist: 0.05
+  farClipDist: 500
+  hardSlopeLimit: 55
   runSpeedMultiplier: 1
   walkSpeedMultiplier: 0.5
   crouchSpeedMultiplier: 0.5

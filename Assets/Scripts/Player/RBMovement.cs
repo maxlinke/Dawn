@@ -413,7 +413,7 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
             var targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcPropsAccel);
-            if(currentState.isInWater && currentState.touchingWall && moveInput.waterExitJump){
+            if(currentState.isInWater && currentState.facingWall && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
             }else if(currentState.coyoteTimer > 0 && moveInput.jump){
                 moveAcceleration += PlayerTransform.up * JumpSpeed() / Time.deltaTime;

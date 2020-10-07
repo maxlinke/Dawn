@@ -29,6 +29,7 @@ namespace PlayerController {
             public float normedDynamicSurfaceFriction;
             public bool touchingGround;
             public bool touchingWall;
+            public bool facingWall;
             public WaterBody waterBody;
             public bool isInWater;
             public bool canCrouchInWater;
@@ -151,11 +152,13 @@ namespace PlayerController {
             public CollisionPoint flattestPoint;
             public CollisionPoint ladderPoint;
             public bool touchingWall;
+            public bool facingWall;
         }
 
         protected virtual CollisionProcessorOutput ProcessCollisionPoints (IEnumerable<CollisionPoint> points) {
             CollisionProcessorOutput output;
             output.touchingWall = false;
+            output.facingWall = false;
             output.flattestPoint = null;
             output.ladderPoint = null;
             float wallDot = 0.0175f;     // cos(89°)
@@ -166,8 +169,9 @@ namespace PlayerController {
                 if(dot > maxDot){
                     output.flattestPoint = point;
                     maxDot = dot;
-                }else if((Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
+                }else if(!output.facingWall && (Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
                     output.touchingWall = true;
+                    output.facingWall = Vector3.Dot(PlayerTransform.forward, point.normal) < -0.707f;   // -cos(45°)
                 }
                 if(dot < minLadderDot && dot > -wallDot){
                     if((point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject))){
@@ -319,6 +323,7 @@ namespace PlayerController {
             output.ladderPoint = lp;
             output.touchingGround = sp != null;
             output.touchingWall = colResult.touchingWall;
+            output.facingWall = colResult.facingWall;
             output.waterBody = null;
             output.isInWater = false;
             output.canCrouchInWater = true;
