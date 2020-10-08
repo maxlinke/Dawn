@@ -53,6 +53,8 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
+  forcedGroundSticking: 0
+  groundStickiness: 0.667
   standingJumpHeight: 1
   crouchedJumpHeight: 0.5
   jumpCalcGravity: 29.43

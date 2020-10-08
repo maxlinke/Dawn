@@ -95,6 +95,8 @@ namespace PlayerController {
         [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
         [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
+        [SerializeField] bool forcedGroundSticking = false;
+        [SerializeField, Range(0f, 1f)] float groundStickiness = 0f;
         
         public float HardSlopeLimit => hardSlopeLimit;
         public float RunSpeedMultiplier => runSpeedMultiplier;
@@ -106,6 +108,8 @@ namespace PlayerController {
         public bool EnableFullFlightParabola => enableFullFlightParabola;
         public MovementProperties Water => water;
         public MovementProperties Ladder => ladder;
+        public bool ForcedGroundSticking => forcedGroundSticking;
+        public float GroundStickiness => groundStickiness;
 
         const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
         const string bunnyHopTip = "Block deceleration on landing if a frame-perfect jump input is present";
