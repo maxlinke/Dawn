@@ -316,11 +316,11 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
-            if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
-                var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
-                targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
-            }
+            // if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
+            //     var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
+            //     var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
+            //     targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
+            // }
             var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, moveFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag);
             if(moveInput.jump){
@@ -335,6 +335,14 @@ namespace PlayerController {
             }else{
                 var stickGravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
                 var lerpFactor = currentState.surfaceSolidness * dragFriction;
+                if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){
+                    if(GroundCast(targetSpeed, -currentState.surfacePoint.normal, out var hit)){
+                        // if(hit.distance > (LocalColliderRadius + 0.01f)){
+                        if(Vector3.Dot(localVelocity, hit.normal) > 0.01f){
+                            Debug.DrawRay(hit.point, hit.normal, Color.white, 10f);
+                        }
+                    }
+                }
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
             }

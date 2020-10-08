@@ -42,6 +42,8 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
+            public bool useOverrideVelocityNextTick;
+            public Vector3 overrideVelocity;
         }
 
         public struct CrouchControlInput {
@@ -149,19 +151,22 @@ namespace PlayerController {
 
         protected struct CollisionProcessorOutput {
             public CollisionPoint flattestPoint;
+            public CollisionPoint closestPoint;
             public CollisionPoint ladderPoint;
             public bool touchingWall;
             public bool facingWall;
         }
 
-        protected virtual CollisionProcessorOutput ProcessCollisionPoints (IEnumerable<CollisionPoint> points) {
+        protected virtual CollisionProcessorOutput ProcessCollisionPoints (IEnumerable<CollisionPoint> points, Vector3 worldColliderBottomSphere) {
             CollisionProcessorOutput output;
             output.touchingWall = false;
             output.facingWall = false;
             output.flattestPoint = null;
+            output.closestPoint = null;
             output.ladderPoint = null;
             float wallDot = 0.0175f;     // cos(89°)
             float maxDot = wallDot;
+            float minSqrDist = float.PositiveInfinity;
             float minLadderDot = float.PositiveInfinity;
             foreach(var point in points){
                 var dot = Vector3.Dot(point.normal, PlayerTransform.up);
@@ -171,6 +176,11 @@ namespace PlayerController {
                 }else if(!output.facingWall && (Mathf.Abs(dot) < wallDot) && ColliderIsSolid(point.otherCollider)){
                     output.touchingWall = true;
                     output.facingWall = Vector3.Dot(PlayerTransform.forward, point.normal) < -0.707f;   // -cos(45°)
+                }
+                var dist = (point.point - worldColliderBottomSphere).sqrMagnitude;
+                if(dot > wallDot && dist < minSqrDist){
+                    output.flattestPoint = point;
+                    minSqrDist = dist;
                 }
                 if(dot < minLadderDot && dot > -wallDot){
                     if((point.otherCollider != null && TagManager.CompareTag(Tag.Ladder, point.otherCollider.gameObject))){
@@ -310,14 +320,18 @@ namespace PlayerController {
         }
 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
-            MoveState output;
-            var colResult = ProcessCollisionPoints(collisionPoints);
+            if(lastState.useOverrideVelocityNextTick){
+                this.Velocity = lastState.overrideVelocity;
+            }
+            Vector3 worldColliderBottomSphere = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+            var colResult = ProcessCollisionPoints(collisionPoints, worldColliderBottomSphere);
             var sp = colResult.flattestPoint;
             var lp = colResult.ladderPoint;
             if(lastState.startedJump){
                 sp = null;
                 lp = null;
             }
+            MoveState output;
             output.surfacePoint = sp;
             output.ladderPoint = lp;
             output.touchingGround = sp != null;
@@ -398,7 +412,10 @@ namespace PlayerController {
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
-            output.startedJump = false;                      // needs to be initialized
+            // these just have to be initialized
+            output.startedJump = false;
+            output.useOverrideVelocityNextTick = false;
+            output.overrideVelocity = Vector3.zero;
             return output;
         }
 
@@ -438,6 +455,12 @@ namespace PlayerController {
             }
             Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
             return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
+        }
+
+        protected bool GroundCast (float moveSpeed, Vector3 rayDirection, out RaycastHit hit) {
+            var rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+            var rayLength = LocalColliderRadius + (moveSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit));
+            return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
         }
         
     }
