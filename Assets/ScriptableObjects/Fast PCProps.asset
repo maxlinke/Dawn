@@ -31,7 +31,7 @@ MonoBehaviour:
   hardSlopeLimit: 55
   runSpeedMultiplier: 1
   walkSpeedMultiplier: 0.5
-  crouchSpeedMultiplier: 0.5
+  crouchSpeedMultiplier: 0.25
   ground:
     speed: 12
     accel: 64

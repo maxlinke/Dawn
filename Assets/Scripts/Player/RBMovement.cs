@@ -343,6 +343,10 @@ namespace PlayerController {
                 if(enumStick && pcProps.GroundStickiness > 0f){
                     if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){
                         StickToGround(ref currentState, ref moveAccel, targetSpeed, localVelocity);
+                         // TODO consider complete removal
+                         // as i'm not using it
+                         // and it might block stuff like getting boosted by explosions and such
+                         // unless i explicitly block that then...
                     }
                 }                
             }
@@ -373,7 +377,10 @@ namespace PlayerController {
             var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Slope.Accel, moveFriction);
             var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag);
             if(currentState.isInWater && moveInput.waterExitJump){
-                moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
+                var facingAngle = Vector3.Angle(-PlayerTransform.forward, currentState.surfacePoint.normal.ProjectOnPlane(PlayerTransform.up));
+                if(facingAngle <= 45f){
+                    moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
+                }
             }else if(Vector3.Dot(moveAcceleration, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 moveAcceleration = moveAcceleration.ProjectOnVector(allowedMoveDirection);
@@ -420,7 +427,7 @@ namespace PlayerController {
             Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
             if(currentState.waterBody != null){
                 var buoyancy = currentState.waterBody.WaterPhysics.BuoyancyFromDensity(pcProps.PlayerDensity);
-                currentState.waterBody.AddBuoyancy(rb, buoyancy, Vector3.zero);
+                currentState.waterBody.AddBuoyancy(rb, buoyancy, Vector3.zero);     // TODO water buoyancy should always happen, not just in here
             }
         }
 
