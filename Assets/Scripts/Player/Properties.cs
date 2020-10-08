@@ -36,6 +36,12 @@ namespace PlayerController {
             Forward
         }
 
+        [System.Flags]
+        public enum GroundStickMode {
+            WhenGoingUp = 1,
+            WhenGoingDown = 2
+        }
+
         const float inf = float.PositiveInfinity;
 
         [Header("Dimensions")]
@@ -95,8 +101,10 @@ namespace PlayerController {
         [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
         [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
-        [SerializeField] bool forcedGroundSticking = false;
+        [SerializeField] bool moveIntoSlopes = true;
+        [SerializeField, EnumFlags] GroundStickMode groundStick = 0;
         [SerializeField, Range(0f, 1f)] float groundStickiness = 0f;
+        [SerializeField, CustomRange(0, 10)] int groundStickInterval = 0;
         
         public float HardSlopeLimit => hardSlopeLimit;
         public float RunSpeedMultiplier => runSpeedMultiplier;
@@ -108,8 +116,13 @@ namespace PlayerController {
         public bool EnableFullFlightParabola => enableFullFlightParabola;
         public MovementProperties Water => water;
         public MovementProperties Ladder => ladder;
-        public bool ForcedGroundSticking => forcedGroundSticking;
+        public bool MoveIntoSlopes => moveIntoSlopes;
+        public GroundStickMode GroundStick => groundStick;
         public float GroundStickiness => groundStickiness;
+        public int GroundStickInterval => groundStickInterval;
+
+        public bool StickGoingDown => ((GroundStick & GroundStickMode.WhenGoingDown) == GroundStickMode.WhenGoingDown);
+        public bool StickGoingUp => ((GroundStick & GroundStickMode.WhenGoingUp) == GroundStickMode.WhenGoingUp);
 
         const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
         const string bunnyHopTip = "Block deceleration on landing if a frame-perfect jump input is present";

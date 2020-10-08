@@ -316,7 +316,7 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
-            if(!pcProps.ForcedGroundSticking){
+            if(pcProps.MoveIntoSlopes){
                 if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                     var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
                     var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
@@ -339,7 +339,8 @@ namespace PlayerController {
                 var lerpFactor = currentState.surfaceSolidness * dragFriction;
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
-                if(pcProps.ForcedGroundSticking && pcProps.GroundStickiness > 0f){
+                bool enumStick = (int)(pcProps.GroundStick) != 0;
+                if(enumStick && pcProps.GroundStickiness > 0f){
                     if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){
                         StickToGround(ref currentState, ref moveAccel, targetSpeed, localVelocity);
                     }

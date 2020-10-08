@@ -12,17 +12,20 @@ namespace PlayerController {
 
         bool boostOn => boostProp.floatValue != 1f;
         bool brakeOn => brakeProp.floatValue != 1f;
+        bool stickOn => stickProp.intValue != 0;
 
         protected void OnEnable () {
             boostProp = serializedObject.FindProperty("boostMultiplier");
             brakeProp = serializedObject.FindProperty("landingSpeedMultiplier");
-            stickProp = serializedObject.FindProperty("forcedGroundSticking");
+            stickProp = serializedObject.FindProperty("groundStick");
         }
 
         protected override bool DrawPropertyCustom (SerializedProperty property) {
             switch(property.name){
                 case "groundStickiness":
-                    return DrawEnabledIf(stickProp.boolValue);
+                    return DrawEnabledIf(stickOn);
+                case "groundStickInterval":
+                    return DrawEnabledIf(stickOn);
                 case "boostDirection":
                     return DrawEnabledIf(boostOn);
                 case "enableOverBoosting":

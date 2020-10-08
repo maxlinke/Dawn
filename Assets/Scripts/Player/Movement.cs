@@ -42,9 +42,9 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
-            public bool useOverrideVelocityNextTick;
+            public float overrideVelocityForNextTickInfluence;
             public Vector3 overrideVelocityForNextTick;
-            public bool eligibleForStickCast;
+            public int groundStickBlockTimer;
         }
 
         public struct CrouchControlInput {
@@ -323,8 +323,8 @@ namespace PlayerController {
         }
 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
-            if(lastState.useOverrideVelocityNextTick){
-                this.Velocity = lastState.overrideVelocityForNextTick;
+            if(lastState.overrideVelocityForNextTickInfluence > 0f){
+                this.Velocity = Vector3.Lerp(this.Velocity, lastState.overrideVelocityForNextTick, lastState.overrideVelocityForNextTickInfluence);
             }
             Vector3 worldColliderBottomSphere = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
             var colResult = ProcessCollisionPoints(collisionPoints, worldColliderBottomSphere);
@@ -358,7 +358,6 @@ namespace PlayerController {
                     break;  // TODO when i properly do the average trigger velocity stuff, remove this break
                 }
             }
-            output.eligibleForStickCast = false;
             if(sp == null || swim){
                 output.surfaceDot = float.NaN;
                 output.surfaceAngle = float.NaN;
@@ -411,6 +410,7 @@ namespace PlayerController {
                     }
                 }
             }
+            output.groundStickBlockTimer = Mathf.Max(0, lastState.groundStickBlockTimer - 1);
             output.canJump = (output.moveType == MoveType.GROUND) || (output.moveType == MoveType.LADDER);
             output.midJump = (lastState.startedJump || lastState.midJump) && (output.moveType == MoveType.AIR);
             output.incomingWorldVelocity = this.Velocity;
@@ -418,7 +418,7 @@ namespace PlayerController {
             output.frame = Time.frameCount;
             // these just have to be initialized
             output.startedJump = false;
-            output.useOverrideVelocityNextTick = false;
+            output.overrideVelocityForNextTickInfluence = 0f;
             output.overrideVelocityForNextTick = Vector3.zero;
             return output;
         }
@@ -461,31 +461,51 @@ namespace PlayerController {
             return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 
-        protected bool GroundCast (float moveSpeed, Vector3 rayDirection, out RaycastHit hit) {
-            Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+        protected bool GroundCast (float moveSpeed, Vector3 rayOrigin, Vector3 rayDirection, out RaycastHit hit) {
             float rayLength = LocalColliderRadius + (moveSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit));
-            // return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
-            float rayRadius = 0.025f;
-            return Physics.SphereCast(rayOrigin, rayRadius, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
+            return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
+            // float rayRadius = 0.025f;
+            // return Physics.SphereCast(rayOrigin, rayRadius, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
         }
 
         protected void StickToGround (ref MoveState currentState, ref Vector3 moveAccel, float targetSpeed, Vector3 localVelocity) {
+            if(currentState.groundStickBlockTimer > 0){
+                return;
+            }
+            float lerpFactor = currentState.surfaceSolidness * currentState.normedStaticSurfaceFriction * pcProps.GroundStickiness;
+            if(lerpFactor <= 0f){
+                return;
+            }
+            Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
             Vector3 rayDir = -currentState.surfacePoint.normal;
-            if(GroundCast(targetSpeed, rayDir, out var hit)){
+            if(GroundCast(targetSpeed, rayOrigin, rayDir, out var hit)){
                 bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
                 bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
                 if(distOK && dotOK){
-                    bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < pcProps.HardSlopeLimit);
-                    if(angleOK){
-                        float lerpFactor = currentState.surfaceSolidness * currentState.normedStaticSurfaceFriction * pcProps.GroundStickiness;
-                        var vTemp = (Velocity + (moveAccel * Time.deltaTime));
-                        var vProj = vTemp.ProjectOnPlaneAlongVector(hit.normal, PlayerTransform.up).normalized * vTemp.magnitude;
-                        currentState.useOverrideVelocityNextTick = true;
-                        currentState.overrideVelocityForNextTick = Vector3.Lerp(vTemp, vProj, lerpFactor);
-                        moveAccel = Vector3.Lerp(moveAccel, Vector3.zero, lerpFactor);
-                        Vector3 delta = rayDir * (hit.distance - LocalColliderRadius);
-                        Velocity = Vector3.Lerp(Velocity, delta / Time.deltaTime, lerpFactor);
-                        Debug.DrawRay(hit.point, hit.normal, Color.Lerp(Color.black, Color.white, lerpFactor), 10f);
+                    bool dirOK = false;
+                    float dir = Vector3.Dot(localVelocity, PlayerTransform.up);
+                    dirOK |= (dir <= 0f && pcProps.StickGoingDown);
+                    dirOK |= (dir > 0f && pcProps.StickGoingUp);
+                    if(dirOK){
+                        bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < pcProps.HardSlopeLimit);
+                        if(angleOK){
+                            var vTemp = (this.Velocity + (moveAccel * Time.deltaTime));
+                            var vProj = vTemp.ProjectOnPlaneAlongVector(hit.normal, PlayerTransform.up).normalized * vTemp.magnitude;
+                            currentState.overrideVelocityForNextTickInfluence = lerpFactor;
+                            currentState.overrideVelocityForNextTick = vProj;
+
+                            moveAccel = Vector3.Lerp(moveAccel, Vector3.zero, lerpFactor);
+                            Vector3 delta = rayDir * (hit.distance - LocalColliderRadius);
+                            Vector3 movePos = (delta / Time.deltaTime) + (vProj * Time.deltaTime);
+                            this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);
+
+                            currentState.groundStickBlockTimer = pcProps.GroundStickInterval + 1;
+
+                            Debug.DrawLine(rayOrigin, PlayerTransform.position, Color.Lerp(Color.black, Color.cyan, lerpFactor), 10f);
+                            Debug.DrawLine(rayOrigin, hit.point, Color.Lerp(Color.black, Color.cyan, lerpFactor), 10f);
+                            Debug.DrawRay(hit.point, hit.normal, Color.Lerp(Color.black, Color.white, lerpFactor), 10f);
+                            Debug.DrawRay(rayOrigin + (rayDir * LocalColliderRadius), this.Velocity * Time.deltaTime, Color.blue, 10f);
+                        }
                     }
                 }
             }
