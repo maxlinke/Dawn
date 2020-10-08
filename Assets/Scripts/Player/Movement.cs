@@ -179,7 +179,7 @@ namespace PlayerController {
                 }
                 var dist = (point.point - worldColliderBottomSphere).sqrMagnitude;
                 if(dot > wallDot && dist < minSqrDist){
-                    output.flattestPoint = point;
+                    output.closestPoint = point;
                     minSqrDist = dist;
                 }
                 if(dot < minLadderDot && dot > -wallDot){
@@ -346,7 +346,7 @@ namespace PlayerController {
                 if(CheckTriggerForWater(trigger, out var canSwimInTrigger, out var canCrouchInTrigger)){
                     output.isInWater = true;
                     if(output.waterBody == null){
-                        output.waterBody = trigger.GetComponent<WaterBody>();
+                        output.waterBody = trigger.GetComponent<WaterBody>();       // TODO nonononono
                     }
                 }
                 output.canCrouchInWater &= canCrouchInTrigger;
@@ -373,6 +373,12 @@ namespace PlayerController {
                     output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
                 }
             }else{
+                // if(GroundCastShort(-sp.normal, out var hit)){
+                //     sp = new CollisionPoint(hit.point, hit.normal, hit.collider);
+                //     Debug.DrawRay(sp.point, sp.normal, Color.cyan, Time.fixedDeltaTime);
+                // }else{
+                    Debug.DrawRay(sp.point, sp.normal, Color.blue, Time.fixedDeltaTime);
+                // }
                 var otherRB = sp.otherRB;
                 var otherVelocity = (otherRB == null ? Vector3.zero : otherRB.velocity);
                 output.incomingLocalVelocity = this.Velocity - otherVelocity;
@@ -457,10 +463,45 @@ namespace PlayerController {
             return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 
+        // Vector3[] groundCastOffsets = new Vector3[]{
+        //     0.01f * Vector3.forward, 
+        //     0.01f * Vector3.right, 
+        //     0.01f * Vector3.back, 
+        //     0.01f * Vector3.left
+        // };
+
+        protected bool GroundCastShort (Vector3 rayDirection, out RaycastHit hit) {
+            Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+            float rayLength = LocalColliderRadius + 0.01f;
+            // return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
+            // float rayRadius = 0.025f;
+            float rayRadius = 0.5f * LocalColliderRadius;
+            return Physics.SphereCast(rayOrigin, rayRadius, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
+        }
+
         protected bool GroundCast (float moveSpeed, Vector3 rayDirection, out RaycastHit hit) {
-            var rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
-            var rayLength = LocalColliderRadius + (moveSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit));
-            return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
+            Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
+            float rayLength = LocalColliderRadius + (moveSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit));
+            return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
+
+            // float minDot = float.PositiveInfinity;
+            // bool castHit = false;
+            // hit = default;
+            // for(int i=0; i<4; i++){
+            //     var offset = PlayerTransform.TransformDirection(groundCastOffsets[i]);
+            //     if(Physics.Raycast(rayOrigin + offset, rayDirection, out var tempHit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore)){
+            //         castHit = true;
+            //         var dot = Vector3.Dot(tempHit.normal, rayDirection);
+            //         if(dot < minDot){
+            //             minDot = dot;
+            //             hit = tempHit;
+            //         }
+            //     }
+            // }
+            // return castHit;
+
+            // float rayRadius = 0.025f;
+            // return Physics.SphereCast(rayOrigin, rayRadius, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
         }
         
     }

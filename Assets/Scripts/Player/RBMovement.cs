@@ -337,11 +337,17 @@ namespace PlayerController {
                 var lerpFactor = currentState.surfaceSolidness * dragFriction;
                 if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){
                     if(GroundCast(targetSpeed, -currentState.surfacePoint.normal, out var hit)){
-                        // if(hit.distance > (LocalColliderRadius + 0.01f)){
-                        if(Vector3.Dot(localVelocity, hit.normal) > 0.01f){
+                        bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
+                        bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
+                        if(distOK && dotOK){
                             Debug.DrawRay(hit.point, hit.normal, Color.white, 10f);
+                            Debug.Log("yes");
                         }
+                    }else{
+                        Debug.Log("no hit");
                     }
+                }else{
+                    Debug.Log("no cast");
                 }
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
