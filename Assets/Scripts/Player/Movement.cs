@@ -42,7 +42,6 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
-            public int coyoteTimer;
         }
 
         public struct CrouchControlInput {
@@ -394,15 +393,8 @@ namespace PlayerController {
                     }
                 }
             }
-            output.canJump = (output.moveType == MoveType.GROUND || output.moveType == MoveType.LADDER);
-            output.midJump = (lastState.startedJump || lastState.midJump) && output.moveType == MoveType.AIR;
-            if(output.moveType != MoveType.AIR || lastState.startedJump){
-                output.coyoteTimer = 0;
-            }else if(!lastState.startedJump && (lastState.moveType == MoveType.GROUND) && (output.moveType == MoveType.AIR)){
-                output.coyoteTimer = pcProps.CoyoteTime;
-            }else{
-                output.coyoteTimer = Mathf.Max(0, lastState.coyoteTimer - 1);
-            }
+            output.canJump = (output.moveType == MoveType.GROUND) || (output.moveType == MoveType.LADDER);
+            output.midJump = (lastState.startedJump || lastState.midJump) && (output.moveType == MoveType.AIR);
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
@@ -410,30 +402,42 @@ namespace PlayerController {
             return output;
         }
 
-        protected Vector3 GetJumpSpeedBoost (Vector3 localVelocity, Properties.JumpSpeedBoostMode mode, float mult) {
+        protected Vector3 GetJumpSpeedBoost (Vector3 localVelocity, float localSpeed, float rawTargetSpeed) {
             localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
             Vector3 relevantVelocity;
             float sign;
-            switch(mode){
-                case Properties.JumpSpeedBoostMode.Off:
-                    return Vector3.zero;
-                case Properties.JumpSpeedBoostMode.Forward:
+            switch(pcProps.BoostDirection){
+                case Properties.JumpBoostDirection.Forward:
                     relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                     sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
                     break;
-                case Properties.JumpSpeedBoostMode.ForwardAndBack:
+                case Properties.JumpBoostDirection.ForwardAndBack:
                     relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                     sign = 1f;
                     break;
-                case Properties.JumpSpeedBoostMode.OmniDirectional:
+                case Properties.JumpBoostDirection.OmniDirectional:
                     relevantVelocity = localVelocity;
                     sign = 1f;
                     break;
                 default:
-                    Debug.LogError($"Unknown {nameof(Properties.JumpSpeedBoostMode)} \"{pcProps.JumpSpeedBoost}\"!");
+                    Debug.LogError($"Unknown {nameof(Properties.JumpBoostDirection)} \"{pcProps.BoostDirection}\"!");
                     return Vector3.zero;
             }
-            return sign * ((relevantVelocity * mult) - relevantVelocity);
+            float boostMultiplier = pcProps.BoostMultiplier;
+            if(!pcProps.EnableOverBoosting && (boostMultiplier != 1f)){
+                var lerp = (localSpeed - rawTargetSpeed) / ((rawTargetSpeed * boostMultiplier) - rawTargetSpeed);
+                boostMultiplier = Mathf.Lerp(boostMultiplier, 1f, lerp);
+            }
+            return sign * ((relevantVelocity * boostMultiplier) - relevantVelocity);
+        }
+
+        protected Vector3 GetLandingBrake (Vector3 localVelocity, bool jumpInput) {
+            if(jumpInput && pcProps.EnableBunnyHopping){
+                Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
+                return Vector3.zero;
+            }
+            Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
+            return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
         
     }

@@ -30,12 +30,13 @@ namespace PlayerController {
             public static MovementProperties LadderDefault => Make(speed: 6f,  accel: 64f, drag: 32f);
         }
 
-        public enum JumpSpeedBoostMode {
-            Off,
-            Forward,
+        public enum JumpBoostDirection {
+            OmniDirectional, 
             ForwardAndBack,
-            OmniDirectional
+            Forward
         }
+
+        const float inf = float.PositiveInfinity;
 
         [Header("Dimensions")]
         [SerializeField, Unit("m")] float normalHeight = 1.8f;
@@ -82,6 +83,7 @@ namespace PlayerController {
         public float NearClipDist => nearClipDist;
         public float FarClipDist => farClipDist;
 
+        const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
         [Header("Movement")]
         [SerializeField, Unit("°")] float hardSlopeLimit = 60f;
         [SerializeField] float runSpeedMultiplier = 1f;
@@ -90,7 +92,6 @@ namespace PlayerController {
         [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
         [SerializeField] MovementProperties slope = MovementProperties.SlopeDefault;
         [SerializeField] MovementProperties air = MovementProperties.AirDefault;
-        const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
         [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
         [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
@@ -106,25 +107,25 @@ namespace PlayerController {
         public MovementProperties Water => water;
         public MovementProperties Ladder => ladder;
 
+        const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
+        const string bunnyHopTip = "Block deceleration on landing if a frame-perfect jump input is present";
         [Header("Jumping")]
         [SerializeField, Unit("m")] float standingJumpHeight = 1f;
         [SerializeField, Unit("m")] float crouchedJumpHeight = 0.5f;
         [SerializeField, Unit("m/s²")] float jumpCalcGravity = 29.43f;
-        [SerializeField, RangedUnit("ticks", 0, 10)] int coyoteTime = 0;
-        [SerializeField] JumpSpeedBoostMode jumpSpeedBoost = JumpSpeedBoostMode.Off;
-        [SerializeField] float jumpSpeedBoostMultiplier = 1.0f;
-        const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
+        [SerializeField, CustomRange(1f, inf)] float boostMultiplier = 1.0f;
+        [SerializeField] JumpBoostDirection boostDirection = JumpBoostDirection.OmniDirectional;
         [SerializeField, Tooltip(overBoostTip)] bool enableOverBoosting = false;
-        const string bunnyHopTip = "Block deceleration on landing if a frame-perfect jump input is present";
+        [SerializeField, CustomRange(0f, 1f)] float landingSpeedMultiplier = 1.0f;
         [SerializeField, Tooltip(bunnyHopTip)] bool enableBunnyHopping = false;
         
         public float StandingJumpHeight => standingJumpHeight;
         public float CrouchedJumpHeight => crouchedJumpHeight;
         public float JumpCalcGravity => jumpCalcGravity;
-        public int CoyoteTime => coyoteTime;
-        public JumpSpeedBoostMode JumpSpeedBoost => jumpSpeedBoost;
-        public float JumpSpeedBoostMultiplier => jumpSpeedBoostMultiplier;
+        public float BoostMultiplier => boostMultiplier;
+        public JumpBoostDirection BoostDirection => boostDirection;
         public bool EnableOverBoosting => enableOverBoosting;
+        public float LandingMultiplier => landingSpeedMultiplier;
         public bool EnableBunnyHopping => enableBunnyHopping;
 
         [Header("Interaction")]

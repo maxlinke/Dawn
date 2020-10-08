@@ -163,7 +163,6 @@ namespace PlayerController {
             debugInfo += $"ilv: {currentState.incomingLocalVelocity.magnitude:F3} m/s\n";
             debugInfo += $"c:   {shouldCrouch}\n";
             debugInfo += $"h:   {col.height}\n";
-            debugInfo += $"coy: {currentState.coyoteTimer}\n";
         }
 
         void FinishMove (MoveState currentState) {Color lineColor;
@@ -299,20 +298,11 @@ namespace PlayerController {
                     return;
                 }
             }
-            var localVelocity = currentState.incomingLocalVelocity;
-            if(pcProps.JumpSpeedBoost != Properties.JumpSpeedBoostMode.Off){
-                if(!lastState.touchingGround && (lastState.startedJump || lastState.midJump)){
-                    if(!(pcProps.EnableBunnyHopping && moveInput.jump)){
-                        var mode = Properties.JumpSpeedBoostMode.OmniDirectional;
-                        var mult = 1f / pcProps.JumpSpeedBoostMultiplier;
-                        var decel = GetJumpSpeedBoost(localVelocity, mode, mult);
-                        localVelocity += decel;
-                        Velocity += decel;
-                        Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
-                    }else{
-                        Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
-                    }
-                }
+            var localVelocity = currentState.incomingLocalVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
+            if(lastState.midJump){
+                var landingAccel = GetLandingBrake(localVelocity, moveInput.jump);
+                localVelocity += landingAccel;
+                Velocity += landingAccel;
             }
             var dragFriction = currentState.normedStaticSurfaceFriction;
             var moveFriction = currentState.normedDynamicSurfaceFriction;
@@ -336,9 +326,7 @@ namespace PlayerController {
             if(moveInput.jump){
                 var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
                 moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;
-                if(pcProps.EnableOverBoosting || localSpeed <= rawTargetSpeed){
-                    moveAccel += GetJumpSpeedBoost(localVelocity, pcProps.JumpSpeedBoost, pcProps.JumpSpeedBoostMultiplier) / Time.deltaTime;
-                }
+                moveAccel += GetJumpSpeedBoost(localVelocity, localSpeed, rawTargetSpeed) / Time.deltaTime;
                 currentState.startedJump = true;
             }
             Vector3 gravity;
@@ -391,36 +379,19 @@ namespace PlayerController {
             var targetDirection = PlayerTransform.TransformDirection(rawInput);
             var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            float drag;
-            float pcPropsSpeed;
-            float pcPropsAccel;
-            if(currentState.coyoteTimer > 0){
-                drag = pcProps.Ground.Drag;
-                pcPropsSpeed = pcProps.Ground.Speed;
-                pcPropsAccel = pcProps.Ground.Accel;
-            }else{
-                drag = pcProps.Air.Drag;
-                if(pcProps.EnableFullFlightParabola && horizontalLocalSpeed > pcProps.Air.Speed){
-                    var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
-                    drag *= (1f - Mathf.Clamp01(dirDot));
-                }
-                pcPropsSpeed = pcProps.Air.Speed;
-                pcPropsAccel = pcProps.Air.Accel;
+            float drag = pcProps.Air.Drag;
+            if(pcProps.EnableFullFlightParabola && horizontalLocalSpeed > pcProps.Air.Speed){
+                var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
+                drag *= (1f - Mathf.Clamp01(dirDot));
             }
             ApplyDrag(drag, ref horizontalLocalVelocity);
             horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            var rawTargetSpeed = pcPropsSpeed * RawSpeedMultiplier(moveInput.run);
+            var rawTargetSpeed = pcProps.Air.Speed * RawSpeedMultiplier(moveInput.run);
             var targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
             var targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcPropsAccel);
+            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * pcProps.Air.Accel);
             if(currentState.isInWater && currentState.facingWall && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
-            }else if(currentState.coyoteTimer > 0 && moveInput.jump){
-                moveAcceleration += PlayerTransform.up * JumpSpeed() / Time.deltaTime;
-                if(pcProps.EnableOverBoosting || horizontalLocalSpeed <= rawTargetSpeed){
-                    moveAcceleration += GetJumpSpeedBoost(horizontalLocalVelocity, pcProps.JumpSpeedBoost, pcProps.JumpSpeedBoostMultiplier) / Time.deltaTime;
-                }
-                currentState.startedJump = true;
             }
             Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
         }

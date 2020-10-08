@@ -118,7 +118,7 @@ public class RBPlayer : Player {
     void CacheSingleFrameInputs () {
         var lastState = rbMovement.lastState;
         if(Time.frameCount != lastState.frame){
-            if(!lastState.startedJump && (lastState.canJump || (lastState.coyoteTimer > 0))){
+            if(!lastState.startedJump && lastState.canJump){
                 cachedJumpKeyDown |= Bind.JUMP.GetKeyDown();
             }
         }

@@ -56,9 +56,9 @@ MonoBehaviour:
   standingJumpHeight: 1
   crouchedJumpHeight: 0.5
   jumpCalcGravity: 29.43
-  coyoteTime: 4
-  jumpSpeedBoost: 3
-  jumpSpeedBoostMultiplier: 1.25
-  enableOverBoosting: 0
+  boostMultiplier: 1.25
+  boostDirection: 0
+  enableOverBoosting: 1
+  landingSpeedMultiplier: 0.667
   enableBunnyHopping: 1
   interactRange: 2

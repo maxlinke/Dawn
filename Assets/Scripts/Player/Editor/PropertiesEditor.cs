@@ -7,29 +7,32 @@ namespace PlayerController {
     public class PropertiesEditor : GenericEditor {
 
         SerializedProperty boostProp;
+        SerializedProperty brakeProp;
 
-        bool boostOn => (boostProp.enumValueIndex != (int)(Properties.JumpSpeedBoostMode.Off));
+        bool boostOn => boostProp.floatValue != 1f;
+        bool brakeOn => brakeProp.floatValue != 1f;
 
         protected override void OnEnable () {
             base.OnEnable();
-            boostProp = serializedObject.FindProperty("jumpSpeedBoost");
+            boostProp = serializedObject.FindProperty("boostMultiplier");
+            brakeProp = serializedObject.FindProperty("landingSpeedMultiplier");
         }
 
         protected override bool DrawPropertyCustom (SerializedProperty property) {
             switch(property.name){
-                case "jumpSpeedBoostMultiplier":
-                    return DrawDependentOnBoost();
+                case "boostDirection":
+                    return DrawEnabledIf(boostOn);
                 case "enableOverBoosting":
-                    return DrawDependentOnBoost();
+                    return DrawEnabledIf(boostOn);
                 case "enableBunnyHopping":
-                    return DrawDependentOnBoost();
+                    return DrawEnabledIf(brakeOn);
                 default: 
                     return false;
             }
 
-            bool DrawDependentOnBoost () {
+            bool DrawEnabledIf (bool condition) {
                 var guiOn = GUI.enabled;
-                GUI.enabled &= boostOn;
+                GUI.enabled &= condition;
                 EditorTools.DrawIndented(property);
                 GUI.enabled = guiOn;
                 return true;
