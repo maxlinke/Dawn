@@ -7,8 +7,7 @@ namespace GeometryGenerators {
 
         SerializedProperty targetSelfProp;
 
-        protected override void OnEnable () {
-            base.OnEnable();
+        protected virtual void OnEnable () {
             targetSelfProp = serializedObject.FindProperty("targetOnlySelf");
         }
 

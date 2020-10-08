@@ -12,8 +12,7 @@ namespace PlayerController {
         bool boostOn => boostProp.floatValue != 1f;
         bool brakeOn => brakeProp.floatValue != 1f;
 
-        protected override void OnEnable () {
-            base.OnEnable();
+        protected void OnEnable () {
             boostProp = serializedObject.FindProperty("boostMultiplier");
             brakeProp = serializedObject.FindProperty("landingSpeedMultiplier");
         }

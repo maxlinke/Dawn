@@ -2,8 +2,6 @@
 
 public abstract class GenericEditor : Editor{
 
-    protected virtual void OnEnable () { }
-
     public override void OnInspectorGUI () {
         serializedObject.Update();
         var currentProperty = serializedObject.GetIterator();
@@ -19,6 +17,4 @@ public abstract class GenericEditor : Editor{
 
     protected abstract bool DrawPropertyCustom (SerializedProperty property);
 
-    
-	
 }
