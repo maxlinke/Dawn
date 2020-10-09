@@ -30,5 +30,12 @@ public static class EditorGUITools {
         EditorGUI.LabelField(labelRect, labelText);
         EditorGUI.PropertyField(propRect, propToDraw, GUIContent.none, true);
     }
+
+    public static void LabelWithoutIndent (Rect labelRect, string labelText) {
+        var il = EditorGUI.indentLevel;
+        EditorGUI.indentLevel = 0;
+        EditorGUI.LabelField(labelRect, labelText);
+        EditorGUI.indentLevel = il;
+    }
 	
 }

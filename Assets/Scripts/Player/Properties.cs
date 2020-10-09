@@ -104,7 +104,7 @@ namespace PlayerController {
         [SerializeField] bool moveIntoSlopes = true;
         [SerializeField, EnumFlags] GroundStickMode groundStick = 0;
         [SerializeField, Range(0f, 1f)] float groundStickiness = 0f;
-        [SerializeField, CustomRange(0, 10)] int groundStickInterval = 0;
+        [SerializeField, RangedUnit("ticks", 0, 10)] int groundStickInterval = 0;
         
         public float HardSlopeLimit => hardSlopeLimit;
         public float RunSpeedMultiplier => runSpeedMultiplier;

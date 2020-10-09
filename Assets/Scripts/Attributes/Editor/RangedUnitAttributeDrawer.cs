@@ -8,7 +8,7 @@ public class RangedUnitAttributeDrawer : IRangeAttributeDrawer {
         var ru = attribute as RangedUnitAttribute;
         UnitAttributeDrawer.GetRects(position, ru.labelWidth, out var propRect, out var unitRect);
         base.OnGUI(propRect, property, label);
-        EditorGUI.LabelField(unitRect, ru.name);
+        EditorGUITools.LabelWithoutIndent(unitRect, ru.name);
     }
 	
 }
