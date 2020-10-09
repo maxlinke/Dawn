@@ -275,7 +275,7 @@ namespace PlayerController {
                 return;
             }
             var gravityRotation = GetGravityRotation(smoothRotationParent);
-            var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.JumpCalcGravity);
+            var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.NormalGravity);
             var degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
             var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, Time.deltaTime * degreesPerSecond);
             smoothRotationParent.rotation = newRotation;
@@ -299,7 +299,7 @@ namespace PlayerController {
                 }
             }
             var localVelocity = currentState.incomingLocalVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
-            if(lastState.midJump){
+            if(lastState.midJump){  // can i move this into the state thingy?
                 var landingAccel = GetLandingBrake(localVelocity, moveInput.jump);
                 localVelocity += landingAccel;
                 Velocity += landingAccel;
@@ -320,18 +320,14 @@ namespace PlayerController {
                 if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                     var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
                     var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
-                    targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness);
+                    targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness); // TODO also make the "regular" slope movement slower, is slerp really needed?
                 }
             }
             var accelMag = Mathf.Lerp(pcProps.Air.Accel, pcProps.Ground.Accel, moveFriction);
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag);
             if(moveInput.jump){
                 var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
-                // float lvVert = Vector3.Dot(localVelocity, PlayerTransform.up);
-                // float lvJump = JumpSpeed() * jumpStrength;
-                // moveAccel += PlayerTransform.up * Mathf.Max(0, lvJump - lvVert) / Time.deltaTime;    // <-- set jump
-                // possible improvements: higher min than 0, clamp lvvert to max(0, lvvert)
-                moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;          // <-- add jump
+                moveAccel += GetJumpVelocity(localVelocity, jumpStrength) / Time.deltaTime;
                 moveAccel += GetJumpSpeedBoost(localVelocity, localSpeed, rawTargetSpeed) / Time.deltaTime;
                 currentState.startedJump = true;
             }

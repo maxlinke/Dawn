@@ -22,6 +22,7 @@ MonoBehaviour:
   playerDensity: 2
   collisionDetection: 2
   physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
+  normalGravity: 29.43
   footRBNonSolidMass: 160
   footRBSolidMass: 400
   gravityTurnSpeed: 360
@@ -52,14 +53,16 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
-  moveIntoSlopes: 0
+  moveIntoSlopes: 1
   enableFullFlightParabola: 1
-  groundStick: 1
+  groundStick: 0
   groundStickiness: 0.8
   groundStickInterval: 0
   standingJumpHeight: 1
   crouchedJumpHeight: 0.5
-  jumpCalcGravity: 29.43
+  velocityMode: 0
+  minJumpVelocity: 0.5
+  limitDescentJumpHeight: 1
   boostMultiplier: 1.25
   boostDirection: 0
   enableOverBoosting: 1

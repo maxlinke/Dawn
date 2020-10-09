@@ -231,7 +231,63 @@ namespace PlayerController {
 
         protected float JumpSpeed () {
             var jumpHeight = Mathf.Lerp(pcProps.CrouchedJumpHeight, pcProps.StandingJumpHeight, CrouchLerpFactor());
-            return Mathf.Sqrt(2f * pcProps.JumpCalcGravity * jumpHeight);
+            return Mathf.Sqrt(2f * pcProps.NormalGravity * jumpHeight);
+        }
+
+        protected Vector3 GetJumpVelocity (Vector3 localVelocity, float jumpStrength) {
+            switch(pcProps.JumpVelMode){
+                case Properties.JumpVelocityMode.AddGlobalVelocity:
+                    return PlayerTransform.up * JumpSpeed() * jumpStrength;
+                case Properties.JumpVelocityMode.SetLocalVelocity:
+                    float lvVert = Vector3.Dot(localVelocity, PlayerTransform.up);
+                    if(pcProps.LimitDescentJumpHeight && lvVert < 0f){
+                        lvVert = 0f;
+                    }
+                    float lvJump = JumpSpeed() * jumpStrength;      // add this strength as a parameter and put it in the square root?
+                    float minJump = pcProps.MinJumpVelocity * lvJump;
+                    return PlayerTransform.up * Mathf.Max(minJump, lvJump - lvVert);
+                default:
+                    Debug.LogError($"Unknown {nameof(Properties.JumpVelocityMode)} \"{pcProps.JumpVelMode}\"!");
+                    return Vector3.zero;
+            }
+        }
+
+        protected Vector3 GetJumpSpeedBoost (Vector3 localVelocity, float localSpeed, float rawTargetSpeed) {
+            localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
+            Vector3 relevantVelocity;
+            float sign;
+            switch(pcProps.BoostDirection){
+                case Properties.JumpBoostDirection.Forward:
+                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                    sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
+                    break;
+                case Properties.JumpBoostDirection.ForwardAndBack:
+                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
+                    sign = 1f;
+                    break;
+                case Properties.JumpBoostDirection.OmniDirectional:
+                    relevantVelocity = localVelocity;
+                    sign = 1f;
+                    break;
+                default:
+                    Debug.LogError($"Unknown {nameof(Properties.JumpBoostDirection)} \"{pcProps.BoostDirection}\"!");
+                    return Vector3.zero;
+            }
+            float boostMultiplier = pcProps.BoostMultiplier;
+            if(!pcProps.EnableOverBoosting && (boostMultiplier != 1f)){
+                var lerp = (localSpeed - rawTargetSpeed) / ((rawTargetSpeed * boostMultiplier) - rawTargetSpeed);
+                boostMultiplier = Mathf.Lerp(boostMultiplier, 1f, lerp);
+            }
+            return sign * ((relevantVelocity * boostMultiplier) - relevantVelocity);
+        }
+
+        protected Vector3 GetLandingBrake (Vector3 localVelocity, bool jumpInput) {
+            if(jumpInput && pcProps.EnableBunnyHopping){
+                Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
+                return Vector3.zero;
+            }
+            Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
+            return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 
         protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float deltaTime) {
@@ -419,44 +475,6 @@ namespace PlayerController {
             output.startedJump = false;
             output.executedGroundStick = false;
             return output;
-        }
-
-        protected Vector3 GetJumpSpeedBoost (Vector3 localVelocity, float localSpeed, float rawTargetSpeed) {
-            localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
-            Vector3 relevantVelocity;
-            float sign;
-            switch(pcProps.BoostDirection){
-                case Properties.JumpBoostDirection.Forward:
-                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
-                    sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
-                    break;
-                case Properties.JumpBoostDirection.ForwardAndBack:
-                    relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
-                    sign = 1f;
-                    break;
-                case Properties.JumpBoostDirection.OmniDirectional:
-                    relevantVelocity = localVelocity;
-                    sign = 1f;
-                    break;
-                default:
-                    Debug.LogError($"Unknown {nameof(Properties.JumpBoostDirection)} \"{pcProps.BoostDirection}\"!");
-                    return Vector3.zero;
-            }
-            float boostMultiplier = pcProps.BoostMultiplier;
-            if(!pcProps.EnableOverBoosting && (boostMultiplier != 1f)){
-                var lerp = (localSpeed - rawTargetSpeed) / ((rawTargetSpeed * boostMultiplier) - rawTargetSpeed);
-                boostMultiplier = Mathf.Lerp(boostMultiplier, 1f, lerp);
-            }
-            return sign * ((relevantVelocity * boostMultiplier) - relevantVelocity);
-        }
-
-        protected Vector3 GetLandingBrake (Vector3 localVelocity, bool jumpInput) {
-            if(jumpInput && pcProps.EnableBunnyHopping){
-                Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
-                return Vector3.zero;
-            }
-            Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
-            return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 
         protected bool TryEnforceGroundStick (ref MoveState state, float targetSpeed, Vector3 localVelocity) {

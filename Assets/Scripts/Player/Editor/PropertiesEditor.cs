@@ -6,15 +6,18 @@ namespace PlayerController {
     [CustomEditor(typeof(Properties))]
     public class PropertiesEditor : GenericEditor {
 
+        SerializedProperty jumpProp;
         SerializedProperty boostProp;
         SerializedProperty brakeProp;
         SerializedProperty stickProp;
 
+        bool setJump => (jumpProp.enumValueIndex == (int)(Properties.JumpVelocityMode.SetLocalVelocity));
         bool boostOn => boostProp.floatValue != 1f;
         bool brakeOn => brakeProp.floatValue != 1f;
         bool stickOn => stickProp.intValue != 0;
 
         protected void OnEnable () {
+            jumpProp = serializedObject.FindProperty("velocityMode");
             boostProp = serializedObject.FindProperty("boostMultiplier");
             brakeProp = serializedObject.FindProperty("landingSpeedMultiplier");
             stickProp = serializedObject.FindProperty("groundStick");
@@ -22,6 +25,10 @@ namespace PlayerController {
 
         protected override bool DrawPropertyCustom (SerializedProperty property) {
             switch(property.name){
+                case "minJumpVelocity":
+                    return DrawEnabledIf(setJump);
+                case "limitDescentJumpHeight":
+                    return DrawEnabledIf(setJump);
                 case "groundStickiness":
                     return DrawEnabledIf(stickOn);
                 case "groundStickInterval":

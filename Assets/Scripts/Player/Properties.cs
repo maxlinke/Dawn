@@ -36,6 +36,11 @@ namespace PlayerController {
             Forward
         }
 
+        public enum JumpVelocityMode {
+            AddGlobalVelocity,
+            SetLocalVelocity
+        }
+
         [System.Flags]
         public enum GroundStickMode {
             Proactive = 1,
@@ -68,6 +73,7 @@ namespace PlayerController {
         [SerializeField, Unit("g/cm³")] float playerDensity = 1f;
         [SerializeField] CollisionDetectionMode collisionDetection = CollisionDetectionMode.ContinuousDynamic;
         [SerializeField] PhysicMaterial physicMaterial = null;
+        [SerializeField, Unit("m/s²")] float normalGravity = 29.43f;
         [SerializeField, Unit("kg")]    float footRBNonSolidMass = 160f;
         [SerializeField, Unit("kg")]    float footRBSolidMass = 400f;
         [SerializeField, Unit("°/s")]   float gravityTurnSpeed = 360f;
@@ -77,6 +83,7 @@ namespace PlayerController {
         public float PlayerDensity => playerDensity;
         public CollisionDetectionMode CollisionDetection => collisionDetection;
         public PhysicMaterial PhysicMaterial => physicMaterial;
+        public float NormalGravity => normalGravity;
         public float FootRBNonSolidMass => footRBNonSolidMass;
         public float FootRBSolidMass => footRBSolidMass;
         public float GravityTurnSpeed => gravityTurnSpeed;
@@ -130,7 +137,9 @@ namespace PlayerController {
         [Header("Jumping")]
         [SerializeField, Unit("m")] float standingJumpHeight = 1f;
         [SerializeField, Unit("m")] float crouchedJumpHeight = 0.5f;
-        [SerializeField, Unit("m/s²")] float jumpCalcGravity = 29.43f;
+        [SerializeField] JumpVelocityMode velocityMode = JumpVelocityMode.AddGlobalVelocity;
+        [SerializeField, Range(0f, 1f)] float minJumpVelocity = 0f;
+        [SerializeField] bool limitDescentJumpHeight = false;
         [SerializeField, CustomRange(1f, inf)] float boostMultiplier = 1.0f;
         [SerializeField] JumpBoostDirection boostDirection = JumpBoostDirection.OmniDirectional;
         [SerializeField, Tooltip(overBoostTip)] bool enableOverBoosting = false;
@@ -139,7 +148,9 @@ namespace PlayerController {
         
         public float StandingJumpHeight => standingJumpHeight;
         public float CrouchedJumpHeight => crouchedJumpHeight;
-        public float JumpCalcGravity => jumpCalcGravity;
+        public JumpVelocityMode JumpVelMode => velocityMode;
+        public float MinJumpVelocity => minJumpVelocity;
+        public bool LimitDescentJumpHeight => limitDescentJumpHeight;
         public float BoostMultiplier => boostMultiplier;
         public JumpBoostDirection BoostDirection => boostDirection;
         public bool EnableOverBoosting => enableOverBoosting;
