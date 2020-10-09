@@ -42,9 +42,8 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
-            public float overrideVelocityForNextTickInfluence;
-            public Vector3 overrideVelocityForNextTick;
             public int groundStickBlockTimer;
+            public bool executedGroundStick;
         }
 
         public struct CrouchControlInput {
@@ -323,8 +322,8 @@ namespace PlayerController {
         }
 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
-            if(lastState.overrideVelocityForNextTickInfluence > 0f){
-                this.Velocity = Vector3.Lerp(this.Velocity, lastState.overrideVelocityForNextTick, lastState.overrideVelocityForNextTickInfluence);
+            if(lastState.executedGroundStick){
+                this.Velocity = Vector3.ClampMagnitude(this.Velocity, lastState.incomingWorldVelocity.magnitude);
             }
             Vector3 worldColliderBottomSphere = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
             var colResult = ProcessCollisionPoints(collisionPoints, worldColliderBottomSphere);
@@ -416,10 +415,9 @@ namespace PlayerController {
             output.incomingWorldVelocity = this.Velocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
-            // these just have to be initialized
+            // these just need to be initialized
             output.startedJump = false;
-            output.overrideVelocityForNextTickInfluence = 0f;
-            output.overrideVelocityForNextTick = Vector3.zero;
+            output.executedGroundStick = false;
             return output;
         }
 
@@ -461,54 +459,55 @@ namespace PlayerController {
             return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 
-        protected bool GroundCast (float moveSpeed, Vector3 rayOrigin, Vector3 rayDirection, out RaycastHit hit) {
-            float rayLength = LocalColliderRadius + (moveSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit));
-            return Physics.Raycast(rayOrigin, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
-            // float rayRadius = 0.025f;
-            // return Physics.SphereCast(rayOrigin, rayRadius, rayDirection, out hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore);
-        }
-
-        protected void StickToGround (ref MoveState currentState, ref Vector3 moveAccel, float targetSpeed, Vector3 localVelocity) {
-            if(currentState.groundStickBlockTimer > 0){
-                return;
+        protected bool TryEnforceGroundStick (ref MoveState state, float targetSpeed, Vector3 localVelocity) {
+            if(state.groundStickBlockTimer > 0){
+                return false;
             }
-            float lerpFactor = currentState.surfaceSolidness * currentState.normedStaticSurfaceFriction * pcProps.GroundStickiness;
+            float lerpFactor = state.surfaceSolidness * state.normedStaticSurfaceFriction * pcProps.GroundStickiness;
             if(lerpFactor <= 0f){
-                return;
+                return false;
             }
             Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
-            Vector3 rayDir = -currentState.surfacePoint.normal;
-            if(GroundCast(targetSpeed, rayOrigin, rayDir, out var hit)){
-                bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
-                bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
-                if(distOK && dotOK){
-                    bool dirOK = false;
-                    float dir = Vector3.Dot(localVelocity, PlayerTransform.up);
-                    dirOK |= (dir <= 0f && pcProps.StickGoingDown);
-                    dirOK |= (dir > 0f && pcProps.StickGoingUp);
-                    if(dirOK){
-                        bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < pcProps.HardSlopeLimit);
-                        if(angleOK){
-                            var vTemp = (this.Velocity + (moveAccel * Time.deltaTime));
-                            var vProj = vTemp.ProjectOnPlaneAlongVector(hit.normal, PlayerTransform.up).normalized * vTemp.magnitude;
-                            currentState.overrideVelocityForNextTickInfluence = lerpFactor;
-                            currentState.overrideVelocityForNextTick = vProj;
+            Vector3 rayDir = -state.surfacePoint.normal;
+            float rayLength = targetSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit);
+            rayLength += LocalColliderRadius;
+            bool groundCastHit = Physics.Raycast(rayOrigin, rayDir, out var hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
+            if(!groundCastHit){
+                return false;
+            }
+            bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
+            bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
+            if(distOK && dotOK){
+                bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < pcProps.HardSlopeLimit);
+                if(angleOK){
+                    Vector3 newCapsuleContact = rayOrigin - (LocalColliderRadius * hit.normal);
+                    Vector3 delta = hit.point - newCapsuleContact;      // doesn't take velocity into consideration...
+                    // Vector3 movePos = (delta / Time.deltaTime) * 1.1f;
+                    Vector3 movePos = 1.1f * delta.ProjectOnVector(PlayerTransform.up) / Time.deltaTime;
+                    movePos += this.Velocity.ProjectOnPlane(hit.normal);
 
-                            moveAccel = Vector3.Lerp(moveAccel, Vector3.zero, lerpFactor);
-                            Vector3 delta = rayDir * (hit.distance - LocalColliderRadius);
-                            Vector3 movePos = (delta / Time.deltaTime) + (vProj * Time.deltaTime);
-                            this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);
-
-                            currentState.groundStickBlockTimer = pcProps.GroundStickInterval + 1;
-
-                            Debug.DrawLine(rayOrigin, PlayerTransform.position, Color.Lerp(Color.black, Color.cyan, lerpFactor), 10f);
-                            Debug.DrawLine(rayOrigin, hit.point, Color.Lerp(Color.black, Color.cyan, lerpFactor), 10f);
-                            Debug.DrawRay(hit.point, hit.normal, Color.Lerp(Color.black, Color.white, lerpFactor), 10f);
-                            Debug.DrawRay(rayOrigin + (rayDir * LocalColliderRadius), this.Velocity * Time.deltaTime, Color.blue, 10f);
-                        }
+                    if(movePos.sqrMagnitude > localVelocity.sqrMagnitude){
+                        movePos = movePos.normalized * localVelocity.magnitude;
                     }
+                    // if(movePos.sqrMagnitude > targetSpeed){
+                    //     movePos = movePos.normalized * targetSpeed;
+                    // }
+
+                    this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);   // TODO i do need to clamp the velocity on the next tick tho...
+                    Debug.Log($"sticking (lerp {lerpFactor:F2})!");
+
+                    state.executedGroundStick = true;
+                    state.groundStickBlockTimer = pcProps.GroundStickInterval + 1;
+
+                    var bwCol = Color.Lerp(Color.black, Color.white, lerpFactor);
+                    Debug.DrawLine(rayOrigin, newCapsuleContact, bwCol, 10f);
+                    Debug.DrawLine(rayOrigin, hit.point, bwCol, 10f);
+                    Debug.DrawRay(hit.point, hit.normal, bwCol, 10f);
+
+                    return true;
                 }
             }
+            return false;
         }
         
     }

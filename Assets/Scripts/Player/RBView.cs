@@ -14,6 +14,7 @@ namespace PlayerController {
             smoothRotationParent.Rotate(0f, viewDelta.x, 0f, Space.Self);
         }
 
+        // TODO max delta option
         protected override void TargetLook (Vector3 viewTargetPoint) {
             // var toTargetLocal = playerTransform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
             // headPan = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);

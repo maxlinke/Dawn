@@ -38,8 +38,8 @@ namespace PlayerController {
 
         [System.Flags]
         public enum GroundStickMode {
-            WhenGoingUp = 1,
-            WhenGoingDown = 2
+            Proactive = 1,
+            Reactive = 2
         }
 
         const float inf = float.PositiveInfinity;
@@ -89,6 +89,7 @@ namespace PlayerController {
         public float NearClipDist => nearClipDist;
         public float FarClipDist => farClipDist;
 
+        const string slopeTip = "Walking uphill is done by walking into the slope instead of up it. This will make going upwill slower and might mitigate flying off the top as much.";
         const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
         [Header("Movement")]
         [SerializeField, Unit("°")] float hardSlopeLimit = 60f;
@@ -98,10 +99,10 @@ namespace PlayerController {
         [SerializeField] MovementProperties ground = MovementProperties.GroundDefault;
         [SerializeField] MovementProperties slope = MovementProperties.SlopeDefault;
         [SerializeField] MovementProperties air = MovementProperties.AirDefault;
-        [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
         [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
-        [SerializeField] bool moveIntoSlopes = true;
+        [SerializeField, Tooltip(slopeTip)] bool moveIntoSlopes = true;
+        [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField, EnumFlags] GroundStickMode groundStick = 0;
         [SerializeField, Range(0f, 1f)] float groundStickiness = 0f;
         [SerializeField, RangedUnit("ticks", 0, 10)] int groundStickInterval = 0;
@@ -121,8 +122,8 @@ namespace PlayerController {
         public float GroundStickiness => groundStickiness;
         public int GroundStickInterval => groundStickInterval;
 
-        public bool StickGoingDown => ((GroundStick & GroundStickMode.WhenGoingDown) == GroundStickMode.WhenGoingDown);
-        public bool StickGoingUp => ((GroundStick & GroundStickMode.WhenGoingUp) == GroundStickMode.WhenGoingUp);
+        public bool StickProactively => ((GroundStick & GroundStickMode.Proactive) == GroundStickMode.Proactive);
+        public bool StickReactively => ((GroundStick & GroundStickMode.Reactive) == GroundStickMode.Reactive);
 
         const string overBoostTip = "Allow jump boost even when speed is greater than maximum move speed";
         const string bunnyHopTip = "Block deceleration on landing if a frame-perfect jump input is present";

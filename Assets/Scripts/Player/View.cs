@@ -66,7 +66,8 @@ namespace PlayerController {
         public void Look (Vector2 viewInput) {
             switch(controlMode){
                 case ControlMode.FULL: 
-                    DeltaLook(viewInput * 60f * Time.deltaTime);
+                    // DeltaLook(viewInput * 60f * Time.deltaTime);
+                    DeltaLook(viewInput * 60f * Time.unscaledDeltaTime);
                     break;
                 case ControlMode.TARGETED:
                     TargetLook(viewTarget.position);

@@ -64,6 +64,7 @@ public class RBPlayer : Player {
         health.InternalHealthUpdate();
         // TODO what about being dead?
         var cursorLocked = CursorLockManager.CursorIsLocked();
+        // TODO && game paused (timescale == 0f but done somewhere else)
         rbView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
         if(rbView.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
@@ -137,7 +138,7 @@ public class RBPlayer : Player {
         }
         if(Input.GetKeyDown(slowMoKey)){
             if(Time.timeScale == 1f){
-                Time.timeScale = 0.05f;
+                Time.timeScale = Time.fixedDeltaTime;
             }else{
                 Time.timeScale = 1f;
             }

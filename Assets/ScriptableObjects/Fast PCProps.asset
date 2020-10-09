@@ -44,7 +44,6 @@ MonoBehaviour:
     speed: 12
     accel: 24
     drag: 4
-  enableFullFlightParabola: 1
   water:
     speed: 12
     accel: 32
@@ -53,8 +52,9 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
-  moveIntoSlopes: 1
-  groundStick: 0
+  moveIntoSlopes: 0
+  enableFullFlightParabola: 1
+  groundStick: 1
   groundStickiness: 0.8
   groundStickInterval: 0
   standingJumpHeight: 1

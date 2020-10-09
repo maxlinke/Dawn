@@ -327,7 +327,11 @@ namespace PlayerController {
             var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag);
             if(moveInput.jump){
                 var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
-                moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;
+                // float lvVert = Vector3.Dot(localVelocity, PlayerTransform.up);
+                // float lvJump = JumpSpeed() * jumpStrength;
+                // moveAccel += PlayerTransform.up * Mathf.Max(0, lvJump - lvVert) / Time.deltaTime;    // <-- set jump
+                // possible improvements: higher min than 0, clamp lvvert to max(0, lvvert)
+                moveAccel += PlayerTransform.up * JumpSpeed() * jumpStrength / Time.deltaTime;          // <-- add jump
                 moveAccel += GetJumpSpeedBoost(localVelocity, localSpeed, rawTargetSpeed) / Time.deltaTime;
                 currentState.startedJump = true;
             }
@@ -339,16 +343,15 @@ namespace PlayerController {
                 var lerpFactor = currentState.surfaceSolidness * dragFriction;
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
-                bool enumStick = (int)(pcProps.GroundStick) != 0;
-                if(enumStick && pcProps.GroundStickiness > 0f){
-                    if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){
-                        StickToGround(ref currentState, ref moveAccel, targetSpeed, localVelocity);
-                         // TODO consider complete removal
-                         // as i'm not using it
-                         // and it might block stuff like getting boosted by explosions and such
-                         // unless i explicitly block that then...
+
+                if(pcProps.StickProactively){
+                    if((localSpeed - 0.01f) <= (pcProps.Ground.Speed * pcProps.RunSpeedMultiplier)){        // TODO gravity strength, velocitycomesfrommove
+                        if(TryEnforceGroundStick(ref currentState, targetSpeed, localVelocity)){
+                            moveAccel = Vector3.zero;
+                            // gravity = Vector3.zero;
+                        }
                     }
-                }                
+                }
             }
             Velocity += (moveAccel + gravity) * Time.deltaTime;
         }
