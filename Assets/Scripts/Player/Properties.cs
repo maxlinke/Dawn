@@ -52,8 +52,6 @@ namespace PlayerController {
         [Header("Dimensions")]
         [SerializeField, Unit("m")] float normalHeight = 1.8f;
         [SerializeField, Unit("m")] float crouchHeight = 0.9f;
-        // [SerializeField, Unit("m")] float airHeight = 1.5f;
-        // [SerializeField, Unit("m")] float swimHeight = 1.5f;
         [SerializeField, Unit("s")] float crouchUncrouchTime = 0.25f;
         [SerializeField, Unit("m"), Tooltip("From collider top")] float eyeOffset = -0.15f;
         [SerializeField, Unit("m"), Tooltip("From collider top")] float swimOffset = -0.4f;
@@ -76,8 +74,8 @@ namespace PlayerController {
         [SerializeField, Unit("m/s²")] float normalGravity = 29.43f;
         [SerializeField, Unit("kg")]    float footRBNonSolidMass = 160f;
         [SerializeField, Unit("kg")]    float footRBSolidMass = 400f;
-        [SerializeField, Unit("°/s")]   float gravityTurnSpeed = 360f;
-        [SerializeField, Range(0f, 1f)] float minGravityTurnSpeedMultiplier = 0f;
+        [SerializeField, Unit("°/s")]   float gravityTurn = 360f;
+        [SerializeField, Range(0f, 1f)] float minGravityTurn = 0f;
 
         public float PlayerMass => playerMass;
         public float PlayerDensity => playerDensity;
@@ -86,8 +84,8 @@ namespace PlayerController {
         public float NormalGravity => normalGravity;
         public float FootRBNonSolidMass => footRBNonSolidMass;
         public float FootRBSolidMass => footRBSolidMass;
-        public float GravityTurnSpeed => gravityTurnSpeed;
-        public float MinGravityTurnSpeedMultiplier => minGravityTurnSpeedMultiplier;
+        public float GravityTurnSpeed => gravityTurn;
+        public float MinGravityTurnSpeedMultiplier => minGravityTurn;
 
         [Header("Camera")]
         [SerializeField, Unit("m")] float nearClipDist = 0.15f;
@@ -96,8 +94,8 @@ namespace PlayerController {
         public float NearClipDist => nearClipDist;
         public float FarClipDist => farClipDist;
 
-        const string slopeTip = "Walking uphill is done by walking into the slope instead of up it. This will make going upwill slower and might mitigate flying off the top as much.";
-        const string parabolaTip = "At high speeds, applying move input in the flight direction will result in no drag being applied, allowing a parabolic arc instead of a shortened one.";
+        const string slopeTip = "Lower the speed at which slopes are ascended. This is both more realistic and helps avoid flying off the top.";
+        const string parabolaTip = "Deactivates drag if input is appropriate, allowing a full parabolic flight arc instead of a dampened one.";
         [Header("Movement")]
         [SerializeField, Unit("°")] float hardSlopeLimit = 60f;
         [SerializeField] float runSpeedMultiplier = 1f;
@@ -108,7 +106,7 @@ namespace PlayerController {
         [SerializeField] MovementProperties air = MovementProperties.AirDefault;
         [SerializeField] MovementProperties water = MovementProperties.WaterDefault;
         [SerializeField] MovementProperties ladder = MovementProperties.LadderDefault;
-        [SerializeField, Tooltip(slopeTip)] bool moveIntoSlopes = true;
+        [SerializeField, Tooltip(slopeTip)] bool slowerAscentSpeed = true;
         [SerializeField, Tooltip(parabolaTip)] bool enableFullFlightParabola = false;
         [SerializeField, EnumFlags] GroundStickMode groundStick = 0;
         [SerializeField, Range(0f, 1f)] float groundStickiness = 0f;
@@ -124,7 +122,7 @@ namespace PlayerController {
         public bool EnableFullFlightParabola => enableFullFlightParabola;
         public MovementProperties Water => water;
         public MovementProperties Ladder => ladder;
-        public bool MoveIntoSlopes => moveIntoSlopes;
+        public bool SlowerAscentSpeed => slowerAscentSpeed;
         public GroundStickMode GroundStick => groundStick;
         public float GroundStickiness => groundStickiness;
         public int GroundStickInterval => groundStickInterval;

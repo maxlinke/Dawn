@@ -25,6 +25,9 @@ namespace PlayerController {
 
         protected override bool DrawPropertyCustom (SerializedProperty property) {
             switch(property.name){
+                case "minGravityTurn":
+                    EditorTools.DrawIndented(property);
+                    return true;
                 case "minJumpVelocity":
                     return DrawEnabledIf(setJump);
                 case "limitDescentJumpHeight":

@@ -283,10 +283,8 @@ namespace PlayerController {
 
         protected Vector3 GetLandingBrake (Vector3 localVelocity, bool jumpInput) {
             if(jumpInput && pcProps.EnableBunnyHopping){
-                Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.green, 10f);
                 return Vector3.zero;
             }
-            Debug.DrawRay(PlayerTransform.position, PlayerTransform.up * 2f, Color.red, 10f);
             return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
         }
 

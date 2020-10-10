@@ -316,7 +316,7 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
-            if(pcProps.MoveIntoSlopes){
+            if(pcProps.SlowerAscentSpeed){
                 if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
                     var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
                     var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;

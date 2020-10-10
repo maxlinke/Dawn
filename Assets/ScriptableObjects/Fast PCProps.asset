@@ -25,8 +25,8 @@ MonoBehaviour:
   normalGravity: 29.43
   footRBNonSolidMass: 160
   footRBSolidMass: 400
-  gravityTurnSpeed: 360
-  minGravityTurnSpeedMultiplier: 0.5
+  gravityTurn: 360
+  minGravityTurn: 0.5
   nearClipDist: 0.05
   farClipDist: 500
   hardSlopeLimit: 55
@@ -53,7 +53,7 @@ MonoBehaviour:
     speed: 6
     accel: 64
     drag: 32
-  moveIntoSlopes: 1
+  slowerAscentSpeed: 1
   enableFullFlightParabola: 1
   groundStick: 0
   groundStickiness: 0.8
