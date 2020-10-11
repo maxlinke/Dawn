@@ -9,9 +9,20 @@ namespace PlayerController {
         
         protected override Transform PlayerTransform => cc.transform;
 
-        public override float LocalColliderHeight => cc.height;
-        public override float LocalColliderRadius => cc.radius;
-        public override Vector3 LocalColliderCenter => cc.center;
+        public override float LocalColliderHeight {
+            get => cc.height;
+            protected set => cc.height = value;
+        }
+
+        public override float LocalColliderRadius {
+            get => cc.radius;
+            protected set => cc.radius = value;
+        }
+
+        public override Vector3 LocalColliderCenter {
+            get => cc.center;
+            protected set => cc.center = value;
+        }
 
         public override Vector3 Velocity { 
             get => m_velocity;
@@ -64,7 +75,9 @@ namespace PlayerController {
             Vector3 wcPos = WorldCenterPos;
             PlayerTransform.rotation = newRotation;
             WorldCenterPos = wcPos;
-        }        
+        }
+
+        protected override void OnColliderUpdated (bool onGround) {}
         
     }
 

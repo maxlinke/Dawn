@@ -78,9 +78,9 @@ namespace PlayerController {
             } }
         }
 
-        public abstract float LocalColliderHeight { get; }
-        public abstract float LocalColliderRadius { get; }
-        public abstract Vector3 LocalColliderCenter { get; }
+        public abstract float LocalColliderHeight { get; protected set; }
+        public abstract float LocalColliderRadius { get; protected set; }
+        public abstract Vector3 LocalColliderCenter { get; protected set; }
 
         public abstract Vector3 Velocity { get; set; }
         public abstract ControlMode controlMode { get; set; }
@@ -404,6 +404,39 @@ namespace PlayerController {
             }
             return true;
         }
+
+        public void UpdateColliderSizeIfNeeded (MoveState currentState, bool instantly, bool forceUpdate = false) {
+            float currentHeight = LocalColliderHeight;
+            bool noHeightUpdateNeeded = false;
+            noHeightUpdateNeeded |= (shouldCrouch && currentHeight == pcProps.CrouchHeight);
+            noHeightUpdateNeeded |= (!shouldCrouch && currentHeight == pcProps.NormalHeight);
+            if(noHeightUpdateNeeded && !forceUpdate){
+                return;
+            }
+            float targetHeight;
+            if(shouldCrouch || !CanUncrouch(currentState.touchingGround)){
+                targetHeight = pcProps.CrouchHeight;
+            }else{
+                targetHeight = pcProps.NormalHeight;
+            }
+            float deltaHeight = targetHeight - currentHeight;
+            if(!instantly){
+                float maxDelta = pcProps.HeightChangeSpeed * Time.deltaTime;
+                if(Mathf.Abs(deltaHeight) > maxDelta){
+                    deltaHeight = Mathf.Sign(deltaHeight) * maxDelta;
+                }
+            }
+            LocalColliderHeight += deltaHeight;
+            LocalColliderCenter = new Vector3(0f, LocalColliderHeight / 2f, 0f);
+            if(currentState.touchingGround){
+                OnColliderUpdated(true);
+            }else{
+                PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
+                OnColliderUpdated(false);
+            }
+        }
+
+        protected abstract void OnColliderUpdated (bool onGround);
 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             if(lastState.executedGroundStick){

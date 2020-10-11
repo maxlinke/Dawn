@@ -10,21 +10,32 @@ namespace PlayerController {
 
         protected override Transform PlayerTransform => rb.transform;
 
-        public override float LocalColliderHeight => col.height;
-        public override float LocalColliderRadius => col.radius;
-        public override Vector3 LocalColliderCenter => col.center;
+        public override float LocalColliderHeight {
+            get => col.height;
+            protected set => col.height = value;
+        }
+
+        public override float LocalColliderRadius {
+            get => col.radius;
+            protected set => col.radius = value;
+        }
+
+        public override Vector3 LocalColliderCenter {
+            get => col.center;
+            protected set => col.center = value;
+        }
 
         protected Vector3 TargetSmoothRotationParentPos => col.center;
         protected Vector3 TargetHeadPos => new Vector3(0f, 0.5f * col.height + pcProps.EyeOffset, 0f);
         protected Vector3 TargetModelPos => new Vector3(0f, -0.5f * col.height, 0f);
         
         public override Vector3 Velocity { 
-            get { return rb.velocity; }
-            set { rb.velocity = value; }
+            get => rb.velocity;
+            set => rb.velocity = value;
         }
 
         public override ControlMode controlMode {
-            get { return m_controlMode; }
+            get => m_controlMode;
             set { 
                 if(value == ControlMode.ANCHORED){
                     rb.isKinematic = true;
@@ -112,7 +123,7 @@ namespace PlayerController {
                 return;
             }
             StartMove(out var currentState);
-            UpdateColliderSizeIfNeeded(currentState);
+            UpdateColliderSizeIfNeeded(currentState, instantly: false);
             switch(controlMode){
                 case ControlMode.FULL:
                     ExecuteMove(moveInput, ref currentState);
@@ -196,37 +207,7 @@ namespace PlayerController {
             }
         }
 
-        public void UpdateColliderSizeIfNeeded (MoveState currentState) {
-            bool noHeightUpdateNeeded = false;
-            noHeightUpdateNeeded |= (shouldCrouch && col.height == pcProps.CrouchHeight);
-            noHeightUpdateNeeded |= (!shouldCrouch && col.height == pcProps.NormalHeight);
-            if(noHeightUpdateNeeded){
-                return;
-            }
-            float targetHeight;
-            if(shouldCrouch || !CanUncrouch(onGround: currentState.surfacePoint != null)){
-                targetHeight = pcProps.CrouchHeight;
-            }else{
-                targetHeight = pcProps.NormalHeight;
-            }
-            float deltaHeight = targetHeight - col.height;
-            float maxDelta = pcProps.HeightChangeSpeed * Time.deltaTime;
-            if(Mathf.Abs(deltaHeight) > maxDelta){
-                deltaHeight = Mathf.Sign(deltaHeight) * maxDelta;
-            }
-            col.height += deltaHeight;
-            col.center = new Vector3(0f, col.height / 2f, 0f);
-            var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
-            smoothRotationParent.localPosition += srpDelta;
-            if(currentState.surfacePoint == null || lastState.startedJump){
-                PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
-                head.localPosition += srpDelta;
-                model.localPosition += srpDelta;
-            }else{
-                head.localPosition -= srpDelta;
-                model.localPosition -= srpDelta;
-            }
-        }
+        
 
         public void UpdateHeadAndModelPosition (bool instantly) {
             var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
@@ -249,6 +230,18 @@ namespace PlayerController {
                 }
                 head.localPosition += deltaHead;
                 model.localPosition += deltaModel;
+            }
+        }
+
+        protected override void OnColliderUpdated (bool onGround) {
+            var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
+            smoothRotationParent.localPosition += srpDelta;
+            if(onGround){
+                head.localPosition -= srpDelta;
+                model.localPosition -= srpDelta;
+            }else{
+                head.localPosition += srpDelta;
+                model.localPosition += srpDelta;
             }
         }
 
