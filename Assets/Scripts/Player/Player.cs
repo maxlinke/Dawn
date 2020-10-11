@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using PlayerController;
+using CustomInputSystem;
 
 public abstract class Player : MonoBehaviour {
 
@@ -66,6 +67,37 @@ public abstract class Player : MonoBehaviour {
         fpCamera.nearClipPlane = pcProps.NearClipDist;
         fpCamera.farClipPlane = pcProps.FarClipDist;
         fpCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
+    }
+
+    protected Vector3 GetViewInput (bool readInput) {
+        if(!readInput){
+            return Vector2.zero;
+        }
+        return Bind.GetViewInput();
+    }
+
+    protected Movement.CrouchControlInput GetCrouchInput (bool readInput) {
+        if(!readInput){
+            return Movement.CrouchControlInput.None;
+        }
+        Movement.CrouchControlInput output;
+        output.toggleCrouch = Bind.CROUCH_TOGGLE.GetKeyDown();
+        output.crouchHold = Bind.CROUCH_HOLD.GetKey();
+        output.crouchHoldRelease = Bind.CROUCH_HOLD.GetKeyUp();
+        return output;
+    }
+
+    protected Movement.MoveInput GetMoveInput (bool readInput) {
+        if(!readInput){
+            return RBMovement.MoveInput.None;
+        }
+        Movement.MoveInput output;
+        output.horizontalInput = Bind.GetHorizontalMoveInput();
+        output.verticalInput = Bind.GetVerticalMoveInput();
+        output.run = 1f - Mathf.Clamp01(Bind.WALK_OR_RUN.GetValue());   // TODO make (1f - x) optional because "Auto Run"
+        output.jump = Bind.JUMP.GetKeyDown();
+        output.waterExitJump = Bind.JUMP.GetKey();
+        return output;
     }
 	
 }

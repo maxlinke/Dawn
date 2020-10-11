@@ -60,6 +60,24 @@ namespace PlayerController {
             } }
         }
 
+        public struct MoveInput {
+            public Vector3 horizontalInput;
+            public Vector3 verticalInput;
+            public float run;
+            public bool jump;
+            public bool waterExitJump;
+
+            public static MoveInput None { get {
+                MoveInput output;
+                output.horizontalInput = Vector3.zero;
+                output.verticalInput = Vector3.zero;
+                output.run = 0f;
+                output.jump = false;
+                output.waterExitJump = false;
+                return output;
+            } }
+        }
+
         public abstract float LocalColliderHeight { get; }
         public abstract float LocalColliderRadius { get; }
         public abstract Vector3 LocalColliderCenter { get; }
@@ -312,7 +330,7 @@ namespace PlayerController {
             ApplyDrag(drag, ref localVelocity, Time.deltaTime);
         }
 
-        protected Quaternion GetGravityRotation (Transform referenceTransform) {
+        protected Quaternion GetTargetGravityRotation (Transform referenceTransform) {
             if(Physics.gravity.sqrMagnitude <= 0f){
                 return referenceTransform.rotation;
             }
@@ -323,6 +341,18 @@ namespace PlayerController {
             }
             newFwd = newFwd.ProjectOnPlane(newUp);
             return Quaternion.LookRotation(newFwd, newUp);
+        }
+
+        protected bool TryAlignWithGravity (Transform referenceTransform, out Quaternion newRotation) {
+            if(controlMode == ControlMode.ANCHORED){
+                newRotation = Quaternion.identity;
+                return false;
+            }
+            var gravityRotation = GetTargetGravityRotation(referenceTransform);
+            var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.NormalGravity);
+            var degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
+            newRotation = Quaternion.RotateTowards(referenceTransform.rotation, gravityRotation, Time.deltaTime * degreesPerSecond);
+            return true;
         }
 
         public void UpdateCrouchState (CrouchControlInput ccInput) {

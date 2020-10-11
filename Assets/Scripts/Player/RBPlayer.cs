@@ -65,7 +65,7 @@ public class RBPlayer : Player {
         // TODO what about being dead?
         var cursorLocked = CursorLockManager.CursorIsLocked();
         // TODO && game paused (timescale == 0f but done somewhere else)
-        rbView.Look(cursorLocked ? Bind.GetViewInput() : Vector2.zero);
+        rbView.Look(GetViewInput(readInput: cursorLocked));
         if(rbView.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
                 interactable.Interact(this);
@@ -88,32 +88,12 @@ public class RBPlayer : Player {
         health.ClearWaterTriggerList();
         var cursorLocked = CursorLockManager.CursorIsLocked();
         rbMovement.ApplySubRotation();
-        rbMovement.Move(GetMoveInput(readInput: cursorLocked));
+        var moveInput = GetMoveInput(readInput: cursorLocked);
+        if(cursorLocked){
+            moveInput.jump |= cachedJumpKeyDown;
+        }
+        rbMovement.Move(moveInput);
         ResetSingleFrameInputs();
-    }
-
-    Movement.CrouchControlInput GetCrouchInput (bool readInput) {
-        if(!readInput){
-            return Movement.CrouchControlInput.None;
-        }
-        Movement.CrouchControlInput output;
-        output.toggleCrouch = Bind.CROUCH_TOGGLE.GetKeyDown();
-        output.crouchHold = Bind.CROUCH_HOLD.GetKey();
-        output.crouchHoldRelease = Bind.CROUCH_HOLD.GetKeyUp();
-        return output;
-    }
-
-    RBMovement.MoveInput GetMoveInput (bool readInput) {
-        if(!readInput){
-            return RBMovement.MoveInput.None;
-        }
-        RBMovement.MoveInput output;
-        output.horizontalInput = Bind.GetHorizontalMoveInput();
-        output.verticalInput = Bind.GetVerticalMoveInput();
-        output.run = 1f - Mathf.Clamp01(Bind.WALK_OR_RUN.GetValue());   // TODO make (1f - x) optional because "Auto Run"
-        output.jump = Bind.JUMP.GetKeyDown() || cachedJumpKeyDown;
-        output.waterExitJump = Bind.JUMP.GetKey();
-        return output;
     }
 
     void CacheSingleFrameInputs () {

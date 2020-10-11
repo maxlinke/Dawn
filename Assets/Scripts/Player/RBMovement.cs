@@ -5,24 +5,6 @@ namespace PlayerController {
 
     public class RBMovement : Movement {
 
-        public struct MoveInput {
-            public Vector3 horizontalInput;
-            public Vector3 verticalInput;
-            public float run;
-            public bool jump;
-            public bool waterExitJump;
-
-            public static MoveInput None { get {
-                MoveInput output;
-                output.horizontalInput = Vector3.zero;
-                output.verticalInput = Vector3.zero;
-                output.run = 0f;
-                output.jump = false;
-                output.waterExitJump = false;
-                return output;
-            } }
-        }
-
         [SerializeField] CapsuleCollider col = default;
         [SerializeField] Rigidbody rb = default;
 
@@ -271,13 +253,9 @@ namespace PlayerController {
         }
 
         public void AlignWithGravityIfAllowed () {
-            if(controlMode == ControlMode.ANCHORED){
+            if(!TryAlignWithGravity(smoothRotationParent, out var newRotation)){
                 return;
             }
-            var gravityRotation = GetGravityRotation(smoothRotationParent);
-            var normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.NormalGravity);
-            var degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
-            var newRotation = Quaternion.RotateTowards(smoothRotationParent.rotation, gravityRotation, Time.deltaTime * degreesPerSecond);
             smoothRotationParent.rotation = newRotation;
         }
 
