@@ -71,9 +71,9 @@ public class RBPlayer : Player {
                 interactable.Interact(this);
             }
         }
-        rbMovement.UpdateCrouchState(GetCrouchInput(readInput));
+        rbMovement.UpdateCrouchState(GetCrouchInput(readInput), rbMovement.lastState);
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
-        rbMovement.AlignWithGravityIfAllowed();
+        rbMovement.TryAlignWithGravity();
         CacheSingleFrameInputs();
         model.UpdateSpherePositions();
 

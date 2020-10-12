@@ -82,8 +82,8 @@ public abstract class Player : MonoBehaviour {
         }
         Movement.CrouchControlInput output;
         output.toggleCrouch = Bind.CROUCH_TOGGLE.GetKeyDown();
-        output.crouchHold = Bind.CROUCH_HOLD.GetKey();
-        output.crouchHoldRelease = Bind.CROUCH_HOLD.GetKeyUp();
+        output.crouch = Bind.CROUCH_HOLD.GetKey();
+        output.uncrouch = Bind.CROUCH_HOLD.GetKeyUp();
         return output;
     }
 

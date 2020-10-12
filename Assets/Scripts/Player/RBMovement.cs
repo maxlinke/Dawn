@@ -9,6 +9,7 @@ namespace PlayerController {
         [SerializeField] Rigidbody rb = default;
 
         protected override Transform PlayerTransform => rb.transform;
+        protected override Transform GravityAlignmentReferenceTransform => smoothRotationParent;
 
         public override float LocalColliderHeight {
             get => col.height;
@@ -242,11 +243,8 @@ namespace PlayerController {
                 model.localPosition += srpDelta;
             }
         }
-
-        public void AlignWithGravityIfAllowed () {
-            if(!TryAlignWithGravity(smoothRotationParent, out var newRotation)){
-                return;
-            }
+        
+        protected override void ApplyGravityRotation (Quaternion newRotation) {
             smoothRotationParent.rotation = newRotation;
         }
 

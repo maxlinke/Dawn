@@ -8,6 +8,7 @@ namespace PlayerController {
         [SerializeField] CharacterController cc = default;
         
         protected override Transform PlayerTransform => cc.transform;
+        protected override Transform GravityAlignmentReferenceTransform => cc.transform;
 
         public override float LocalColliderHeight {
             get => cc.height;
@@ -73,10 +74,7 @@ namespace PlayerController {
             contactPoints.Add(new CollisionPoint(hit));
         }
 
-        public void AlignWithGravityIfAllowed () {
-            if(!TryAlignWithGravity(PlayerTransform, out var newRotation)){
-                return;
-            }
+        protected override void ApplyGravityRotation (Quaternion newRotation) {
             Vector3 wcPos = WorldCenterPos;
             PlayerTransform.rotation = newRotation;
             WorldCenterPos = wcPos;

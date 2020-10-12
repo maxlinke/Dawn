@@ -17,7 +17,6 @@ public class CCPlayer : Player {
     // up slopes: set velocity FLAT
     // down slopes: use regular ground move vector
 
-
     protected override void InitializeComponents () {
         ccView.Initialize(pcProps, this, head);
         ccView.SetHeadOrientation(
@@ -26,8 +25,6 @@ public class CCPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         ccMovement.Initialize(pcProps, head, modelParent);
-
-        // var test = ControllerColliderHit.
     }
 
     void Update () {
@@ -41,7 +38,7 @@ public class CCPlayer : Player {
         #endif
         bool readInput = CursorLockManager.CursorIsLocked();   // TODO && !paused
         ccView.Look(GetViewInput(readInput));
-        ccMovement.UpdateCrouchState(GetCrouchInput(readInput));
+        ccMovement.UpdateCrouchState(GetCrouchInput(readInput), ccMovement.lastState);
         ccMovement.Move(GetMoveInput(readInput));
         ccView.UpdateHeadLocalPosition();
         if(ccView.InteractCheck(out var interactable, out var interactDescription)){
