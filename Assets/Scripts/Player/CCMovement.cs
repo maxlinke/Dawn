@@ -40,19 +40,24 @@ namespace PlayerController {
         bool m_initialized = false;
 
         List<CollisionPoint> contactPoints;
+        List<Collider> triggerStays;
 
         public void Initialize (Properties pcProps, Transform head, Transform model) {
             base.Init(pcProps, head, model);
             contactPoints = new List<CollisionPoint>();
-
+            triggerStays = new List<Collider>();
             m_initialized = true;    
         }
 
         // probably should cache the foot-object (esp. if it's a monobehaviour moving platform)
         // so some refactoring of the rb movement is needed
+        // or maybe not, if i juse use the last state as my cache...
         // TODO just make this virtual, i can pretty much copy the stuff from rbmovement
         public void Move (MoveInput move) {
+            MoveState currentState = GetCurrentState(contactPoints, triggerStays);
             contactPoints.Clear();
+            triggerStays.Clear();
+            UpdateColliderSizeIfNeeded(currentState, false);
         }
 
         // TODO extract the movement stuff, put it into partial class Movement (Movements.cs (notice the s))
@@ -77,7 +82,10 @@ namespace PlayerController {
             WorldCenterPos = wcPos;
         }
 
-        protected override void OnColliderUpdated (bool onGround) {}
+        protected override void OnColliderSizeUpdated (bool onGround) {
+            model.localPosition = Vector3.zero;
+            head.localPosition = new Vector3(0f, LocalColliderHeight - pcProps.EyeOffset, 0f);
+        }
         
     }
 

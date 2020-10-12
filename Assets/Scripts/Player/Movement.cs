@@ -429,14 +429,14 @@ namespace PlayerController {
             LocalColliderHeight += deltaHeight;
             LocalColliderCenter = new Vector3(0f, LocalColliderHeight / 2f, 0f);
             if(currentState.touchingGround){
-                OnColliderUpdated(true);
+                OnColliderSizeUpdated(true);
             }else{
                 PlayerTransform.position += PlayerTransform.up * deltaHeight * -1f;
-                OnColliderUpdated(false);
+                OnColliderSizeUpdated(false);
             }
         }
 
-        protected abstract void OnColliderUpdated (bool onGround);
+        protected abstract void OnColliderSizeUpdated (bool onGround);
 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             if(lastState.executedGroundStick){

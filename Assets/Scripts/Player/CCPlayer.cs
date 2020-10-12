@@ -26,6 +26,8 @@ public class CCPlayer : Player {
             headRoll: 0f
         ); // should be deserialized or something later on
         ccMovement.Initialize(pcProps, head, modelParent);
+
+        // var test = ControllerColliderHit.
     }
 
     void Update () {
@@ -37,9 +39,10 @@ public class CCPlayer : Player {
                 CursorLockManager.UpdateLockState();
             }
         #endif
-        var cursorLocked = CursorLockManager.CursorIsLocked();
-        ccView.Look(GetViewInput(readInput: cursorLocked));
-        ccMovement.Move(GetMoveInput(readInput: cursorLocked));
+        bool readInput = CursorLockManager.CursorIsLocked();   // TODO && !paused
+        ccView.Look(GetViewInput(readInput));
+        ccMovement.UpdateCrouchState(GetCrouchInput(readInput));
+        ccMovement.Move(GetMoveInput(readInput));
         ccView.UpdateHeadLocalPosition();
         if(ccView.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){

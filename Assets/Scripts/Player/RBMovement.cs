@@ -207,8 +207,6 @@ namespace PlayerController {
             }
         }
 
-        
-
         public void UpdateHeadAndModelPosition (bool instantly) {
             var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
             smoothRotationParent.localPosition += srpDelta;
@@ -233,7 +231,7 @@ namespace PlayerController {
             }
         }
 
-        protected override void OnColliderUpdated (bool onGround) {
+        protected override void OnColliderSizeUpdated (bool onGround) {
             var srpDelta = TargetSmoothRotationParentPos - smoothRotationParent.localPosition;
             smoothRotationParent.localPosition += srpDelta;
             if(onGround){

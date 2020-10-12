@@ -63,15 +63,15 @@ public class RBPlayer : Player {
         #endif
         health.InternalHealthUpdate();
         // TODO what about being dead?
-        var cursorLocked = CursorLockManager.CursorIsLocked();
+        bool readInput = CursorLockManager.CursorIsLocked();
         // TODO && game paused (timescale == 0f but done somewhere else)
-        rbView.Look(GetViewInput(readInput: cursorLocked));
+        rbView.Look(GetViewInput(readInput));
         if(rbView.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
                 interactable.Interact(this);
             }
         }
-        rbMovement.UpdateCrouchState(GetCrouchInput(readInput: cursorLocked));
+        rbMovement.UpdateCrouchState(GetCrouchInput(readInput));
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.AlignWithGravityIfAllowed();
         CacheSingleFrameInputs();
@@ -86,10 +86,10 @@ public class RBPlayer : Player {
             return;
         }
         health.ClearWaterTriggerList();
-        var cursorLocked = CursorLockManager.CursorIsLocked();
+        bool readInput = CursorLockManager.CursorIsLocked();
         rbMovement.ApplySubRotation();
-        var moveInput = GetMoveInput(readInput: cursorLocked);
-        if(cursorLocked){
+        var moveInput = GetMoveInput(readInput);
+        if(readInput){
             moveInput.jump |= cachedJumpKeyDown;
         }
         rbMovement.Move(moveInput);
