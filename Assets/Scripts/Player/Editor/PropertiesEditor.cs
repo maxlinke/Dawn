@@ -11,7 +11,7 @@ namespace PlayerController {
         SerializedProperty brakeProp;
         SerializedProperty stickProp;
 
-        bool setJump => (jumpProp.enumValueIndex == (int)(Properties.JumpVelocityMode.SetLocalVelocity));
+        bool setJump => (jumpProp.enumValueIndex == (int)(JumpVelocityMode.SetLocalVelocity));
         bool boostOn => boostProp.floatValue != 1f;
         bool brakeOn => brakeProp.floatValue != 1f;
         bool stickOn => stickProp.intValue != 0;

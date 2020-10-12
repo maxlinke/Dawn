@@ -253,10 +253,10 @@ namespace PlayerController {
         }
 
         protected Vector3 GetJumpVelocity (Vector3 localVelocity, float jumpStrength) {
-            switch(pcProps.JumpVelMode){
-                case Properties.JumpVelocityMode.AddGlobalVelocity:
+            switch(pcProps.JumpVelocityMode){
+                case JumpVelocityMode.AddGlobalVelocity:
                     return PlayerTransform.up * JumpSpeed() * jumpStrength;
-                case Properties.JumpVelocityMode.SetLocalVelocity:
+                case JumpVelocityMode.SetLocalVelocity:
                     float lvVert = Vector3.Dot(localVelocity, PlayerTransform.up);
                     if(pcProps.LimitDescentJumpHeight && lvVert < 0f){
                         lvVert = 0f;
@@ -265,7 +265,7 @@ namespace PlayerController {
                     float minJump = pcProps.MinJumpVelocity * lvJump;
                     return PlayerTransform.up * Mathf.Max(minJump, lvJump - lvVert);
                 default:
-                    Debug.LogError($"Unknown {nameof(Properties.JumpVelocityMode)} \"{pcProps.JumpVelMode}\"!");
+                    Debug.LogError($"Unknown {nameof(JumpVelocityMode)} \"{pcProps.JumpVelocityMode}\"!");
                     return Vector3.zero;
             }
         }
@@ -274,21 +274,21 @@ namespace PlayerController {
             localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
             Vector3 relevantVelocity;
             float sign;
-            switch(pcProps.BoostDirection){
-                case Properties.JumpBoostDirection.Forward:
+            switch(pcProps.JumpBoostDirection){
+                case JumpBoostDirection.Forward:
                     relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                     sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
                     break;
-                case Properties.JumpBoostDirection.ForwardAndBack:
+                case JumpBoostDirection.ForwardAndBack:
                     relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                     sign = 1f;
                     break;
-                case Properties.JumpBoostDirection.OmniDirectional:
+                case JumpBoostDirection.OmniDirectional:
                     relevantVelocity = localVelocity;
                     sign = 1f;
                     break;
                 default:
-                    Debug.LogError($"Unknown {nameof(Properties.JumpBoostDirection)} \"{pcProps.BoostDirection}\"!");
+                    Debug.LogError($"Unknown {nameof(JumpBoostDirection)} \"{pcProps.JumpBoostDirection}\"!");
                     return Vector3.zero;
             }
             float boostMultiplier = pcProps.BoostMultiplier;
@@ -572,7 +572,7 @@ namespace PlayerController {
                     //     movePos = movePos.normalized * targetSpeed;
                     // }
 
-                    this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);   // TODO i do need to clamp the velocity on the next tick tho...
+                    this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);
                     Debug.Log($"sticking (lerp {lerpFactor:F2})!");
 
                     state.executedGroundStick = true;

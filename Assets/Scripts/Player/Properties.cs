@@ -30,23 +30,6 @@ namespace PlayerController {
             public static MovementProperties LadderDefault => Make(speed: 6f,  accel: 64f, drag: 32f);
         }
 
-        public enum JumpBoostDirection {
-            OmniDirectional, 
-            ForwardAndBack,
-            Forward
-        }
-
-        public enum JumpVelocityMode {
-            AddGlobalVelocity,
-            SetLocalVelocity
-        }
-
-        [System.Flags]
-        public enum GroundStickMode {
-            Proactive = 1,
-            Reactive = 2
-        }
-
         const float inf = float.PositiveInfinity;
 
         [Header("Dimensions")]
@@ -146,11 +129,11 @@ namespace PlayerController {
         
         public float StandingJumpHeight => standingJumpHeight;
         public float CrouchedJumpHeight => crouchedJumpHeight;
-        public JumpVelocityMode JumpVelMode => velocityMode;
+        public JumpVelocityMode JumpVelocityMode => velocityMode;
         public float MinJumpVelocity => minJumpVelocity;
         public bool LimitDescentJumpHeight => limitDescentJumpHeight;
         public float BoostMultiplier => boostMultiplier;
-        public JumpBoostDirection BoostDirection => boostDirection;
+        public JumpBoostDirection JumpBoostDirection => boostDirection;
         public bool EnableOverBoosting => enableOverBoosting;
         public float LandingMultiplier => landingSpeedMultiplier;
         public bool EnableBunnyHopping => enableBunnyHopping;
