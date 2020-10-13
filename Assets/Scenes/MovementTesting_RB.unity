@@ -2834,7 +2834,7 @@ PrefabInstance:
     - target: {fileID: 807854283640154826, guid: 56255569b7329e0468f9e49be4544043,
         type: 3}
       propertyPath: m_Name
-      value: Game Initializer
+      value: Game Core Components
       objectReference: {fileID: 0}
     - target: {fileID: 6287373953858432049, guid: 56255569b7329e0468f9e49be4544043,
         type: 3}

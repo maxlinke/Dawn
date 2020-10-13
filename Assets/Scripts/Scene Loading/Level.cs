@@ -38,7 +38,7 @@ public class Level : MonoBehaviour {
         int idIndex = (int)id;
         int realIndex = this.gameObject.scene.buildIndex;
         if(idIndex != realIndex){
-            Debug.LogWarning($"{nameof(SceneID)} mismatch! {nameof(Level)} is tagged as \"{id}\" (index {idIndex}) but scene has index {realIndex}!");
+            Debug.LogWarning($"{nameof(Level)} is tagged as \"{id}\" (index {idIndex}) but scene has index {realIndex}!");
         }
     }
 
