@@ -22,19 +22,11 @@ namespace SceneLoading {
                 selectedScene = SceneLoader.CurrentScene;
                 gotScene = true;
             }
-            ManualEnumPopup(ref selectedScene, "Scene");
-            ManualEnumPopup(ref selectedMode, "Load Mode");
+            EditorGUITools.ManualEnumPopup(ref selectedScene, "Scene");
+            EditorGUITools.ManualEnumPopup(ref selectedMode, "Load Mode");
             GUILayout.Space(10f);
             if(EditorTools.ButtonCentered("Load Scene", 400)){
                 SceneLoader.LoadScene(selectedScene, selectedMode);
-            }
-        }
-
-        void ManualEnumPopup<T> (ref T currentValue, string label) where T : System.Enum {
-            EditorGUI.BeginChangeCheck();
-            T newSelection = (T)(EditorGUILayout.EnumPopup(label, currentValue));
-            if(EditorGUI.EndChangeCheck()){
-                currentValue = newSelection;
             }
         }
         

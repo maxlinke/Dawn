@@ -37,5 +37,13 @@ public static class EditorGUITools {
         EditorGUI.LabelField(labelRect, labelText);
         EditorGUI.indentLevel = il;
     }
+
+    public static void ManualEnumPopup<T> (ref T currentValue, string label) where T : System.Enum {
+        EditorGUI.BeginChangeCheck();
+        T newSelection = (T)(EditorGUILayout.EnumPopup(label, currentValue));
+        if(EditorGUI.EndChangeCheck()){
+            currentValue = newSelection;
+        }
+    }
 	
 }
