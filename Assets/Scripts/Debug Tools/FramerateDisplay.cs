@@ -94,8 +94,8 @@ namespace DebugTools {
             );
             texWidth = tex.width;
             texHeight = tex.height;
-            tex.SetPixels(clearCol32, true, false);
             pixels = tex.GetPixels32();
+            ClearImage();
             framerates = new float[texWidth];
             smallModeDeltaTimes = new Queue<float>();
             InitUI();
@@ -125,8 +125,14 @@ namespace DebugTools {
         }
 
         void OnHide () {
-            tex.SetPixels(clearCol32, true, false);
+            ClearImage();
             smallModeDeltaTimes.Clear();
+        }
+
+        void ClearImage () {
+            for(int i=0; i<pixels.Length; i++){
+                pixels[i] = clearCol32;
+            }
         }
 
         Mode NextMode (Mode input) {

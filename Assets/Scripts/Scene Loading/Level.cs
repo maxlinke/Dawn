@@ -16,15 +16,16 @@ public class Level : MonoBehaviour {
     public SceneID ID => id;
     public FogSettings FogSettings => fogSettings;
 
+    bool initialized = false;
+
     void Awake () {
         if(current != null){
-            Debug.LogError("Singleton violation! Aborting!");
+            Debug.LogError("Singleton violation, aborting!");
             return;
         }
         current = this;
-        if(SceneLoader.instance == null){
-            Init();
-        }
+        CheckID();
+        FirstTimeInit();
     }
 
     void OnDestroy () {
@@ -33,8 +34,19 @@ public class Level : MonoBehaviour {
         }
     }
 
-    // TODO level state here
-    public void Init () {
+    void CheckID () {
+        int idIndex = (int)id;
+        int realIndex = this.gameObject.scene.buildIndex;
+        if(idIndex != realIndex){
+            Debug.LogWarning($"{nameof(SceneID)} mismatch! {nameof(Level)} is tagged as \"{id}\" (index {idIndex}) but scene has index {realIndex}!");
+        }
+    }
+
+    void FirstTimeInit () {
+        if(initialized){
+            Debug.LogWarning("Already initialized, aborting!");
+            return;
+        }
         fogSettings.Apply();
         if(playerPrefab != null){
             var player = Instantiate(playerPrefab);
@@ -43,11 +55,7 @@ public class Level : MonoBehaviour {
             player.transform.rotation = playerSpawn.rotation;
             player.Initialize();    // TODO player state here
         }
-    }
-
-    // ???
-    public void LoadSave () {
-        
+        initialized = true;
     }
 	
 }
