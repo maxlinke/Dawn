@@ -7,12 +7,6 @@ namespace SceneLoading {
 
     public class SceneLoader : MonoBehaviour {
 
-        public enum LoadMode {
-            NoLoadingScreen,
-            WithLoadingScreen,
-            WithLoadingScreenAndManualContinue
-        }
-
         [SerializeField] Canvas loadingScreenCanvas = default;
         [SerializeField] Image loadingBar = default;
         [SerializeField] Text[] loadingTexts = default;
@@ -26,6 +20,15 @@ namespace SceneLoading {
                     return false;
                 }
                 return instance.loadingScreenCanvas.enabled;
+            }
+        }
+
+        public static SceneID CurrentScene {
+            get {
+                if(instance == null){
+                    return (SceneID)(-1);
+                }
+                return (SceneID)(SceneManager.GetActiveScene().buildIndex);
             }
         }
         

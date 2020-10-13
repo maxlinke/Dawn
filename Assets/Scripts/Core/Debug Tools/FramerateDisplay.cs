@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace DebugTools {
 
-    public class FramerateDisplay : MonoBehaviour {
+    public class FramerateDisplay : MonoBehaviour, ICoreComponent {
 
         const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
 
@@ -16,6 +16,7 @@ namespace DebugTools {
         }
 
         [Header("Settings")]
+        [SerializeField] bool selfInit = false;
         [SerializeField] Mode mode;
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
@@ -75,6 +76,12 @@ namespace DebugTools {
         float texMax;
 
         void Awake () {
+            if(selfInit){
+                InitializeCoreComponent(null);
+            }
+        }
+
+        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(FramerateDisplay)} is not null!");
                 Destroy(this.gameObject);

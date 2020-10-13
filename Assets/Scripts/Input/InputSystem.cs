@@ -4,8 +4,10 @@ using CustomInputSystem.Inputs;
 
 namespace CustomInputSystem {
 
-    public class InputSystem : MonoBehaviour {
+    public class InputSystem : MonoBehaviour, ICoreComponent {
 
+        [Header("Settings")]
+        [SerializeField] bool selfInit = false;
         [SerializeField] bool resetAxisConfigToDefault = false;
         [SerializeField] bool resetKeybindsToDefault = false;
 
@@ -18,6 +20,12 @@ namespace CustomInputSystem {
         public static int fixedUpdateCount => instance.m_fixedUpdateCount;
 
         void Awake () {
+            if(selfInit){
+                InitializeCoreComponent(null);
+            }
+        }
+
+        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!");
                 Destroy(this.gameObject);

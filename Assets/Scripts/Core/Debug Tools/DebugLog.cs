@@ -6,9 +6,12 @@ using CustomInputSystem;
 
 namespace DebugTools {
 
-    public class DebugLog : MonoBehaviour {
+    public class DebugLog : MonoBehaviour, ICoreComponent {
 
         const int UNITY_TEXT_CHAR_LIMIT = (65000 / 4) - 1;
+
+        [Header("Settings")]
+        [SerializeField] bool selfInit = false;
 
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
@@ -67,6 +70,12 @@ namespace DebugTools {
         string hexOtherColor;
 
         void Awake () {
+            if(selfInit){
+                InitializeCoreComponent(null);
+            }
+        }
+
+        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(DebugLog)} is not null!");
                 Destroy(this.gameObject);

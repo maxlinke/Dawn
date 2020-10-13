@@ -1,11 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using CustomInputSystem;
 
 namespace DebugTools {
 
-    public class PlayerControllerDebugUI : MonoBehaviour {
+    public class PlayerControllerDebugUI : MonoBehaviour, ICoreComponent {
 
+        [Header("Settings")]
+        [SerializeField] bool selfInit = false;
         [SerializeField] bool hideAfterInit = true;
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
@@ -54,6 +57,12 @@ namespace DebugTools {
         }
 
         void Awake () {
+            if(selfInit){
+                InitializeCoreComponent(null);
+            }
+        }
+
+        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(PlayerControllerDebugUI)} is not null!");
                 Destroy(this.gameObject);

@@ -25,7 +25,7 @@ public class GameInitializer : MonoBehaviour {
             }
         }
         foreach(var coreComponent in coreComponents){
-            coreComponent.Initialize(coreComponents);
+            coreComponent.InitializeCoreComponent(coreComponents);
         }
     }
 	

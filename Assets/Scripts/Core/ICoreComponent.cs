@@ -2,6 +2,6 @@
 
 public interface ICoreComponent {
 
-    void Initialize (IEnumerable<ICoreComponent> allCoreComponents);
+    void InitializeCoreComponent (IEnumerable<ICoreComponent> allCoreComponents);
 
 }
