@@ -375,6 +375,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16a2e12f9da3d0e42ab710ec02f26b2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selfInit: 0
   canvas: {fileID: 4984440591279747816}
   logTextFieldTemplate: {fileID: 4984440592788290079}
   countDisplayTextField: {fileID: 4984440591862629076}
@@ -386,7 +387,7 @@ MonoBehaviour:
   leftLogMargin: 2
   topLogMargin: 2
   openOnLog: 0
-  openOnWarning: 0
+  openOnWarning: 1
   openOnError: 1
   openOnException: 1
 --- !u!1 &4984440591362190459

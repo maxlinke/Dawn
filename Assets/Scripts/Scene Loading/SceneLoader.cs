@@ -28,7 +28,7 @@ namespace SceneLoading {
                 if(instance == null){
                     return (SceneID)(-1);
                 }
-                return (SceneID)(SceneManager.GetActiveScene().buildIndex);
+                return SceneBuildIndices.GetID(SceneManager.GetActiveScene().buildIndex);
             }
         }
         
@@ -54,15 +54,16 @@ namespace SceneLoading {
                 Debug.LogWarning($"Currently loading another scene, call to load \"{newScene}\" will be ignored!");
                 return;
             }
-            var loadOp = SceneManager.LoadSceneAsync((int)newScene, LoadSceneMode.Single);
+            int sceneIndex = SceneBuildIndices.GetBuildIndex(newScene);
+            var loadOp = SceneManager.LoadSceneAsync(sceneIndex, LoadSceneMode.Single);
             loadOp.allowSceneActivation = true;
-            loadOp.completed += (op) => SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex((int)newScene));
+            loadOp.completed += (op) => SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(sceneIndex));
             if(loadMode != LoadMode.NoLoadingScreen){
-                loadCoroutine = StartCoroutine(LoadingVis(loadOp, newScene, loadMode == LoadMode.WithLoadingScreenAndManualContinue));
+                loadCoroutine = StartCoroutine(LoadingVis(loadOp, loadMode == LoadMode.WithLoadingScreenAndManualContinue));
             }
         }
 
-        IEnumerator LoadingVis (AsyncOperation loadOp, SceneID newScene, bool manualContinue) {
+        IEnumerator LoadingVis (AsyncOperation loadOp, bool manualContinue) {
             loadingScreenCanvas.enabled = true;
             continueText.gameObject.SetActive(false);
             while(!loadOp.isDone){
@@ -75,10 +76,12 @@ namespace SceneLoading {
                 yield return null;   
             }
             if(manualContinue){
+                // TODO pause game (time only)
                 continueText.gameObject.SetActive(true);
                 while(!Input.anyKeyDown){
                     yield return null;
                 }
+                // TODO unpause game
             }
             loadingScreenCanvas.enabled = false;
             loadCoroutine = null;
