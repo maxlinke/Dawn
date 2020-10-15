@@ -75,6 +75,7 @@ namespace PlayerController {
             return output;
         }
 
+        // TODO "other velocity"-handling here is pretty rb-specific... 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             if(lastState.executedGroundStick){
                 this.Velocity = Vector3.ClampMagnitude(this.Velocity, lastState.incomingWorldVelocity.magnitude);

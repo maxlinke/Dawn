@@ -25,9 +25,11 @@ namespace PlayerController {
             protected set => cc.center = value;
         }
 
+        // TODO this is global velocity, movement should always by local velocity, when parented
+        // so this should add the parent's velocity!
         public override Vector3 Velocity { 
-            get => m_velocity;
-            set => m_velocity = value;
+            get => Vector3.zero;
+            set { }
         }
 
         public override ControlMode controlMode {
@@ -35,7 +37,7 @@ namespace PlayerController {
             set => m_controlMode = value;
         }
 
-        private Vector3 m_velocity;
+        private Vector3 m_ownVelocity;
         private ControlMode m_controlMode;
 
         bool m_initialized = false;

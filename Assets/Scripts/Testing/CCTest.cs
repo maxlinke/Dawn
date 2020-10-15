@@ -20,8 +20,6 @@ public class CCTest : MonoBehaviour {
     [SerializeField] KeyCode rbMoveKey = default;
     [SerializeField] float rbSpeed = default;
 
-    int collisions = 0;
-
     void Update () {
         if(Input.GetKey(moveKey)){
             cc.Move(MoveVec() * moveSpeed * Time.deltaTime);
@@ -42,7 +40,6 @@ public class CCTest : MonoBehaviour {
     }
 
     void OnControllerColliderHit (ControllerColliderHit hit) {
-        // collisions++;
         // Debug.DrawRay(hit.point, hit.normal, Color.magenta, 10f, false);
     }
 
