@@ -5,34 +5,38 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class CCTest : MonoBehaviour {
 
+    [Header("CC")]
     [SerializeField] CharacterController cc = default;
     [SerializeField] KeyCode moveKey = default;
-    [SerializeField] Vector3 moveDelta = default;
+    [SerializeField] float moveSpeed = default;
 
-    [SerializeField] Transform other;
-    [SerializeField] Rigidbody otherRB;
-    [SerializeField] Vector3 otherSpeed;
+    [Header("Parent Transform")]
+    [SerializeField] Transform other = default;
+    [SerializeField] KeyCode otherMoveKey = default;
+    [SerializeField] float otherSpeed = default;
+
+    [Header("Parent RB")]
+    [SerializeField] Rigidbody otherRB = default;
+    [SerializeField] KeyCode rbMoveKey = default;
+    [SerializeField] float rbSpeed = default;
 
     int collisions = 0;
 
     void Update () {
-        // if(Input.GetKeyDown(moveKey)){
-        //     collisions = 0;
-        //     var flags = cc.Move(moveDelta);
-        //     Debug.Log($"{collisions} hits\n{flags.ToStringImproved()}");
-        // }
         if(Input.GetKey(moveKey)){
+            cc.Move(MoveVec() * moveSpeed * Time.deltaTime);
+        }
+        if(Input.GetKey(otherMoveKey)){
             if(other != null){
-                other.transform.position += otherSpeed * Time.deltaTime;
+                other.transform.position += MoveVec () * otherSpeed * Time.deltaTime;
             }
-            cc.Move(moveDelta * Time.deltaTime);
         }
     }
 
     void FixedUpdate () {
-        if(Input.GetKey(moveKey)){
+        if(Input.GetKey(rbMoveKey)){
             if(otherRB != null){
-                otherRB.MovePosition(otherRB.position + (otherSpeed * Time.deltaTime));
+                otherRB.MovePosition(otherRB.position + (MoveVec() * rbSpeed * Time.deltaTime));
             }
         }
     }
@@ -40,6 +44,23 @@ public class CCTest : MonoBehaviour {
     void OnControllerColliderHit (ControllerColliderHit hit) {
         // collisions++;
         // Debug.DrawRay(hit.point, hit.normal, Color.magenta, 10f, false);
+    }
+
+    Vector3 MoveVec () {
+        Vector3 output = Vector3.zero;
+        if(Input.GetKey(KeyCode.W)){
+            output += Vector3.forward;
+        }
+        if(Input.GetKey(KeyCode.S)){
+            output += Vector3.back;
+        }
+        if(Input.GetKey(KeyCode.A)){
+            output += Vector3.left;
+        }
+        if(Input.GetKey(KeyCode.D)){
+            output += Vector3.right;
+        }
+        return output;
     }
 	
 }
