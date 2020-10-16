@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 070f8f5acf8444e48aa0981863c4e972, type: 3}
-  m_Name: Slow Or Realistic PCProps
+  m_Script: {fileID: 11500000, guid: b6c53a9a0acf8994ea35fb08375fccda, type: 3}
+  m_Name: Slow Props (RB)
   m_EditorClassIdentifier: 
   normalHeight: 1.8
   crouchHeight: 0.9
@@ -18,20 +18,16 @@ MonoBehaviour:
   eyeOffset: -0.15
   swimOffset: -0.3
   colliderRadius: 0.4
-  playerMass: 80
-  collisionDetection: 2
-  physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
-  footRBNonSolidMass: 160
-  footRBSolidMass: 400
-  gravityTurnDegreesPerSecond: 360
+  playerDensity: 1
+  normalGravity: 29.43
+  gravityTurn: 360
+  minGravityTurn: 0
   nearClipDist: 0.15
   farClipDist: 1000
   hardSlopeLimit: 60
   runSpeedMultiplier: 1
   walkSpeedMultiplier: 0.4
   crouchSpeedMultiplier: 0.2
-  jumpHeight: 0.75
-  jumpCalcGravity: 29.43
   ground:
     speed: 5.5
     accel: 32
@@ -52,8 +48,23 @@ MonoBehaviour:
     speed: 2.5
     accel: 32
     drag: 16
-  dodgeSpeed: 12
-  dodgeStartTime: 0.125
-  dodgeEndTime: 0.125
-  dodgeDuration: 0.5
+  enableFullFlightParabola: 0
+  groundStick: 0
+  groundStickiness: 0
+  groundStickInterval: 0
+  standingJumpHeight: 1
+  crouchedJumpHeight: 0.5
+  velocityMode: 0
+  minJumpVelocity: 0
+  limitDescentJumpHeight: 0
+  boostMultiplier: 1
+  boostDirection: 0
+  enableOverBoosting: 0
+  landingSpeedMultiplier: 1
+  enableBunnyHopping: 0
   interactRange: 1.5
+  playerMass: 80
+  physicMaterial: {fileID: 13400000, guid: 33b2d429ca1450947b3f43cb700fa6b1, type: 2}
+  collisionDetection: 2
+  footRBNonSolidMass: 160
+  footRBSolidMass: 400

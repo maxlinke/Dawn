@@ -97,12 +97,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 74e7253a09d0f3d438958d7ac3eb668e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pcProps: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
-  healthSettings: {fileID: 11400000, guid: 45690da1e6255fb4aba7d341b52fa306, type: 2}
+  props: {fileID: 0}
   selfInit: 0
   head: {fileID: 4167552292664473783}
   modelParent: {fileID: 6472569767721710277}
-  fpCamera: {fileID: 1771142467539686678}
+  firstPersonCamera: {fileID: 1771142467539686678}
   ccMovement: {fileID: 114885910112137000}
   ccView: {fileID: 114558246560536770}
 --- !u!114 &114558246560536770

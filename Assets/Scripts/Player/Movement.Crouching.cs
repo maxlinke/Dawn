@@ -60,7 +60,7 @@ namespace PlayerController {
             var offset = 0.05f;
             var scale = PlayerTransform.lossyScale.Average();
             var rayRadius = (LocalColliderRadius * scale) - offset;
-            var rayLength = ((pcProps.NormalHeight - LocalColliderHeight) * scale) + offset;
+            var rayLength = ((props.NormalHeight - LocalColliderHeight) * scale) + offset;
             if(Physics.SphereCast(rayStart, rayRadius, rayDir, out var hit, rayLength, collisionCastMask)){
                 // could do a mass check here if hit is a rigidbody
                 return false;
@@ -71,20 +71,20 @@ namespace PlayerController {
         public void UpdateColliderSizeIfNeeded (MoveState currentState, bool instantly, bool forceUpdate = false) {
             float currentHeight = LocalColliderHeight;
             bool noHeightUpdateNeeded = false;
-            noHeightUpdateNeeded |= (shouldCrouch && currentHeight == pcProps.CrouchHeight);
-            noHeightUpdateNeeded |= (!shouldCrouch && currentHeight == pcProps.NormalHeight);
+            noHeightUpdateNeeded |= (shouldCrouch && currentHeight == props.CrouchHeight);
+            noHeightUpdateNeeded |= (!shouldCrouch && currentHeight == props.NormalHeight);
             if(noHeightUpdateNeeded && !forceUpdate){
                 return;
             }
             float targetHeight;
             if(shouldCrouch || !CanUncrouch(currentState.touchingGround)){
-                targetHeight = pcProps.CrouchHeight;
+                targetHeight = props.CrouchHeight;
             }else{
-                targetHeight = pcProps.NormalHeight;
+                targetHeight = props.NormalHeight;
             }
             float deltaHeight = targetHeight - currentHeight;
             if(!instantly){
-                float maxDelta = pcProps.HeightChangeSpeed * Time.deltaTime;
+                float maxDelta = props.HeightChangeSpeed * Time.deltaTime;
                 if(Mathf.Abs(deltaHeight) > maxDelta){
                     deltaHeight = Mathf.Sign(deltaHeight) * maxDelta;
                 }

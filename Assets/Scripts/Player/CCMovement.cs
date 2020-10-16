@@ -84,7 +84,29 @@ namespace PlayerController {
 
         protected override void OnColliderSizeUpdated (bool onGround) {
             model.localPosition = Vector3.zero;
-            head.localPosition = new Vector3(0f, LocalColliderHeight - pcProps.EyeOffset, 0f);
+            head.localPosition = new Vector3(0f, LocalColliderHeight - props.EyeOffset, 0f);
+        }
+
+        protected override bool ColliderIsSolid (Collider otherCollider) {
+            // if(otherCollider == null) return false;
+            // var otherRB = otherCollider.attachedRigidbody;
+            // if(otherRB == null) return true;
+            // return otherRB.isKinematic;
+            return true;
+        }
+
+        protected override void GetVelocityAndSolidness (CollisionPoint surfacePoint, out Vector3 velocity, out float solidness) {
+            // var otherRB = surfacePoint.otherRB;
+            // velocity = (otherRB == null ? Vector3.zero : otherRB.velocity);
+            // if(ColliderIsSolid(surfacePoint.otherCollider)){
+            //     solidness = 1f;    
+            // }else if(otherRB != null){
+            //     solidness = Mathf.Clamp01((otherRB.mass - rbProps.FootRBNonSolidMass) / (rbProps.FootRBSolidMass - rbProps.FootRBNonSolidMass));
+            // }else{
+            //     solidness = 0f;
+            // }
+            velocity = Vector3.zero;
+            solidness = 1f;
         }
         
     }

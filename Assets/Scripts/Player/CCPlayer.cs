@@ -4,11 +4,24 @@ using CustomInputSystem;
 
 public class CCPlayer : Player {
 
-    [Header("Specific Scripty bits")]
+    [Header("Properties")]
+    [SerializeField] Properties props = default;
+    // [SerializeField] PlayerHealthSettings healthSettings = default;
+    [SerializeField] bool selfInit = false;
+
+    [Header("GameObject Parts")]
+    [SerializeField] Transform head = default;
+    [SerializeField] Transform modelParent = default;
+    [SerializeField] Camera firstPersonCamera = default;
+
+    [Header("Script Components")]
     [SerializeField] CCMovement ccMovement = default;
     [SerializeField] CCView ccView = default;
 
+    protected override Camera FirstPersonCamera => firstPersonCamera;
+    protected override Properties Props => props;
     protected override Movement MovementSystem => ccMovement;
+    protected override bool SelfInit => selfInit;
 
     // brought back from the dead
     // plan: NO PHYSICS (maybe pushing small physics objects but that's it!)
@@ -18,13 +31,13 @@ public class CCPlayer : Player {
     // down slopes: use regular ground move vector
 
     protected override void InitializeComponents () {
-        ccView.Initialize(pcProps, this, head);
+        ccView.Initialize(props, this, head);
         ccView.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        ccMovement.Initialize(pcProps, head, modelParent);
+        ccMovement.Initialize(props, head, modelParent);
     }
 
     void Update () {

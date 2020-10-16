@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-[CreateAssetMenu(menuName = "Player Health Settings", fileName = "New PlayerHealthSettings")]
+[CreateAssetMenu(menuName = "Player/Health Settings", fileName = "New PlayerHealthSettings")]
 public class PlayerHealthSettings : ScriptableObject {
 
     // TODO could this be general health settings? i'll see when i get around to other entities...

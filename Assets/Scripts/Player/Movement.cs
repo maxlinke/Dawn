@@ -46,7 +46,7 @@ namespace PlayerController {
         protected abstract Transform PlayerTransform { get; }
         protected abstract Transform GravityAlignmentReferenceTransform { get; }
 
-        protected Properties pcProps { get; private set; }
+        protected Properties props { get; private set; }
         protected Transform head  { get; private set; }
         protected Transform model { get; private set; }
 
@@ -95,7 +95,7 @@ namespace PlayerController {
         private int collisionCastMask;
 
         protected virtual void Init (Properties pcProps, Transform head, Transform model) {
-            this.pcProps = pcProps;
+            this.props = pcProps;
             this.head = head;
             this.model = model;
             defaultPM = new PhysicMaterial();
@@ -137,8 +137,8 @@ namespace PlayerController {
                         return false;
                     }
                 }
-                var swimPoint = PlayerTransform.TransformPoint(LocalColliderTop + new Vector3(0f, pcProps.SwimOffset, 0f));
-                var crouchPoint = PlayerTransform.TransformPoint(LocalColliderBottom + new Vector3(0f, pcProps.CrouchHeight + pcProps.SwimOffset, 0f));
+                var swimPoint = PlayerTransform.TransformPoint(LocalColliderTop + new Vector3(0f, props.SwimOffset, 0f));
+                var crouchPoint = PlayerTransform.TransformPoint(LocalColliderBottom + new Vector3(0f, props.CrouchHeight + props.SwimOffset, 0f));
                 canSwim = (otherCollider.ClosestPoint(swimPoint) - swimPoint).sqrMagnitude < 0.0001f;           // TODO replace with the static waterbody collider contains thing?
                 canCrouch = (otherCollider.ClosestPoint(crouchPoint) - crouchPoint).sqrMagnitude >= 0.0001f; 
                 return true;
@@ -146,42 +146,37 @@ namespace PlayerController {
             return false;
         }
 
-        protected bool ColliderIsSolid (Collider otherCollider) {
-            if(otherCollider == null) return false;
-            var otherRB = otherCollider.attachedRigidbody;
-            if(otherRB == null) return true;
-            return otherRB.isKinematic;
-        }
+        protected abstract bool ColliderIsSolid (Collider otherCollider);
 
         protected float CrouchLerpFactor () {
-            return Mathf.Clamp01((LocalColliderHeight - pcProps.CrouchHeight) / (pcProps.NormalHeight - pcProps.CrouchHeight));
+            return Mathf.Clamp01((LocalColliderHeight - props.CrouchHeight) / (props.NormalHeight - props.CrouchHeight));
         }
 
         protected float RawSpeedMultiplier (float run) {
-            var standingSpeed = Mathf.Lerp(pcProps.WalkSpeedMultiplier, pcProps.RunSpeedMultiplier, Mathf.Clamp01(run));
-            var crouchSpeed = pcProps.CrouchSpeedMultiplier;
+            var standingSpeed = Mathf.Lerp(props.WalkSpeedMultiplier, props.RunSpeedMultiplier, Mathf.Clamp01(run));
+            var crouchSpeed = props.CrouchSpeedMultiplier;
             return Mathf.Lerp(crouchSpeed, standingSpeed, CrouchLerpFactor());
         }
 
         protected float JumpSpeed () {
-            var jumpHeight = Mathf.Lerp(pcProps.CrouchedJumpHeight, pcProps.StandingJumpHeight, CrouchLerpFactor());
-            return Mathf.Sqrt(2f * pcProps.NormalGravity * jumpHeight);
+            var jumpHeight = Mathf.Lerp(props.CrouchedJumpHeight, props.StandingJumpHeight, CrouchLerpFactor());
+            return Mathf.Sqrt(2f * props.NormalGravity * jumpHeight);
         }
 
         protected Vector3 GetJumpVelocity (Vector3 localVelocity, float jumpStrength) {
-            switch(pcProps.JumpVelocityMode){
+            switch(props.JumpVelocityMode){
                 case JumpVelocityMode.AddGlobalVelocity:
                     return PlayerTransform.up * JumpSpeed() * jumpStrength;
                 case JumpVelocityMode.SetLocalVelocity:
                     float lvVert = Vector3.Dot(localVelocity, PlayerTransform.up);
-                    if(pcProps.LimitDescentJumpHeight && lvVert < 0f){
+                    if(props.LimitDescentJumpHeight && lvVert < 0f){
                         lvVert = 0f;
                     }
                     float lvJump = JumpSpeed() * jumpStrength;      // add this strength as a parameter and put it in the square root?
-                    float minJump = pcProps.MinJumpVelocity * lvJump;
+                    float minJump = props.MinJumpVelocity * lvJump;
                     return PlayerTransform.up * Mathf.Max(minJump, lvJump - lvVert);
                 default:
-                    Debug.LogError($"Unknown {nameof(JumpVelocityMode)} \"{pcProps.JumpVelocityMode}\"!");
+                    Debug.LogError($"Unknown {nameof(JumpVelocityMode)} \"{props.JumpVelocityMode}\"!");
                     return Vector3.zero;
             }
         }
@@ -190,7 +185,7 @@ namespace PlayerController {
             localVelocity = localVelocity.ProjectOnPlane(PlayerTransform.up);
             Vector3 relevantVelocity;
             float sign;
-            switch(pcProps.JumpBoostDirection){
+            switch(props.JumpBoostDirection){
                 case JumpBoostDirection.Forward:
                     relevantVelocity = localVelocity.ProjectOnVector(PlayerTransform.forward);
                     sign = Mathf.Clamp01(Mathf.Sign(Vector3.Dot(localVelocity, PlayerTransform.forward)));
@@ -204,11 +199,11 @@ namespace PlayerController {
                     sign = 1f;
                     break;
                 default:
-                    Debug.LogError($"Unknown {nameof(JumpBoostDirection)} \"{pcProps.JumpBoostDirection}\"!");
+                    Debug.LogError($"Unknown {nameof(JumpBoostDirection)} \"{props.JumpBoostDirection}\"!");
                     return Vector3.zero;
             }
-            float boostMultiplier = pcProps.BoostMultiplier;
-            if(!pcProps.EnableOverBoosting && (boostMultiplier != 1f)){
+            float boostMultiplier = props.BoostMultiplier;
+            if(!props.EnableOverBoosting && (boostMultiplier != 1f)){
                 var lerp = (localSpeed - rawTargetSpeed) / ((rawTargetSpeed * boostMultiplier) - rawTargetSpeed);
                 boostMultiplier = Mathf.Lerp(boostMultiplier, 1f, lerp);
             }
@@ -216,10 +211,10 @@ namespace PlayerController {
         }
 
         protected Vector3 GetLandingBrake (Vector3 localVelocity, bool jumpInput) {
-            if(jumpInput && pcProps.EnableBunnyHopping){
+            if(jumpInput && props.EnableBunnyHopping){
                 return Vector3.zero;
             }
-            return (localVelocity * pcProps.LandingMultiplier) - localVelocity;
+            return (localVelocity * props.LandingMultiplier) - localVelocity;
         }
 
         protected Vector3 ClampedDeltaVAcceleration (Vector3 currentVelocity, Vector3 targetVelocity, float maxAcceleration, float deltaTime) {
@@ -265,8 +260,8 @@ namespace PlayerController {
             }
             Transform referenceTransform = GravityAlignmentReferenceTransform;
             Quaternion gravityRotation = GetTargetGravityRotation(referenceTransform);
-            float normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / pcProps.NormalGravity);
-            float degreesPerSecond = pcProps.GravityTurnSpeed * Mathf.Max(normedGravityStrength, pcProps.MinGravityTurnSpeedMultiplier);
+            float normedGravityStrength = Mathf.Clamp01(Physics.gravity.magnitude / props.NormalGravity);
+            float degreesPerSecond = props.GravityTurnSpeed * Mathf.Max(normedGravityStrength, props.MinGravityTurnSpeedMultiplier);
             Quaternion newRotation = Quaternion.RotateTowards(referenceTransform.rotation, gravityRotation, Time.deltaTime * degreesPerSecond);
             ApplyGravityRotation(newRotation);
             return true;
@@ -278,13 +273,13 @@ namespace PlayerController {
             if(state.groundStickBlockTimer > 0){
                 return false;
             }
-            float lerpFactor = state.surfaceSolidness * state.normedStaticSurfaceFriction * pcProps.GroundStickiness;
+            float lerpFactor = state.surfaceSolidness * state.normedStaticSurfaceFriction * props.GroundStickiness;
             if(lerpFactor <= 0f){
                 return false;
             }
             Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
             Vector3 rayDir = -state.surfacePoint.normal;
-            float rayLength = targetSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * pcProps.HardSlopeLimit);
+            float rayLength = targetSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * props.HardSlopeLimit);
             rayLength += LocalColliderRadius;
             bool groundCastHit = Physics.Raycast(rayOrigin, rayDir, out var hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
             if(!groundCastHit){
@@ -293,7 +288,7 @@ namespace PlayerController {
             bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
             bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
             if(distOK && dotOK){
-                bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < pcProps.HardSlopeLimit);
+                bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < props.HardSlopeLimit);
                 if(angleOK){
                     Vector3 newCapsuleContact = rayOrigin - (LocalColliderRadius * hit.normal);
                     Vector3 delta = hit.point - newCapsuleContact;      // doesn't take velocity into consideration...
@@ -312,7 +307,7 @@ namespace PlayerController {
                     Debug.Log($"sticking (lerp {lerpFactor:F2})!");
 
                     state.executedGroundStick = true;
-                    state.groundStickBlockTimer = pcProps.GroundStickInterval + 1;
+                    state.groundStickBlockTimer = props.GroundStickInterval + 1;
 
                     var bwCol = Color.Lerp(Color.black, Color.white, lerpFactor);
                     Debug.DrawLine(rayOrigin, newCapsuleContact, bwCol, 10f);

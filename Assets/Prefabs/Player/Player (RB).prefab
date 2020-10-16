@@ -296,12 +296,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea910f09c6513284a961d3f9f57e8021, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pcProps: {fileID: 11400000, guid: 31050e73fba0abf4fae99b2fbb09a517, type: 2}
+  props: {fileID: 11400000, guid: c0f849a5adf1533409eae61af5adec0a, type: 2}
   healthSettings: {fileID: 11400000, guid: 45690da1e6255fb4aba7d341b52fa306, type: 2}
   selfInit: 0
   head: {fileID: 8913080615580733567}
   modelParent: {fileID: 8913080616386587639}
-  fpCamera: {fileID: 8913080616304595080}
+  firstPersonCamera: {fileID: 8913080616304595080}
   smoothRotationParent: {fileID: 2538744342937488322}
   rbMovement: {fileID: 8913080616178811583}
   rbView: {fileID: 8913080616178811552}
@@ -312,6 +312,7 @@ MonoBehaviour:
   gravityFlipKey: 103
   viewLockKey: 118
   debugViewTarget: {fileID: 0}
+  numberKeysDoDebugLogs: 0
 --- !u!114 &8913080616178811583
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -368,8 +369,8 @@ GameObject:
   - component: {fileID: 7080257077693341513}
   - component: {fileID: 3633530048604628650}
   m_Layer: 0
-  m_Name: Main Camera
-  m_TagString: MainCamera
+  m_Name: Camera
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

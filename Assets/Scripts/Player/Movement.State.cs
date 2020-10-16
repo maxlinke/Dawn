@@ -75,6 +75,8 @@ namespace PlayerController {
             return output;
         }
 
+        protected abstract void GetVelocityAndSolidness (CollisionPoint surfacePoint, out Vector3 velocity, out float solidness);
+
         // TODO "other velocity"-handling here is pretty rb-specific... 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
             if(lastState.executedGroundStick){
@@ -130,20 +132,12 @@ namespace PlayerController {
                     output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
                 }
             }else{
-                var otherRB = sp.otherRB;
-                var otherVelocity = (otherRB == null ? Vector3.zero : otherRB.velocity);
+                GetVelocityAndSolidness(sp, out Vector3 otherVelocity, out output.surfaceSolidness);
                 output.incomingLocalVelocity = this.Velocity - otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
                 var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);    // just using acos (and rad2deg) on the surfacedot sometimes results in NaN errors...
                 output.surfaceDot = surfaceDot;
                 output.surfaceAngle = surfaceAngle;
-                if(ColliderIsSolid(sp.otherCollider)){
-                    output.surfaceSolidness = 1f;    
-                }else if(otherRB != null){
-                    output.surfaceSolidness = Mathf.Clamp01((otherRB.mass - pcProps.FootRBNonSolidMass) / (pcProps.FootRBSolidMass - pcProps.FootRBNonSolidMass));
-                }else{
-                    output.surfaceSolidness = 0f;
-                }
                 if(sp.otherCollider != null && sp.otherCollider.sharedMaterial != null){
                     var otherPM = sp.otherCollider.sharedMaterial;
                     output.normedStaticSurfaceFriction = otherPM.staticFriction / defaultPM.staticFriction;
@@ -157,7 +151,7 @@ namespace PlayerController {
                 if(sp.otherCollider != null && TagManager.CompareTag(Tag.Slippery, sp.otherCollider.gameObject)){
                     output.moveType = MoveType.SLOPE;
                 }else{
-                    if(surfaceAngle <= pcProps.HardSlopeLimit){
+                    if(surfaceAngle <= props.HardSlopeLimit){
                         output.moveType = MoveType.GROUND;
                     }else{
                         output.moveType = ((lp != null) ? MoveType.LADDER : MoveType.SLOPE);

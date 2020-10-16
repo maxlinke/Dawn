@@ -4,10 +4,18 @@ using CustomInputSystem;
 
 public class RBPlayer : Player {
 
-    [Header("Specific Gameobject Parts")]
+    [Header("Properties")]
+    [SerializeField] RBProperties props = default;
+    [SerializeField] PlayerHealthSettings healthSettings = default;
+    [SerializeField] bool selfInit = false;
+
+    [Header("GameObject Parts")]
+    [SerializeField] Transform head = default;
+    [SerializeField] Transform modelParent = default;
+    [SerializeField] Camera firstPersonCamera = default;
     [SerializeField] Transform smoothRotationParent = default;
 
-    [Header("Specific Scripty bits")]
+    [Header("Script Components")]
     [SerializeField] RBMovement rbMovement = default;
     [SerializeField] RBView rbView = default;
     [SerializeField] PlayerModel model = default;
@@ -21,7 +29,10 @@ public class RBPlayer : Player {
     [SerializeField] Transform debugViewTarget = default;
     [SerializeField] bool numberKeysDoDebugLogs = false;
 
+    protected override Camera FirstPersonCamera => firstPersonCamera;
+    protected override Properties Props => props;
     protected override Movement MovementSystem => rbMovement;
+    protected override bool SelfInit => selfInit;
 
     private bool cachedJumpKeyDown = false;
 
@@ -37,18 +48,18 @@ public class RBPlayer : Player {
     // TODO serializable playerstate thing (class so null is an option?)
     // so there is a difference between a "fresh" load and a "save" load
     protected override void InitializeComponents () {
-        rbView.Initialize(pcProps, this, head);
+        rbView.Initialize(props, this, head);
         rbView.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
         rbView.smoothRotationParent = smoothRotationParent;
-        rbMovement.Initialize(pcProps, head, modelParent, smoothRotationParent);
+        rbMovement.Initialize(props, head, modelParent, smoothRotationParent);
         health.Initialize(healthSettings, head);
         health.SetHealth(healthSettings.DefaultHealth);
         health.SetInvulnerable(false);      // TODO commandprompt.godmodeenabled
-        model.Initialize(pcProps, rbMovement, head);
+        model.Initialize(props, rbMovement, head);
         // load the states 
         // set collider height
         rbMovement.UpdateHeadAndModelPosition(instantly: true);

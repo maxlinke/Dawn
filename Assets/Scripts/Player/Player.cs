@@ -4,25 +4,15 @@ using CustomInputSystem;
 
 public abstract class Player : MonoBehaviour {
 
-    [Header("Properties")]
-    [SerializeField] protected Properties pcProps = default;
-    [SerializeField] protected PlayerHealthSettings healthSettings = default;
-    [SerializeField] protected bool selfInit = false;
-
-    [Header("GameObject Parts")]
-    [SerializeField] protected Transform head = default;
-    [SerializeField] protected Transform modelParent = default;
-    [SerializeField] protected Camera fpCamera = default;
-
     public static Player Instance { get; private set; }
 
     public float Height => MovementSystem.LocalColliderHeight * transform.lossyScale.Average();
     public Vector3 Velocity => MovementSystem.Velocity;
 
-    public Vector3 HeadPos => head.transform.position;
-    public Vector3 CenterPos => MovementSystem.WorldCenterPos;
-
+    protected abstract Camera FirstPersonCamera { get; }
+    protected abstract Properties Props { get; }
     protected abstract Movement MovementSystem { get; }
+    protected abstract bool SelfInit { get; }
 
     private bool m_initialized = false;
     public bool initialized { 
@@ -37,7 +27,7 @@ public abstract class Player : MonoBehaviour {
             return;
         }
         Instance = this;
-        if(selfInit){
+        if(SelfInit){
             Debug.LogWarning($"{nameof(Player)} is self initializing!");
             Initialize();
         }
@@ -54,7 +44,7 @@ public abstract class Player : MonoBehaviour {
             Debug.LogWarning($"{nameof(Player)} is already initialized, aborting!");
             return;
         }
-        InitCamera();
+        InitFirstPersonCamera();
         InitializeComponents();
         initialized = true;
     }
@@ -62,11 +52,11 @@ public abstract class Player : MonoBehaviour {
     protected abstract void InitializeComponents ();
 
     // TODO also third person camera
-    void InitCamera () {
-        fpCamera.orthographic = false;
-        fpCamera.nearClipPlane = pcProps.NearClipDist;
-        fpCamera.farClipPlane = pcProps.FarClipDist;
-        fpCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
+    void InitFirstPersonCamera () {
+        FirstPersonCamera.orthographic = false;
+        FirstPersonCamera.nearClipPlane = Props.NearClipDist;
+        FirstPersonCamera.farClipPlane = Props.FarClipDist;
+        FirstPersonCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
     }
 
     protected Vector3 GetViewInput (bool readInput) {
