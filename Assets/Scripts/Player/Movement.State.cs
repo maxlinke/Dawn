@@ -28,8 +28,6 @@ namespace PlayerController {
             public bool startedJump;
             public bool midJump;
             public int frame;
-            public int groundStickBlockTimer;
-            public bool executedGroundStick;
         }
 
         private struct CollisionProcessorOutput {
@@ -79,9 +77,6 @@ namespace PlayerController {
 
         // TODO "other velocity"-handling here is pretty rb-specific... 
         protected virtual MoveState GetCurrentState (IEnumerable<CollisionPoint> collisionPoints, IEnumerable<Collider> triggerStays) {
-            if(lastState.executedGroundStick){
-                this.Velocity = Vector3.ClampMagnitude(this.Velocity, lastState.incomingWorldVelocity.magnitude);
-            }
             Vector3 worldColliderBottomSphere = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
             var colResult = ProcessCollisionPoints(collisionPoints, worldColliderBottomSphere);
             var sp = colResult.flattestPoint;
@@ -158,7 +153,6 @@ namespace PlayerController {
                     }
                 }
             }
-            output.groundStickBlockTimer = Mathf.Max(0, lastState.groundStickBlockTimer - 1);
             output.canJump = (output.moveType == MoveType.GROUND) || (output.moveType == MoveType.LADDER);
             output.midJump = (lastState.startedJump || lastState.midJump) && (output.moveType == MoveType.AIR);
             output.incomingWorldVelocity = this.Velocity;
@@ -166,7 +160,6 @@ namespace PlayerController {
             output.frame = Time.frameCount;
             // these just need to be initialized
             output.startedJump = false;
-            output.executedGroundStick = false;
             return output;
         }
 

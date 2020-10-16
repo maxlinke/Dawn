@@ -268,57 +268,6 @@ namespace PlayerController {
         }
 
         protected abstract void ApplyGravityRotation (Quaternion newRotation);
-
-        protected bool TryEnforceGroundStick (ref MoveState state, float targetSpeed, Vector3 localVelocity) {
-            if(state.groundStickBlockTimer > 0){
-                return false;
-            }
-            float lerpFactor = state.surfaceSolidness * state.normedStaticSurfaceFriction * props.GroundStickiness;
-            if(lerpFactor <= 0f){
-                return false;
-            }
-            Vector3 rayOrigin = PlayerTransform.TransformPoint(LocalColliderBottomSphere);
-            Vector3 rayDir = -state.surfacePoint.normal;
-            float rayLength = targetSpeed * Time.deltaTime * Mathf.Tan(Mathf.Deg2Rad * props.HardSlopeLimit);
-            rayLength += LocalColliderRadius;
-            bool groundCastHit = Physics.Raycast(rayOrigin, rayDir, out var hit, rayLength, collisionCastMask, QueryTriggerInteraction.Ignore); 
-            if(!groundCastHit){
-                return false;
-            }
-            bool distOK = (hit.distance > (LocalColliderRadius + 0.01f));
-            bool dotOK = (Vector3.Dot(localVelocity, hit.normal) > 0.01f);
-            if(distOK && dotOK){
-                bool angleOK = (Vector3.Angle(hit.normal, PlayerTransform.up) < props.HardSlopeLimit);
-                if(angleOK){
-                    Vector3 newCapsuleContact = rayOrigin - (LocalColliderRadius * hit.normal);
-                    Vector3 delta = hit.point - newCapsuleContact;      // doesn't take velocity into consideration...
-                    // Vector3 movePos = (delta / Time.deltaTime) * 1.1f;
-                    Vector3 movePos = 1.1f * delta.ProjectOnVector(PlayerTransform.up) / Time.deltaTime;
-                    movePos += this.Velocity.ProjectOnPlane(hit.normal);
-
-                    if(movePos.sqrMagnitude > localVelocity.sqrMagnitude){
-                        movePos = movePos.normalized * localVelocity.magnitude;
-                    }
-                    // if(movePos.sqrMagnitude > targetSpeed){
-                    //     movePos = movePos.normalized * targetSpeed;
-                    // }
-
-                    this.Velocity = Vector3.Lerp(this.Velocity, movePos, lerpFactor);
-                    Debug.Log($"sticking (lerp {lerpFactor:F2})!");
-
-                    state.executedGroundStick = true;
-                    state.groundStickBlockTimer = props.GroundStickInterval + 1;
-
-                    var bwCol = Color.Lerp(Color.black, Color.white, lerpFactor);
-                    Debug.DrawLine(rayOrigin, newCapsuleContact, bwCol, 10f);
-                    Debug.DrawLine(rayOrigin, hit.point, bwCol, 10f);
-                    Debug.DrawRay(hit.point, hit.normal, bwCol, 10f);
-
-                    return true;
-                }
-            }
-            return false;
-        }
         
     }
 

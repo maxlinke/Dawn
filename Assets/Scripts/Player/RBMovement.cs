@@ -326,15 +326,6 @@ namespace PlayerController {
                 var lerpFactor = currentState.surfaceSolidness * dragFriction;
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
-
-                if(props.StickProactively){
-                    if((localSpeed - 0.01f) <= (props.Ground.Speed * props.RunSpeedMultiplier)){        // TODO gravity strength, velocitycomesfrommove
-                        if(TryEnforceGroundStick(ref currentState, targetSpeed, localVelocity)){
-                            moveAccel = Vector3.zero;
-                            // gravity = Vector3.zero;
-                        }
-                    }
-                }
             }
             Velocity += (moveAccel + gravity) * Time.deltaTime;
         }
