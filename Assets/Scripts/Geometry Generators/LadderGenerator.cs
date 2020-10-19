@@ -39,9 +39,6 @@ namespace GeometryGenerators {
         [SerializeField, Range(MIN_RING_VERTS, MAX_RING_VERTS)]     int rungVertexCount = 7;
         [SerializeField, Range(MIN_RAIL_RADIUS, MAX_RAIL_RADIUS)]   float railRadius = 0.1f;
         [SerializeField, Range(MIN_RUNG_RADIUS, MAX_RUNG_RADIUS)]   float rungRadius = 0.1f;
-
-        // TODO for uvs multiple options. normalized or position(*scalar)
-        // option for rotation (and randomness too)
         
         protected override Mesh CreateMesh () {
             var points = GetPoints();

@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace GeometryGenerators {
 
@@ -14,32 +17,34 @@ namespace GeometryGenerators {
 
         [ContextMenu("Generate")]
         public void Generate () {
-            if(GetTargets(out var mfs, out var mcs)){
+            if(TryGetTargets(out var mfs, out var mcs)){
                 var mesh = CreateMesh();
                 if(mesh != null){
-                    foreach(var mf in mfs){
-                        mf.sharedMesh = mesh;
-                    }
-                    foreach(var mc in mcs){
-                        mc.sharedMesh = mesh;
-                    }
+                    #if UNITY_EDITOR
+                        MeshUtility.Optimize(mesh);
+                    #endif
+                    AssignMeshToTargets(mfs, mcs, mesh);
                 }
             }
         }
 
         [ContextMenu("Clear")]
         public void Clear () {
-            if(GetTargets(out var mfs, out var mcs)){
-                foreach(var mf in mfs){
-                    mf.sharedMesh = null;
-                }
-                foreach(var mc in mcs){
-                    mc.sharedMesh = null;
-                }
+            if(TryGetTargets(out var mfs, out var mcs)){
+                AssignMeshToTargets(mfs, mcs, null);
             }
         }
 
-        protected bool GetTargets (out IEnumerable<MeshFilter> outputMFs, out IEnumerable<MeshCollider> outputMCs) {
+        protected void AssignMeshToTargets (IEnumerable<MeshFilter> mfs, IEnumerable<MeshCollider> mcs, Mesh mesh) {
+            foreach(var mf in mfs){
+                mf.sharedMesh = mesh;
+            }
+            foreach(var mc in mcs){
+                mc.sharedMesh = mesh;
+            }
+        }
+
+        protected bool TryGetTargets (out IEnumerable<MeshFilter> outputMFs, out IEnumerable<MeshCollider> outputMCs) {
             var meshFilters = new List<MeshFilter>();
             var meshColliders = new List<MeshCollider>();
             outputMFs = meshFilters;
@@ -72,6 +77,69 @@ namespace GeometryGenerators {
                     meshColliders.AddRange(targetMeshColliders);
                 }
                 return true;
+            }
+        }
+
+        [ContextMenu("Save mesh as asset")]
+        public void SaveMeshAsAsset () {
+            #if !UNITY_EDITOR
+                Debug.LogError("Saving meshes as assets is only supported in the editor!");
+            #else
+                if(!TryGetTargets(out var mfs, out var mcs)){
+                    return;
+                }
+                if(!TryGetMesh(mfs, mcs, out Mesh mesh)){
+                    return;
+                }
+                var path = EditorUtility.SaveFilePanel("Save Generated Mesh", "Assets/", mesh.name, "asset");
+                if(string.IsNullOrEmpty(path)){
+                    return;
+                }
+                path = FileUtil.GetProjectRelativePath(path);
+                var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+                if(existing != null){
+                    if(mesh.subMeshCount > 1){
+                        // TODO on upgrade to 2019, fix this
+                        Debug.LogWarning($"Mesh has {mesh.subMeshCount} submeshes. Overwriting an existing asset means losing them. If you want to keep the submeshes, save as a new asset.");
+                    }
+                    existing.CopyDataFrom(mesh);
+                    AssignMeshToTargets(mfs, mcs, existing);
+                }else{
+                    AssetDatabase.CreateAsset(mesh, path);
+                }
+                AssetDatabase.SaveAssets();
+            #endif
+        }
+
+        bool TryGetMesh (IEnumerable<MeshFilter> mfs, IEnumerable<MeshCollider> mcs, out Mesh output) {
+            output = null;
+            Mesh mesh = null;
+            bool matching = true;
+            foreach(var mf in mfs){
+                matching &= CompareOrAssign(mf.sharedMesh);
+            }
+            foreach(var mc in mcs){
+                matching &= CompareOrAssign(mc.sharedMesh);
+            }
+            if(mesh == null){
+                Debug.LogError("Mesh is null!");
+                return false;
+            }
+            if(!matching){
+                Debug.LogError("Mismatched meshes!");
+                return false;
+            }
+            output = mesh;
+            return true;
+
+            bool CompareOrAssign (Mesh input) {
+                if(mesh == null){
+                    mesh = input;
+                    return true;
+                }else if(mesh == input){
+                    return true;
+                }
+                return false;
             }
         }
         

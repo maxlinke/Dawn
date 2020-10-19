@@ -38,6 +38,9 @@ namespace GeometryGenerators {
                 if(GUILayout.Button("Clear")){
                     generator.Clear();
                 }
+                if(GUILayout.Button("Save mesh as asset")){
+                    generator.SaveMeshAsAsset();
+                }
             }else{
                 GUILayout.Label($"ERROR! {target.GetType()} is not a {nameof(GeometryGenerator)}!");
             }
