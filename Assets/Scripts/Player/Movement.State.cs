@@ -85,6 +85,7 @@ namespace PlayerController {
                 sp = null;
                 lp = null;
             }
+            Vector3 worldVelocity = this.Velocity;
             MoveState output;
             output.surfacePoint = sp;
             output.ladderPoint = lp;
@@ -118,17 +119,17 @@ namespace PlayerController {
                 output.surfacePhysicMaterial = null;
                 if(swim){
                     output.moveType = MoveType.WATER;
-                    output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
+                    output.incomingLocalVelocity = worldVelocity - averageTriggerVelocity;
                 }else if(output.ladderPoint != null){
                     output.moveType = MoveType.LADDER;
-                    output.incomingLocalVelocity = this.Velocity - output.ladderPoint.GetVelocity();
+                    output.incomingLocalVelocity = worldVelocity - output.ladderPoint.GetVelocity();
                 }else{
                     output.moveType = MoveType.AIR;
-                    output.incomingLocalVelocity = this.Velocity - averageTriggerVelocity;
+                    output.incomingLocalVelocity = worldVelocity - averageTriggerVelocity;
                 }
             }else{
                 GetVelocityAndSolidness(sp, out Vector3 otherVelocity, out output.surfaceSolidness);
-                output.incomingLocalVelocity = this.Velocity - otherVelocity;
+                output.incomingLocalVelocity = worldVelocity - otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
                 var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);    // just using acos (and rad2deg) on the surfacedot sometimes results in NaN errors...
                 output.surfaceDot = surfaceDot;
@@ -155,7 +156,7 @@ namespace PlayerController {
             }
             output.canJump = (output.moveType == MoveType.GROUND) || (output.moveType == MoveType.LADDER);
             output.midJump = (lastState.startedJump || lastState.midJump) && (output.moveType == MoveType.AIR);
-            output.incomingWorldVelocity = this.Velocity;
+            output.incomingWorldVelocity = worldVelocity;
             output.worldPosition = this.PlayerTransform.position;
             output.frame = Time.frameCount;
             // these just need to be initialized

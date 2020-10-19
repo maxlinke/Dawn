@@ -230,15 +230,13 @@ namespace PlayerController {
             return ClampedDeltaVAcceleration(currentVelocity, targetVelocity, maxAcceleration, Time.deltaTime);
         }
 
-        protected void ApplyDrag (float drag, ref Vector3 localVelocity, float deltaTime) {
+        // TODO this is only really for rb, not so much for cc
+        // as Velocity is more of a get-thing there as opposed to a direct link to rb.velocity
+        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
-            dragDeceleration *= deltaTime;
+            dragDeceleration *= Time.deltaTime;
             Velocity += dragDeceleration;
             localVelocity += dragDeceleration;
-        }
-
-        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
-            ApplyDrag(drag, ref localVelocity, Time.deltaTime);
         }
 
         protected Quaternion GetTargetGravityRotation (Transform referenceTransform) {
