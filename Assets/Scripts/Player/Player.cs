@@ -7,7 +7,7 @@ public abstract class Player : MonoBehaviour {
     public static Player Instance { get; private set; }
 
     public float Height => MovementSystem.LocalColliderHeight * transform.lossyScale.Average();
-    public Vector3 Velocity => MovementSystem.Velocity;
+    public Vector3 Velocity => MovementSystem.WorldVelocity;
 
     protected abstract Camera FirstPersonCamera { get; }
     protected abstract Properties Props { get; }

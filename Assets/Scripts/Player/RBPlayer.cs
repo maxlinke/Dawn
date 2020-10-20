@@ -125,7 +125,7 @@ public class RBPlayer : Player {
             CursorLockManager.UpdateLockState();
         }
         if(Input.GetKeyDown(boostKey)){
-            rbMovement.Velocity += head.transform.forward * 50f;
+            rbMovement.AddVelocity(head.transform.forward * 50f);
         }
         if(Input.GetKeyDown(slowMoKey)){
             if(Time.timeScale == 1f){

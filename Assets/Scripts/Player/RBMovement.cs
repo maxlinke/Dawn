@@ -29,8 +29,11 @@ namespace PlayerController {
         protected Vector3 TargetSmoothRotationParentPos => col.center;
         protected Vector3 TargetHeadPos => new Vector3(0f, 0.5f * col.height + props.EyeOffset, 0f);
         protected Vector3 TargetModelPos => new Vector3(0f, -0.5f * col.height, 0f);
+
+        public override Vector3 WorldVelocity => rb.velocity;
+        public override Vector3 LocalVelocity => rb.velocity;       // TODO either last state or actual calculation?
         
-        public override Vector3 Velocity { 
+        protected override Vector3 MoveVelocity { 
             get => rb.velocity;
             set => rb.velocity = value;
         }
@@ -59,6 +62,7 @@ namespace PlayerController {
 
         List<CollisionPoint> contactPoints;
         List<Collider> triggerStays;
+        Vector3 lastPos;
 
         public void Initialize (RBProperties rbProps, Transform head, Transform model, Transform smoothRotationParent) {
             base.Init(rbProps, head, model);
@@ -66,6 +70,7 @@ namespace PlayerController {
             this.smoothRotationParent = smoothRotationParent;
             contactPoints = new List<CollisionPoint>();
             triggerStays = new List<Collider>();
+            lastPos = transform.position;
             InitCol();
             InitRB();
             initialized = true;
@@ -136,14 +141,14 @@ namespace PlayerController {
                     ExecuteMove(MoveInput.None, ref currentState);
                     break;
                 case ControlMode.ANCHORED:
-                    Velocity = Vector3.zero;
+                    MoveVelocity = Vector3.zero;
                     break;
                 default:
                     Debug.LogError($"Unknown {nameof(ControlMode)} \"{controlMode}\"!");
-                    Velocity = Vector3.zero;
+                    MoveVelocity = Vector3.zero;
                     break;
             }
-            FinishMove(currentState);
+            FinishMove(ref currentState);
         }
 
         void StartMove (out MoveState currentState) {
@@ -157,12 +162,12 @@ namespace PlayerController {
             debugInfo += $"mt:  {currentState.moveType.ToString()}\n";
             debugInfo += $"nsf: {currentState.normedStaticSurfaceFriction.ToString()}\n";
             debugInfo += $"ndf: {currentState.normedDynamicSurfaceFriction.ToString()}\n";
-            debugInfo += $"ilv: {currentState.incomingLocalVelocity.magnitude:F3} m/s\n";
+            debugInfo += $"ilv: {currentState.localVelocity.magnitude:F3} m/s\n";
             debugInfo += $"c:   {shouldCrouch}\n";
             debugInfo += $"h:   {col.height}\n";
         }
 
-        void FinishMove (MoveState currentState) {Color lineColor;
+        void FinishMove (ref MoveState currentState) {Color lineColor;
             switch(currentState.moveType){
                 case MoveType.AIR:
                     lineColor = Color.red;
@@ -183,7 +188,12 @@ namespace PlayerController {
                     lineColor = Color.magenta;
                     break;
             }
-            Debug.DrawLine(lastState.worldPosition, currentState.worldPosition, lineColor, 10f);
+            var currentPos = transform.position;
+            Debug.DrawLine(lastPos, currentPos, lineColor, 10f);
+            lastPos = currentPos;
+            
+            currentState.worldVelocity = WorldVelocity;
+            currentState.localVelocity = LocalVelocity;
             lastState = currentState;
         }
         
@@ -206,7 +216,7 @@ namespace PlayerController {
                     break;
                 default:
                     Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
-                    Velocity += Physics.gravity * Time.deltaTime;
+                    MoveVelocity += Physics.gravity * Time.deltaTime;
                     break;
             }
         }
@@ -287,11 +297,11 @@ namespace PlayerController {
                     return;
                 }
             }
-            var localVelocity = currentState.incomingLocalVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
+            var localVelocity = currentState.localVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
             if(lastState.midJump){  // can i move this into the state thingy?
                 var landingAccel = GetLandingBrake(localVelocity, moveInput.jump);
                 localVelocity += landingAccel;
-                Velocity += landingAccel;
+                MoveVelocity += landingAccel;
             }
             var dragFriction = currentState.normedStaticSurfaceFriction;
             var moveFriction = currentState.normedDynamicSurfaceFriction;
@@ -327,11 +337,11 @@ namespace PlayerController {
                 lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
                 gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
             }
-            Velocity += (moveAccel + gravity) * Time.deltaTime;
+            MoveVelocity += (moveAccel + gravity) * Time.deltaTime;
         }
 
         Vector3 WaterExitAcceleration (ref MoveState currentState) {
-            var verticalLocalVelocity = VerticalComponent(currentState.incomingLocalVelocity);
+            var verticalLocalVelocity = VerticalComponent(currentState.localVelocity);
             if(verticalLocalVelocity.y > 0){
                 var jumpVelocity = PlayerTransform.up * JumpSpeed();
                 return (jumpVelocity - verticalLocalVelocity) / Time.deltaTime;
@@ -340,7 +350,7 @@ namespace PlayerController {
         }
 
         void SlopeMovement (MoveInput moveInput, ref MoveState currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
             var dragFriction = currentState.normedStaticSurfaceFriction;
             var moveFriction = currentState.normedDynamicSurfaceFriction;
             var frictionMag = Mathf.Lerp(props.Air.Drag, props.Slope.Drag, dragFriction);
@@ -362,14 +372,14 @@ namespace PlayerController {
                 var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
                 moveAcceleration = moveAcceleration.ProjectOnVector(allowedMoveDirection);
             }
-            Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
         }
 
         void AerialMovement (MoveInput moveInput, ref MoveState currentState) {
             var rawInput = moveInput.horizontalInput;
             var rawInputMag = rawInput.magnitude;
             var targetDirection = PlayerTransform.TransformDirection(rawInput);
-            var horizontalLocalVelocity = HorizontalComponent(currentState.incomingLocalVelocity);
+            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
             var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             float drag = props.Air.Drag;
             if(props.EnableFullFlightParabola && horizontalLocalSpeed > props.Air.Speed){
@@ -385,11 +395,11 @@ namespace PlayerController {
             if(currentState.isInWater && currentState.facingWall && moveInput.waterExitJump){
                 moveAcceleration += WaterExitAcceleration(ref currentState);
             }
-            Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
         }
 
         void WaterMovement (MoveInput moveInput, ref MoveState currentState) {
-            var localVelocity = currentState.incomingLocalVelocity;
+            var localVelocity = currentState.localVelocity;
             ApplyDrag(props.Water.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
             var rawInput = moveInput.horizontalInput;
@@ -401,11 +411,11 @@ namespace PlayerController {
             var targetSpeed = Mathf.Max(props.Water.Speed * RawSpeedMultiplier(moveInput.run), localSpeed);
             var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
             var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * props.Water.Accel);
-            Velocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
             if(currentState.waterBody != null){
                 var buoyancy = currentState.waterBody.WaterPhysics.BuoyancyFromDensity(props.PlayerDensity);
                 currentState.waterBody.AddBuoyancy(rb, buoyancy, Vector3.zero);     // TODO water buoyancy should always happen, not just in here
             }
+            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
         }
 
         void LadderMovement (MoveInput moveInput, ref MoveState currentState) {
@@ -415,7 +425,7 @@ namespace PlayerController {
                 AerialMovement(moveInput, ref currentState);
                 return;
             }
-            var localVelocity = currentState.incomingLocalVelocity;
+            var localVelocity = currentState.localVelocity;
             ApplyDrag(props.Ladder.Drag, ref localVelocity);
             var localSpeed = localVelocity.magnitude;
             var targetDirection = LadderMoveVector(rawInput, currentState.ladderPoint.normal);
@@ -432,7 +442,7 @@ namespace PlayerController {
                 var lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
                 gravity = Vector3.Slerp(stickGravity, Physics.gravity, lerpFactor);
             }
-            Velocity += (moveAcceleration + gravity) * Time.deltaTime;
+            MoveVelocity += (moveAcceleration + gravity) * Time.deltaTime;
         }
 
     }

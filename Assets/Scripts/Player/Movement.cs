@@ -40,7 +40,10 @@ namespace PlayerController {
         public abstract float LocalColliderRadius { get; protected set; }
         public abstract Vector3 LocalColliderCenter { get; protected set; }
 
-        public abstract Vector3 Velocity { get; set; }
+        protected abstract Vector3 MoveVelocity { get; set; }
+
+        public abstract Vector3 WorldVelocity { get; }
+        public abstract Vector3 LocalVelocity { get; }
         public abstract ControlMode controlMode { get; set; }
 
         protected abstract Transform PlayerTransform { get; }
@@ -101,6 +104,10 @@ namespace PlayerController {
             defaultPM = new PhysicMaterial();
             collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndWorldModel);
             collisionCastMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel, Layer.Water);
+        }
+
+        public void AddVelocity (Vector3 addVelocity) {
+            MoveVelocity += addVelocity;
         }
 
         protected Vector3 HorizontalComponent (Vector3 vector) {
@@ -235,7 +242,7 @@ namespace PlayerController {
         protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
             var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
             dragDeceleration *= Time.deltaTime;
-            Velocity += dragDeceleration;
+            MoveVelocity += dragDeceleration;
             localVelocity += dragDeceleration;
         }
 

@@ -22,9 +22,8 @@ namespace PlayerController {
             public bool canJump;
             public PhysicMaterial surfacePhysicMaterial;
             public MoveType moveType;
-            public Vector3 worldPosition;
-            public Vector3 incomingWorldVelocity;
-            public Vector3 incomingLocalVelocity;
+            public Vector3 worldVelocity;
+            public Vector3 localVelocity;
             public bool startedJump;
             public bool midJump;
             public int frame;
@@ -85,7 +84,7 @@ namespace PlayerController {
                 sp = null;
                 lp = null;
             }
-            Vector3 worldVelocity = this.Velocity;
+            Vector3 worldVelocity = this.WorldVelocity;
             MoveState output;
             output.surfacePoint = sp;
             output.ladderPoint = lp;
@@ -119,17 +118,17 @@ namespace PlayerController {
                 output.surfacePhysicMaterial = null;
                 if(swim){
                     output.moveType = MoveType.WATER;
-                    output.incomingLocalVelocity = worldVelocity - averageTriggerVelocity;
+                    output.localVelocity = worldVelocity - averageTriggerVelocity;
                 }else if(output.ladderPoint != null){
                     output.moveType = MoveType.LADDER;
-                    output.incomingLocalVelocity = worldVelocity - output.ladderPoint.GetVelocity();
+                    output.localVelocity = worldVelocity - output.ladderPoint.GetVelocity();
                 }else{
                     output.moveType = MoveType.AIR;
-                    output.incomingLocalVelocity = worldVelocity - averageTriggerVelocity;
+                    output.localVelocity = worldVelocity - averageTriggerVelocity;
                 }
             }else{
                 GetVelocityAndSolidness(sp, out Vector3 otherVelocity, out output.surfaceSolidness);
-                output.incomingLocalVelocity = worldVelocity - otherVelocity;
+                output.localVelocity = worldVelocity - otherVelocity;
                 var surfaceDot = Vector3.Dot(sp.normal, PlayerTransform.up);
                 var surfaceAngle = Vector3.Angle(sp.normal, PlayerTransform.up);    // just using acos (and rad2deg) on the surfacedot sometimes results in NaN errors...
                 output.surfaceDot = surfaceDot;
@@ -156,8 +155,7 @@ namespace PlayerController {
             }
             output.canJump = (output.moveType == MoveType.GROUND) || (output.moveType == MoveType.LADDER);
             output.midJump = (lastState.startedJump || lastState.midJump) && (output.moveType == MoveType.AIR);
-            output.incomingWorldVelocity = worldVelocity;
-            output.worldPosition = this.PlayerTransform.position;
+            output.worldVelocity = worldVelocity;
             output.frame = Time.frameCount;
             // these just need to be initialized
             output.startedJump = false;
