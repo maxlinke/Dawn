@@ -56,6 +56,10 @@ namespace PlayerController {
         // so some refactoring of the rb movement is needed
         // or maybe not, if i juse use the last state as my cache...
         // TODO just make this virtual, i can pretty much copy the stuff from rbmovement
+
+        // important note: when INSIDE a collider and moving down, i will get pushed up
+        // the collision flags of the move will say "below" but there won't be a concontrollercolliderhit event!
+        // possible solution: if move and flags != none but collisions == 0 -> do last "vertical move" again?
         public void Move (MoveInput move) {
             MoveState currentState = GetCurrentState(contactPoints, triggerStays);
             contactPoints.Clear();
