@@ -12,7 +12,7 @@ namespace GeometryGenerators {
         const float MAX_REAR_ANGLE = 90f;
 
         const float MIN_LENGTH = 0f;
-        const float MAX_LENGTH = 10f;
+        const float MAX_LENGTH = 20f;
 
         const float MIN_WIDTH = 0f;
         const float MAX_WIDTH = 10f;
