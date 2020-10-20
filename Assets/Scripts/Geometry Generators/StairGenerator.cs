@@ -9,13 +9,13 @@ namespace GeometryGenerators {
         const int MAX_STEP_COUNT = 20;
 
         const float MIN_STEP_SIZE = 0.01f;
-        const float MAX_STEP_SIZE = 2f;
+        const float MAX_STEP_SIZE = 10f;
 
         const float MIN_END_LENGTH = 1f;
         const float MAX_END_LENGTH = 10f;
 
         const float MIN_WIDTH = 0f;
-        const float MAX_WIDTH = 10f;
+        const float MAX_WIDTH = 100f;
 
         [Header("Settings")]
         [SerializeField, Range(MIN_STEP_COUNT, MAX_STEP_COUNT)] int stepCount = 10;
