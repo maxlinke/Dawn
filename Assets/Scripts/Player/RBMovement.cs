@@ -200,19 +200,19 @@ namespace PlayerController {
         void ExecuteMove (MoveInput moveInput, ref MoveState currentState) {
             switch(currentState.moveType){
                 case MoveType.AIR:
-                    AerialMovement(moveInput, ref currentState);
+                    MoveVelocity += AerialMovement(moveInput, ref currentState) * Time.deltaTime;
                     break;
                 case MoveType.GROUND:
-                    GroundedMovement(moveInput, ref currentState);
+                    MoveVelocity += GroundedMovement(moveInput, ref currentState) * Time.deltaTime;
                     break;
                 case MoveType.SLOPE:
-                    SlopeMovement(moveInput, ref currentState);
+                    MoveVelocity += SlopeMovement(moveInput, ref currentState) * Time.deltaTime;
                     break;
                 case MoveType.WATER:
-                    WaterMovement(moveInput, ref currentState);
+                    MoveVelocity += WaterMovement(moveInput, ref currentState) * Time.deltaTime;
                     break;
                 case MoveType.LADDER:
-                    LadderMovement(moveInput, ref currentState);
+                    MoveVelocity += LadderMovement(moveInput, ref currentState) * Time.deltaTime;
                     break;
                 default:
                     Debug.LogError($"Unknown {nameof(MoveType)} \"{currentState.moveType}\"!");
@@ -287,59 +287,61 @@ namespace PlayerController {
             WorldCenterPos = wcPos;
         }
 
-        void GroundedMovement (MoveInput moveInput, ref MoveState currentState) {
-            var rawInput = moveInput.horizontalInput;
-            var rawInputMag = rawInput.magnitude;
-            var targetDirection = PlayerTransform.TransformDirection(rawInput);
+        Vector3 GroundedMovement (MoveInput moveInput, ref MoveState currentState) {
+            Vector3 rawInput = moveInput.horizontalInput;
+            float rawInputMag = rawInput.magnitude;
+            Vector3 targetDirection = PlayerTransform.TransformDirection(rawInput);
             if(currentState.ladderPoint != null && currentState.ladderPoint != currentState.surfacePoint){
                 if(Vector3.Dot(targetDirection.normalized, currentState.ladderPoint.normal) < 0f){
-                    LadderMovement(moveInput, ref currentState);
-                    return;
+                    return LadderMovement(moveInput, ref currentState);
                 }
             }
-            var localVelocity = currentState.localVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
-            if(lastState.midJump){  // can i move this into the state thingy?
-                var landingAccel = GetLandingBrake(localVelocity, moveInput.jump);
-                localVelocity += landingAccel;
-                MoveVelocity += landingAccel;
+            Vector3 localVelocity = currentState.localVelocity.ProjectOnPlane(currentState.surfacePoint.normal);
+            Vector3 dragAccel = Vector3.zero;
+            if(lastState.midJump){
+                var brakeDeltaV = GetLandingBrake(localVelocity, moveInput.jump);
+                localVelocity += brakeDeltaV;
+                dragAccel += brakeDeltaV / Time.deltaTime;
             }
-            var dragFriction = currentState.normedStaticSurfaceFriction;
-            var moveFriction = currentState.normedDynamicSurfaceFriction;
-            var frictionMag = Mathf.Lerp(props.Air.Drag, props.Ground.Drag, dragFriction);
+            float dragFriction = currentState.normedStaticSurfaceFriction;
+            float moveFriction = currentState.normedDynamicSurfaceFriction;
+            float frictionMag = Mathf.Lerp(props.Air.Drag, props.Ground.Drag, dragFriction);
             // if(dragFriction > 1){                // TODO revisit this when i do moving platforms (lateral ones) and they slide away from underneath me
             //     frictionMag *= dragFriction;
             // }
-            ApplyDrag(frictionMag, ref localVelocity);
-            var localSpeed = localVelocity.magnitude;
-            var rawTargetSpeed = props.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
-            var targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
+            Vector3 groundDragAccel = DragAccel(frictionMag, localVelocity);
+            localVelocity += groundDragAccel * Time.deltaTime;
+            dragAccel += groundDragAccel;
+            float localSpeed = localVelocity.magnitude;
+            float rawTargetSpeed = props.Ground.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
+            float targetSpeed = Mathf.Max(rawTargetSpeed, localSpeed);
             Vector3 targetVelocity = GroundMoveVector(targetDirection, currentState.surfacePoint.normal);
             targetVelocity = targetVelocity.normalized * rawInputMag * targetSpeed;
+            // TODO use bool, other value than 0?
             if(Vector3.Dot(targetDirection, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                var tvSolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
-                var tvNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
-                targetVelocity = Vector3.Slerp(tvNonSolid, tvSolid, currentState.surfaceSolidness); // TODO also make the "regular" slope movement slower, is slerp really needed?
+                Vector3 targetVelocitySolid = targetVelocity.ProjectOnPlaneAlongVector(PlayerTransform.up, currentState.surfacePoint.normal);    // <<< THIS!!!!! no ground snap needed, no extra raycasts. i still get launched slightly but it's negligible
+                Vector3 targetVelocityNonSolid = targetVelocity * targetDirection.normalized.ProjectOnPlane(currentState.surfacePoint.normal).magnitude;
+                targetVelocity = Vector3.Slerp(targetVelocityNonSolid, targetVelocitySolid, currentState.surfaceSolidness);
             }
-            var accelMag = Mathf.Lerp(props.Air.Accel, props.Ground.Accel, moveFriction);
-            var moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * accelMag);
+            float maxAccel = rawInputMag * Mathf.Lerp(props.Air.Accel, props.Ground.Accel, moveFriction);
+            Vector3 moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, maxAccel);
+            Vector3 gravity = Physics.gravity;
             if(moveInput.jump){
-                var jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
+                float jumpStrength = Mathf.Lerp(1f - (currentState.surfaceAngle / 90f), 1f, moveFriction);
                 moveAccel += GetJumpVelocity(localVelocity, jumpStrength) / Time.deltaTime;
                 moveAccel += GetJumpSpeedBoost(localVelocity, localSpeed, rawTargetSpeed) / Time.deltaTime;
                 currentState.startedJump = true;
-            }
-            Vector3 gravity;
-            if(currentState.startedJump){
-                gravity = Physics.gravity * 0.5f;
+                gravity *= 0.5f;    // it's weird but needed for a correct jump height
             }else{
-                var stickGravity = -currentState.surfacePoint.normal * Physics.gravity.magnitude;
-                var lerpFactor = currentState.surfaceSolidness * dragFriction;
-                lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(Physics.gravity.normalized, PlayerTransform.up));
-                gravity = Vector3.Slerp(Physics.gravity, stickGravity, lerpFactor);
+                Vector3 stickGravity = -currentState.surfacePoint.normal * gravity.magnitude;
+                float lerpFactor = currentState.surfaceSolidness * dragFriction;
+                lerpFactor *= Mathf.Clamp01(-1f * Vector3.Dot(gravity.normalized, PlayerTransform.up));
+                gravity = Vector3.Slerp(gravity, stickGravity, lerpFactor);
             }
-            MoveVelocity += (moveAccel + gravity) * Time.deltaTime;
+            return dragAccel + moveAccel + gravity;
         }
 
+        // TODO can this be moved to movement? is the currentstate necessary? is the ref necessary?
         Vector3 WaterExitAcceleration (ref MoveState currentState) {
             var verticalLocalVelocity = VerticalComponent(currentState.localVelocity);
             if(verticalLocalVelocity.y > 0){
@@ -349,100 +351,98 @@ namespace PlayerController {
             return Vector3.zero;
         }
 
-        void SlopeMovement (MoveInput moveInput, ref MoveState currentState) {
-            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
-            var dragFriction = currentState.normedStaticSurfaceFriction;
-            var moveFriction = currentState.normedDynamicSurfaceFriction;
-            var frictionMag = Mathf.Lerp(props.Air.Drag, props.Slope.Drag, dragFriction);
-            ApplyDrag(frictionMag, ref horizontalLocalVelocity);
-            var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            var rawInput = moveInput.horizontalInput;
-            var rawInputMag = rawInput.magnitude;
-            var targetSpeed = props.Slope.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
-            targetSpeed = Mathf.Max(targetSpeed, horizontalLocalSpeed);
-            var targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var accelMag = Mathf.Lerp(props.Air.Accel, props.Slope.Accel, moveFriction);
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * accelMag);
+        Vector3 SlopeMovement (MoveInput moveInput, ref MoveState currentState) {
+            Vector3 horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
+            float dragFriction = currentState.normedStaticSurfaceFriction;
+            float moveFriction = currentState.normedDynamicSurfaceFriction;
+            float frictionMag = Mathf.Lerp(props.Air.Drag, props.Slope.Drag, dragFriction);     // TODO take a look at this friction stuff again
+            Vector3 dragAccel = DragAccel(frictionMag, horizontalLocalVelocity);
+            horizontalLocalVelocity += dragAccel * Time.deltaTime;
+            float horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
+            Vector3 rawInput = moveInput.horizontalInput;
+            float rawTargetSpeed = props.Slope.Speed * RawSpeedMultiplier(moveInput.run) / Mathf.Max(1f, moveFriction);
+            float targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
+            Vector3 targetVelocity = PlayerTransform.TransformDirection(rawInput) * targetSpeed;   // raw input magnitude is contained in raw input vector
+            float maxAccel = rawInput.magnitude * Mathf.Lerp(props.Air.Accel, props.Slope.Accel, moveFriction);
+            Vector3 moveAccel = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, maxAccel);
             if(currentState.isInWater && moveInput.waterExitJump){
-                var facingAngle = Vector3.Angle(-PlayerTransform.forward, currentState.surfacePoint.normal.ProjectOnPlane(PlayerTransform.up));
+                float facingAngle = Vector3.Angle(-PlayerTransform.forward, currentState.surfacePoint.normal.ProjectOnPlane(PlayerTransform.up));
                 if(facingAngle <= 45f){
-                    moveAcceleration += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
+                    moveAccel += WaterExitAcceleration(ref currentState).ProjectOnPlane(currentState.surfacePoint.normal);
                 }
-            }else if(Vector3.Dot(moveAcceleration, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
-                var allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
-                moveAcceleration = moveAcceleration.ProjectOnVector(allowedMoveDirection);
+            }else if(Vector3.Dot(moveAccel, currentState.surfacePoint.normal) < 0){          // if vector points into ground/slope
+                Vector3 allowedMoveDirection = Vector3.Cross(currentState.surfacePoint.normal, PlayerTransform.up).normalized;
+                moveAccel = moveAccel.ProjectOnVector(allowedMoveDirection);
             }
-            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            return dragAccel + moveAccel + Physics.gravity;
         }
 
-        void AerialMovement (MoveInput moveInput, ref MoveState currentState) {
-            var rawInput = moveInput.horizontalInput;
-            var rawInputMag = rawInput.magnitude;
-            var targetDirection = PlayerTransform.TransformDirection(rawInput);
-            var horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
-            var horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
+        Vector3 AerialMovement (MoveInput moveInput, ref MoveState currentState) {
+            Vector3 rawInput = moveInput.horizontalInput;
+            Vector3 targetDirection = PlayerTransform.TransformDirection(rawInput);
+            Vector3 horizontalLocalVelocity = HorizontalComponent(currentState.localVelocity);
+            float horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
             float drag = props.Air.Drag;
             if(props.EnableFullFlightParabola && horizontalLocalSpeed > props.Air.Speed){
-                var dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
+                float dirDot = Vector3.Dot(targetDirection, horizontalLocalVelocity.normalized);
                 drag *= (1f - Mathf.Clamp01(dirDot));
             }
-            ApplyDrag(drag, ref horizontalLocalVelocity);
+            Vector3 dragAccel = DragAccel(drag, horizontalLocalVelocity);
+            horizontalLocalVelocity += dragAccel * Time.deltaTime;
             horizontalLocalSpeed = horizontalLocalVelocity.magnitude;
-            var rawTargetSpeed = props.Air.Speed * RawSpeedMultiplier(moveInput.run);
-            var targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
-            var targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
-            var moveAcceleration = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, rawInputMag * props.Air.Accel);
+            float rawTargetSpeed = props.Air.Speed * RawSpeedMultiplier(moveInput.run);
+            float targetSpeed = Mathf.Max(rawTargetSpeed, horizontalLocalSpeed);
+            Vector3 targetVelocity = targetDirection * targetSpeed;   // raw input magnitude is contained in raw input vector
+            float maxAccel = rawInput.magnitude * props.Air.Accel;
+            Vector3 moveAccel = ClampedDeltaVAcceleration(horizontalLocalVelocity, targetVelocity, maxAccel);
             if(currentState.isInWater && currentState.facingWall && moveInput.waterExitJump){
-                moveAcceleration += WaterExitAcceleration(ref currentState);
+                moveAccel += WaterExitAcceleration(ref currentState);
             }
-            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            return dragAccel + moveAccel + Physics.gravity;
         }
 
-        void WaterMovement (MoveInput moveInput, ref MoveState currentState) {
-            var localVelocity = currentState.localVelocity;
-            ApplyDrag(props.Water.Drag, ref localVelocity);
-            var localSpeed = localVelocity.magnitude;
-            var rawInput = moveInput.horizontalInput;
-            rawInput += head.InverseTransformDirection(moveInput.verticalInput);
-            if(rawInput.sqrMagnitude > 1f){
-                rawInput = rawInput.normalized;
-            }
-            var rawInputMag = rawInput.magnitude;
-            var targetSpeed = Mathf.Max(props.Water.Speed * RawSpeedMultiplier(moveInput.run), localSpeed);
-            var targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
-            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * props.Water.Accel);
+        Vector3 WaterMovement (MoveInput moveInput, ref MoveState currentState) {
+            Vector3 localVelocity = currentState.localVelocity;
+            Vector3 dragAccel = DragAccel(props.Water.Drag, localVelocity);
+            localVelocity += dragAccel * Time.deltaTime;
+            float localSpeed = localVelocity.magnitude;
+            float targetSpeed = Mathf.Max(props.Water.Speed * RawSpeedMultiplier(moveInput.run), localSpeed);
+            Vector3 rawInput = WaterMoveVector(moveInput);
+            Vector3 targetVelocity = head.TransformDirection(rawInput) * targetSpeed;
+            float maxAccel = rawInput.magnitude * props.Water.Accel;
+            Vector3 moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, maxAccel);
             if(currentState.waterBody != null){
                 var buoyancy = currentState.waterBody.WaterPhysics.BuoyancyFromDensity(props.PlayerDensity);
                 currentState.waterBody.AddBuoyancy(rb, buoyancy, Vector3.zero);     // TODO water buoyancy should always happen, not just in here
             }
-            MoveVelocity += (moveAcceleration + Physics.gravity) * Time.deltaTime;
+            return dragAccel + moveAccel + Physics.gravity;
         }
 
-        void LadderMovement (MoveInput moveInput, ref MoveState currentState) {
-            var rawInput = moveInput.horizontalInput;
-            var rawInputMag = rawInput.magnitude;
+        Vector3 LadderMovement (MoveInput moveInput, ref MoveState currentState) {
+            Vector3 rawInput = moveInput.horizontalInput;
             if(currentState.isInWater && Vector3.Dot(PlayerTransform.TransformDirection(rawInput), currentState.ladderPoint.normal) > 0){
-                AerialMovement(moveInput, ref currentState);
-                return;
+                return AerialMovement(moveInput, ref currentState);
             }
-            var localVelocity = currentState.localVelocity;
-            ApplyDrag(props.Ladder.Drag, ref localVelocity);
-            var localSpeed = localVelocity.magnitude;
-            var targetDirection = LadderMoveVector(rawInput, currentState.ladderPoint.normal);
-            var targetSpeed = Mathf.Max(localSpeed, props.Ladder.Speed * RawSpeedMultiplier(moveInput.run));
-            var targetVelocity = targetDirection * targetSpeed;
-            var moveAcceleration = ClampedDeltaVAcceleration(localVelocity, targetVelocity, rawInputMag * props.Ladder.Accel);
+            Vector3 localVelocity = currentState.localVelocity;
+            Vector3 dragAccel = DragAccel(props.Ladder.Drag, localVelocity);
+            localVelocity += dragAccel * Time.deltaTime;
+            float localSpeed = localVelocity.magnitude;
+            float targetSpeed = Mathf.Max(localSpeed, props.Ladder.Speed * RawSpeedMultiplier(moveInput.run));
+            Vector3 targetDirection = LadderMoveVector(rawInput, currentState.ladderPoint.normal);
+            Vector3 targetVelocity = targetDirection * targetSpeed;
+            float maxAccel = rawInput.magnitude * props.Ladder.Accel;
+            Vector3 moveAccel = ClampedDeltaVAcceleration(localVelocity, targetVelocity, maxAccel);
             Vector3 gravity;
             if(moveInput.jump){
-                moveAcceleration += currentState.ladderPoint.normal * JumpSpeed() / Time.deltaTime;
+                moveAccel += currentState.ladderPoint.normal * JumpSpeed() / Time.deltaTime;
                 currentState.startedJump = true;
                 gravity = Physics.gravity * 0.5f;
             }else{
-                var stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;
-                var lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
+                Vector3 stickGravity = -currentState.ladderPoint.normal * Physics.gravity.magnitude;
+                float lerpFactor = Mathf.Clamp01(Vector3.Dot(Physics.gravity.normalized, currentState.ladderPoint.normal));
                 gravity = Vector3.Slerp(stickGravity, Physics.gravity, lerpFactor);
             }
-            MoveVelocity += (moveAcceleration + gravity) * Time.deltaTime;
+            return dragAccel + moveAccel + gravity;
         }
 
     }

@@ -135,6 +135,15 @@ namespace PlayerController {
             return upDown + leftRight;
         }
 
+        protected Vector3 WaterMoveVector (MoveInput moveInput) {
+            Vector3 rawInput = moveInput.horizontalInput;
+            rawInput += head.InverseTransformDirection(moveInput.verticalInput);
+            if(rawInput.sqrMagnitude > 1f){
+                return rawInput.normalized;
+            }
+            return rawInput;
+        }
+
         protected bool CheckTriggerForWater (Collider otherCollider, out bool canSwim, out bool canCrouch) {
             canSwim = false;
             canCrouch = true;
@@ -237,13 +246,8 @@ namespace PlayerController {
             return ClampedDeltaVAcceleration(currentVelocity, targetVelocity, maxAcceleration, Time.deltaTime);
         }
 
-        // TODO this is only really for rb, not so much for cc
-        // as Velocity is more of a get-thing there as opposed to a direct link to rb.velocity
-        protected void ApplyDrag (float drag, ref Vector3 localVelocity) {
-            var dragDeceleration = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
-            dragDeceleration *= Time.deltaTime;
-            MoveVelocity += dragDeceleration;
-            localVelocity += dragDeceleration;
+        protected Vector3 DragAccel (float drag, Vector3 localVelocity) {
+            return ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
         }
 
         protected Quaternion GetTargetGravityRotation (Transform referenceTransform) {
