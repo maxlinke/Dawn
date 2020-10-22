@@ -57,4 +57,7 @@ namespace PlayerController {
         
     }
 
+    [CustomEditor(typeof(RBProperties))]
+    public class RBPropertiesEditor : PropertiesEditor { }
+
 }

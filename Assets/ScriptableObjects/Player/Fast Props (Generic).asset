@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 070f8f5acf8444e48aa0981863c4e972, type: 3}
+  m_Name: Fast Props (Generic)
+  m_EditorClassIdentifier: 
+  normalHeight: 1.8
+  crouchHeight: 0.9
+  crouchUncrouchTime: 0.25
+  eyeOffset: -0.15
+  swimOffset: -0.4
+  colliderRadius: 0.4
+  playerDensity: 1.5
+  normalGravity: 29.43
+  gravityTurn: 360
+  minGravityTurn: 0.5
+  nearClipDist: 0.05
+  farClipDist: 500
+  hardSlopeLimit: 60
+  runSpeedMultiplier: 1
+  walkSpeedMultiplier: 0.5
+  crouchSpeedMultiplier: 0.25
+  ground:
+    speed: 12
+    accel: 64
+    drag: 32
+  slope:
+    speed: 12
+    accel: 32
+    drag: 12
+  air:
+    speed: 12
+    accel: 24
+    drag: 4
+  water:
+    speed: 12
+    accel: 24
+    drag: 0
+  ladder:
+    speed: 6
+    accel: 64
+    drag: 32
+  enableFullFlightParabola: 1
+  standingJumpHeight: 1
+  crouchedJumpHeight: 0.5
+  velocityMode: 0
+  minJumpVelocity: 0
+  limitDescentJumpHeight: 0
+  boostMultiplier: 1.25
+  boostDirection: 0
+  enableOverBoosting: 1
+  landingSpeedMultiplier: 0.667
+  enableBunnyHopping: 1
+  interactRange: 1.5

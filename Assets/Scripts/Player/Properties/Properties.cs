@@ -2,7 +2,8 @@
 
 namespace PlayerController {
 
-    public abstract class Properties : ScriptableObject {
+    [CreateAssetMenu(menuName = "Player/Player Controller Properties (Generic)", fileName = "New PCProperties")]
+    public class Properties : ScriptableObject {
 
         [System.Serializable]
         public struct MovementProperties {
