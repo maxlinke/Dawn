@@ -246,8 +246,11 @@ namespace PlayerController {
             return ClampedDeltaVAcceleration(currentVelocity, targetVelocity, maxAcceleration, Time.deltaTime);
         }
 
-        protected Vector3 DragAccel (float drag, Vector3 localVelocity) {
-            return ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
+        protected Vector3 DragAccel (float drag, ref Vector3 localVelocity, out float localSpeed) {
+            var dragAccel = ClampedDeltaVAcceleration(localVelocity, Vector3.zero, drag);
+            localVelocity += dragAccel * Time.deltaTime;
+            localSpeed = localVelocity.magnitude;
+            return dragAccel;
         }
 
         protected Quaternion GetTargetGravityRotation (Transform referenceTransform) {

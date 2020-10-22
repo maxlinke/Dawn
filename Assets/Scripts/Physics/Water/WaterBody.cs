@@ -121,9 +121,13 @@ public abstract class WaterBody : MonoBehaviour {
         rb.velocity = ownVelocity + localRBVelocity;
     }
 
-    public void AddBuoyancy (Rigidbody rb, float buoyancy, Vector3 gravityDir) {
+    public Vector3 GetBuoyancyAcceleration (Rigidbody rb, float buoyancy) {
+        return -Physics.gravity * buoyancy;
+    }
+
+    public void AddBuoyancyAndBuoyancyTorque (Rigidbody rb, float buoyancy, Vector3 gravityDir) {
         rb.AddForce(
-            force: -Physics.gravity * buoyancy,
+            force: GetBuoyancyAcceleration(rb, buoyancy),
             mode: ForceMode.Acceleration
         );
         var torque = 10f * GetBuoyancyTorque(rb, gravityDir);
@@ -180,7 +184,7 @@ public abstract class WaterBody : MonoBehaviour {
                 buoyancy *= (1f - Mathf.Clamp01(maxOutDepth / waterPhysics.UpperBuoyancyNeutralizationRange));
             }
         }
-        AddBuoyancy(rb, buoyancy, gravityDir);
+        AddBuoyancyAndBuoyancyTorque(rb, buoyancy, gravityDir);
     }
 
     bool DepthCast (Collider col, Vector3 targetPos, Vector3 gravityDir, out float depth) {

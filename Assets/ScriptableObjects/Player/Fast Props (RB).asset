@@ -18,7 +18,7 @@ MonoBehaviour:
   eyeOffset: -0.15
   swimOffset: -0.4
   colliderRadius: 0.4
-  playerDensity: 2
+  playerDensity: 1.5
   normalGravity: 29.43
   gravityTurn: 360
   minGravityTurn: 0.5
@@ -49,9 +49,6 @@ MonoBehaviour:
     accel: 64
     drag: 32
   enableFullFlightParabola: 1
-  groundStick: 0
-  groundStickiness: 0
-  groundStickInterval: 0
   standingJumpHeight: 1
   crouchedJumpHeight: 0.5
   velocityMode: 0
