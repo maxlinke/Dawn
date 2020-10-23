@@ -17,7 +17,7 @@ public class RBPlayer : Player {
 
     [Header("Script Components")]
     [SerializeField] RBMovement rbMovement = default;
-    [SerializeField] RBView rbView = default;
+    [SerializeField] View view = default;
     [SerializeField] PlayerModel model = default;
     [SerializeField] PlayerHealth health = default;
 
@@ -48,13 +48,12 @@ public class RBPlayer : Player {
     // TODO serializable playerstate thing (class so null is an option?)
     // so there is a difference between a "fresh" load and a "save" load
     protected override void InitializeComponents () {
-        rbView.Initialize(props, this, head);
-        rbView.SetHeadOrientation(
+        view.Initialize(props, this, head, smoothRotationParent);
+        view.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
             headRoll: 0f
         ); // should be deserialized or something later on
-        rbView.smoothRotationParent = smoothRotationParent;
         rbMovement.Initialize(props, head, modelParent, smoothRotationParent);
         health.Initialize(healthSettings, head);
         health.SetHealth(healthSettings.DefaultHealth);
@@ -76,8 +75,8 @@ public class RBPlayer : Player {
         // TODO what about being dead?
         bool readInput = CursorLockManager.CursorIsLocked();
         // TODO && game paused (timescale == 0f but done somewhere else)
-        rbView.Look(GetViewInput(readInput));
-        if(rbView.InteractCheck(out var interactable, out var interactDescription)){
+        view.Look(GetViewInput(readInput));
+        if(view.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
                 interactable.Interact(this);
             }
@@ -88,7 +87,7 @@ public class RBPlayer : Player {
         CacheSingleFrameInputs();
         model.UpdateSpherePositions();
 
-        DebugTools.PlayerControllerDebugUI.ViewInfo = rbView.debugInfo;
+        DebugTools.PlayerControllerDebugUI.ViewInfo = view.debugInfo;
         DebugTools.PlayerControllerDebugUI.MovementInfo = rbMovement.debugInfo;
     }
 
@@ -139,13 +138,13 @@ public class RBPlayer : Player {
         }
         if(Input.GetKeyDown(viewLockKey)){
             if(debugViewTarget != null){
-                rbView.viewTarget = debugViewTarget;
-                rbView.controlMode = View.ControlMode.TARGETED;
+                view.viewTarget = debugViewTarget;
+                view.controlMode = View.ControlMode.TARGETED;
             }
         }
         if(Input.GetKeyUp(viewLockKey)){
-            rbView.viewTarget = null;
-            rbView.controlMode = View.ControlMode.FULL;
+            view.viewTarget = null;
+            view.controlMode = View.ControlMode.FULL;
         }
         if(numberKeysDoDebugLogs){
             if(Input.GetKeyDown(KeyCode.Alpha1)){

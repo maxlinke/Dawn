@@ -188,7 +188,7 @@ namespace PlayerController {
                     if(props.LimitDescentJumpHeight && lvVert < 0f){
                         lvVert = 0f;
                     }
-                    float lvJump = JumpSpeed() * jumpStrength;      // add this strength as a parameter and put it in the square root?
+                    float lvJump = JumpSpeed() * jumpStrength;      // TODO add this strength as a parameter and put it in the square root?
                     float minJump = props.MinJumpVelocity * lvJump;
                     return PlayerTransform.up * Mathf.Max(minJump, lvJump - lvVert);
                 default:

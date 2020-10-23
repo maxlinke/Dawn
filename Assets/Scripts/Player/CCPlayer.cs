@@ -16,7 +16,7 @@ public class CCPlayer : Player {
 
     [Header("Script Components")]
     [SerializeField] CCMovement ccMovement = default;
-    [SerializeField] CCView ccView = default;
+    [SerializeField] View view = default;
 
     protected override Camera FirstPersonCamera => firstPersonCamera;
     protected override Properties Props => props;
@@ -31,8 +31,8 @@ public class CCPlayer : Player {
     // down slopes: use regular ground move vector
 
     protected override void InitializeComponents () {
-        ccView.Initialize(props, this, head);
-        ccView.SetHeadOrientation(
+        view.Initialize(props, this, head, ccMovement.transform);
+        view.SetHeadOrientation(
             headTilt: 0f, 
             headPan: 0f,
             headRoll: 0f
@@ -50,11 +50,11 @@ public class CCPlayer : Player {
             }
         #endif
         bool readInput = CursorLockManager.CursorIsLocked();   // TODO && !paused
-        ccView.Look(GetViewInput(readInput));
+        view.Look(GetViewInput(readInput));
         ccMovement.UpdateCrouchState(GetCrouchInput(readInput), ccMovement.lastState);
         ccMovement.Move(GetMoveInput(readInput));
-        ccView.UpdateHeadLocalPosition();
-        if(ccView.InteractCheck(out var interactable, out var interactDescription)){
+        ccMovement.UpdateHeadLocalPosition();
+        if(view.InteractCheck(out var interactable, out var interactDescription)){
             if(Bind.INTERACT.GetKeyDown()){
                 interactable.Interact(this);
             }

@@ -81,6 +81,10 @@ namespace PlayerController {
             contactPoints.Add(new CollisionPoint(hit));
         }
 
+        public void UpdateHeadLocalPosition () {
+            head.localPosition = new Vector3(0f, this.LocalColliderHeight + props.EyeOffset, 0f);
+        }
+
         protected override void ApplyGravityRotation (Quaternion newRotation) {
             Vector3 wcPos = WorldCenterPos;
             PlayerTransform.rotation = newRotation;

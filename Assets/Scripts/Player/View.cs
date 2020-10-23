@@ -2,7 +2,7 @@
 
 namespace PlayerController {
 
-    public abstract class View : MonoBehaviour {
+    public class View : MonoBehaviour {
 
         public enum ControlMode {
             FULL,
@@ -14,6 +14,7 @@ namespace PlayerController {
         protected Player player;
         protected Transform head;
         protected Transform playerTransform => player.transform;
+        protected Transform panTransform;
 
         public float headTilt { get; protected set; }
         public float headPan { get; protected set; }
@@ -32,10 +33,11 @@ namespace PlayerController {
             }
         }     // TODO a clearer reset point
 
-        public void Initialize (Properties pcProps, Player player, Transform head) {
+        public void Initialize (Properties pcProps, Player player, Transform head, Transform panTransform) {
             this.pcProps = pcProps;
             this.player = player;
             this.head = head;
+            this.panTransform = panTransform;
             SetupInteractMask();
         }
 
@@ -65,12 +67,11 @@ namespace PlayerController {
 
         public void Look (Vector2 viewInput) {
             switch(controlMode){
-                case ControlMode.FULL: 
-                    // DeltaLook(viewInput * 60f * Time.deltaTime);
+                case ControlMode.FULL:
                     DeltaLook(viewInput * 60f * Time.unscaledDeltaTime);
                     break;
                 case ControlMode.TARGETED:
-                    TargetLook(viewTarget.position);
+                    TargetLook(viewTarget.position, 360f * Time.unscaledDeltaTime);
                     break;
                 case ControlMode.BLOCK_INPUT:
                     break;
@@ -80,8 +81,31 @@ namespace PlayerController {
             }
         }
 
-        protected abstract void DeltaLook (Vector2 viewDelta);
-        protected abstract void TargetLook (Vector3 targetPoint);
+        protected virtual void DeltaLook (Vector2 viewDelta) {
+            headTilt = Mathf.Clamp(headTilt + viewDelta.y, -90f, 90f);
+            headPan = 0f;
+            ApplyHeadEuler();
+            panTransform.Rotate(0f, viewDelta.x, 0f, Space.Self);
+        }
+
+        protected virtual void TargetLook (Vector3 viewTargetPoint, float maxDelta) {
+            var toTargetLocal = panTransform.InverseTransformDirection(viewTargetPoint - head.position).normalized;
+            toTargetLocal.y = Mathf.Clamp(toTargetLocal.y, -1f, 1f);
+
+            var targetTilt = -1f * Mathf.Rad2Deg * Mathf.Asin(toTargetLocal.y);
+            var tiltDelta = targetTilt - headTilt;
+            var panDelta = Mathf.Rad2Deg * Mathf.Atan2(toTargetLocal.x, toTargetLocal.z);
+            var vecDelta = new Vector2(panDelta, tiltDelta);
+            if(vecDelta.sqrMagnitude > maxDelta * maxDelta){
+                vecDelta = vecDelta.normalized * maxDelta;
+            }
+
+            headTilt += vecDelta.y;
+            headPan = 0f;
+            ApplyHeadEuler();
+
+            panTransform.Rotate(0f, vecDelta.x, 0f, Space.Self);
+        }
 
         public bool InteractCheck (out IInteractable outputInteractable, out string outputDescription) {
             Color rayCol;

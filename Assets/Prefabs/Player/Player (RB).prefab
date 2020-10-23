@@ -304,7 +304,7 @@ MonoBehaviour:
   firstPersonCamera: {fileID: 8913080616304595080}
   smoothRotationParent: {fileID: 2538744342937488322}
   rbMovement: {fileID: 8913080616178811583}
-  rbView: {fileID: 8913080616178811552}
+  view: {fileID: 8913080616178811552}
   model: {fileID: 6223672753868876897}
   health: {fileID: 5721669904811009425}
   boostKey: 324
@@ -336,7 +336,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8913080616178811556}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 450af5809292ccc479dba8eea3805ffb, type: 3}
+  m_Script: {fileID: 11500000, guid: 918b34ed6af331342b4c3eacd8df0859, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   controlMode: 0
