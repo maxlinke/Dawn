@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7326451563758994646}
   - component: {fileID: 8242134099997128119}
   m_Layer: 0
-  m_Name: Game Initializer
+  m_Name: Game Core Components
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -52,6 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae6f6a84553eb5f43a4746a5a51234ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unloadSceneOnDone: 0
 --- !u!1001 &754253676562580161
 PrefabInstance:
   m_ObjectHideFlags: 0

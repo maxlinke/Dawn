@@ -53,6 +53,7 @@ namespace DebugTools {
         }
 
         private static FramerateDisplay instance;
+        bool initialized = false;
 
         RectTransform imageRT => graphImage.rectTransform;
         Texture2D tex;
@@ -110,6 +111,7 @@ namespace DebugTools {
             if(visible){
                 OnShow();
             }
+            initialized = true;
         }
 
         void OnDestroy () {
@@ -178,6 +180,9 @@ namespace DebugTools {
         }
 
         void Update () {
+            if(!initialized){
+                return;
+            }
             bool modeUpdated = false;
             if(Bind.TOGGLE_FRAMERATE_DISPLAY.GetKeyDown()){
                 mode = NextMode(mode);
