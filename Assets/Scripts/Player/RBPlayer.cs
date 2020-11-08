@@ -85,7 +85,7 @@ public class RBPlayer : Player {
         rbMovement.UpdateHeadAndModelPosition(instantly: false);
         rbMovement.TryAlignWithGravity();
         CacheSingleFrameInputs();
-        model.UpdateSpherePositions();
+        model.UpdateColliderModelPositions();
 
         DebugTools.PlayerControllerDebugUI.ViewInfo = view.debugInfo;
         DebugTools.PlayerControllerDebugUI.MovementInfo = rbMovement.debugInfo;
