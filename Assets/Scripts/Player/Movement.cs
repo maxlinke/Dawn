@@ -102,8 +102,8 @@ namespace PlayerController {
             this.head = head;
             this.model = model;
             defaultPM = new PhysicMaterial();
-            collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndWorldModel);
-            collisionCastMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel, Layer.Water);
+            collisionCastMask = LayerMaskUtils.GetFullPhysicsCollisionMask(Layer.PlayerControllerAndFirstPersonModel);
+            collisionCastMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndFirstPersonModel, Layer.Water);
         }
 
         public void AddVelocity (Vector3 addVelocity) {

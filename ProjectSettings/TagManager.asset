@@ -20,13 +20,13 @@ TagManager:
   - 
   - 
   - PostProcessing
-  - PlayerControllerAndWorldModel
+  - PlayerControllerAndFirstPersonModel
   - Prop
   - SmallProp
   - EntityGround
   - PropGround
   - FreeCam
-  - 
+  - PlayerHitboxesAndThirdPersonModel
   - 
   - 
   - 

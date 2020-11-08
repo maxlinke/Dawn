@@ -56,7 +56,7 @@ public abstract class Player : MonoBehaviour {
         FirstPersonCamera.orthographic = false;
         FirstPersonCamera.nearClipPlane = Props.NearClipDist;
         FirstPersonCamera.farClipPlane = Props.FarClipDist;
-        FirstPersonCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndWorldModel);
+        FirstPersonCamera.cullingMask &= ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndFirstPersonModel);
     }
 
     protected Vector3 GetViewInput (bool readInput) {
