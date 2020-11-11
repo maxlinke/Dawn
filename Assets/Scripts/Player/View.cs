@@ -42,7 +42,7 @@ namespace PlayerController {
         }
 
         protected virtual void SetupInteractMask () {
-            interactMask = ~LayerMaskUtils.LayerToBitMask(Layer.PlayerControllerAndFirstPersonModel);
+            interactMask = ~Layer.PlayerControllerAndFirstPersonModel.mask;
         }
 
         public void SetHeadOrientation (float headTilt, float headPan, float headRoll) {

@@ -1,4 +1,8 @@
-﻿public class Layer {
+﻿using UnityEngine;
+
+public class Layer {
+
+    public static readonly Layer Everything = new Layer(-1, "Everything");
 
     public static readonly Layer Default = new Layer(0, "Default");
     public static readonly Layer TransparentFX = new Layer(1, "TransparentFX");
@@ -17,6 +21,7 @@
 
     public readonly int index;
     public readonly string name;
+    public readonly int mask;
 
     public static implicit operator int (Layer l) => l.index;
     public static implicit operator string (Layer l) => l.name;
@@ -24,6 +29,25 @@
     private Layer (int index, string name) {
         this.index = index;
         this.name = name;
+        if(index == -1){
+            this.mask = -1;
+        }else{
+            this.mask = 1 << index;
+        }
+    }
+
+    public int CalculateCollisionMask () {
+        int output = 0;
+        for(int i=0; i<32; i++){
+			if(!Physics.GetIgnoreLayerCollision(this.index, i)){
+				output |= (1 << i);
+			}
+		}
+        return output;
+    }
+
+    public static string MaskToString (int mask) {
+        return System.Convert.ToString(mask, 2);
     }
 	
 }

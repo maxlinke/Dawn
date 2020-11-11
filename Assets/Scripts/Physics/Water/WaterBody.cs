@@ -253,7 +253,7 @@ public abstract class WaterBody : MonoBehaviour {
     bool AllTriggersOnWaterLayer (Transform transformToCheck) {
         var triggerComponent = transformToCheck.GetComponent<Collider>();
         var transformIsTrigger = triggerComponent != null ? triggerComponent.isTrigger : false;
-        var transformIsOnWaterLayer = transformToCheck.gameObject.layer == Layer.Water.index;
+        var transformIsOnWaterLayer = transformToCheck.gameObject.layer == Layer.Water;
         if(transformIsTrigger && !transformIsOnWaterLayer){
             return false;
         }
