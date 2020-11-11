@@ -12,8 +12,7 @@ public static class BootstrapSceneLoader {
     }
 
     // moving the scene to the beginning is a nice try, but it doesn't enfore its awakes to run first
-    [MenuItem("Play/Start With Bootstrapper")]
-    static void StartPlayMode () {
+    public static void StartPlayMode () {
         if(!EditorApplication.isPlaying){
             var bootstrapper = EditorSceneManager.OpenScene(initScenePath, OpenSceneMode.Additive);
             if(EditorSceneManager.sceneCount > 1){
