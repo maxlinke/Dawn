@@ -9,6 +9,8 @@ public class Version : IComparable {
     public static bool operator ==(Version a, Version b) => a.CompareTo(b) == 0;
     public static bool operator !=(Version a, Version b) => a.CompareTo(b) != 0;
 
+    public static implicit operator Version (string s) => new Version(s);
+
     private List<int> numbers;
 
     public Version (string version) {
@@ -81,6 +83,14 @@ public class Version : IComparable {
             return 0;
         }
         throw new ArgumentException($"Cannot compare \"{nameof(Version)}\" to \"{obj.GetType()}\"!");
+    }
+
+    public bool IsNewerThan (Version other) {
+        return this > other;
+    }
+
+    public bool IsOlderThan (Version other) {
+        return this < other;
     }
 
 }
