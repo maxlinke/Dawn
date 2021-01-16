@@ -309,7 +309,7 @@ namespace DebugTools {
             cbCols.pressedColor = colorScheme.MidgroundColor;
             cbCols.disabledColor = Color.magenta;
             clearButton.colors = cbCols;
-            clearButton.onClick.AddListener(() => {Clear();});
+            clearButton.onClick.AddListener(() => Clear());
             clearButtonLabel.color = colorScheme.TextColor;
             countDisplayTextField.text = string.Empty;
             countDisplayTextField.color = colorScheme.TextColor;

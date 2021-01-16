@@ -1751,7 +1751,7 @@ GameObject:
   - component: {fileID: 2117278993}
   - component: {fileID: 2117278992}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: Test
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1771,7 +1771,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   a: 1.0
   b: 1.0
-  run: 0
+  error: 
+  equals: 0
+  notEquals: 0
+  greater: 0
+  less: 0
 --- !u!4 &2117278993
 Transform:
   m_ObjectHideFlags: 0
