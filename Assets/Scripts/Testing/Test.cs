@@ -7,7 +7,6 @@ using UnityEditor;
 
 public class Test : MonoBehaviour {
 
-    [SerializeField] ScrollingTextDisplay textDisplay = default;
     [SerializeField, CustomRange(1, int.MaxValue, false)] int charactersOnLine = default;
     [SerializeField, CustomRange(1, int.MaxValue, false)] int lines = default;
 
@@ -19,7 +18,7 @@ public class Test : MonoBehaviour {
               
     }
 
-    public void AddText () {
+    public string GetText () {
         string text = string.Empty;
         int c = 0;
         for(int i=0; i<lines; i++){
@@ -30,12 +29,7 @@ public class Test : MonoBehaviour {
             }
             text += $"{new string(line)}\n";
         }
-        // textDisplay.AppendLine(text.Trim());
-        textDisplay.AppendLine(text);
-    }
-
-    public void Clear () {
-        textDisplay.Clear();
+        return text.Trim();
     }
 	
 }
@@ -47,11 +41,24 @@ public class TestEditor : Editor {
 
     public override void OnInspectorGUI () {
         base.OnInspectorGUI();
-        if(GUILayout.Button("Add Text")){
-            ((Test)target).AddText();
+        if(!EditorApplication.isPlaying){
+            return;
         }
-        if(GUILayout.Button("Clear")){
-            ((Test)target).Clear();
+        if(GUILayout.Button("Log")){
+            Log(Debug.Log);
+        }
+        if(GUILayout.Button("Log Warning")){
+            Log(Debug.LogWarning);
+        }
+        if(GUILayout.Button("Log Error")){
+            Log(Debug.LogError);
+        }
+        if(GUILayout.Button("Throw Exception")){
+            Log((s) => throw new System.Exception(s));
+        }
+
+        void Log (System.Action<string> log) {
+            log(((Test)target).GetText());
         }
     }
 

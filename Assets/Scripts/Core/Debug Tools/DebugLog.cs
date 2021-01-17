@@ -8,26 +8,22 @@ namespace DebugTools {
 
     public class DebugLog : MonoBehaviour, ICoreComponent {
 
-        const int UNITY_TEXT_CHAR_LIMIT = (65000 / 4) - 1;
-
         [Header("Settings")]
         [SerializeField] bool selfInit = false;
 
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
+        [SerializeField] ScrollingTextDisplay textDisplay = default;
         [SerializeField] Text logTextFieldTemplate = default;
         [SerializeField] Text countDisplayTextField = default;
         [SerializeField] Button clearButton = default;
         [SerializeField] Text clearButtonLabel = default;
-        [SerializeField] ScrollRect scrollView = default;
         [SerializeField] Image background = default;
 
         [Header("Colors")]
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
         [Header("Other Settings")]
-        [SerializeField] float leftLogMargin = default;
-        [SerializeField] float topLogMargin = default;
         [SerializeField] bool openOnLog = false;
         [SerializeField] bool openOnWarning = false;
         [SerializeField] bool openOnError = false;
@@ -50,12 +46,6 @@ namespace DebugTools {
         
         private static DebugLog instance;
 
-        Queue<string> queuedLogs;
-        List<Text> clonedTextFields;
-        Text activeLogTextField;
-        RectTransform verticalScrollBarRT;
-
-        string currentLog;
         int totalLogCount;
         int logCount;
         int warningCount;
@@ -84,15 +74,12 @@ namespace DebugTools {
             instance = this;
             canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_LOG;
             InitUI();
-            queuedLogs = new Queue<string>();
-            clonedTextFields = new List<Text>();
-            activeLogTextField = logTextFieldTemplate;
-            verticalScrollBarRT = (RectTransform)(scrollView.verticalScrollbar.transform);
             hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);
             hexErrorColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugErrorColor);
             hexExceptionColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugExceptionColor);
             hexOtherColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugOtherColor);
+            textDisplay.EnsureInitialized();
             Clear();
             visible = false;
             Application.logMessageReceived += HandleLog;
@@ -106,12 +93,12 @@ namespace DebugTools {
         }
 
         void OnShow () {
-            UpdateDisplay();
-            scrollView.verticalNormalizedPosition = 0;
-            scrollView.horizontalNormalizedPosition = 0;
+            textDisplay.gameObject.SetActive(true);
+            UpdateCountTextField();
         }
 
         void OnHide () {
+            textDisplay.gameObject.SetActive(false);
             if(EventSystem.current != null){
                 if(this.transform.HasInHierarchy(EventSystem.current.currentSelectedGameObject)){
                     EventSystem.current.SetSelectedGameObject(null);
@@ -119,6 +106,9 @@ namespace DebugTools {
             }
         }
 
+        // TODO have a different object always active listening for the inputs and calling this thing to enable itself? 
+        // maybe even just use gameobject.setactive? 
+        // then i wouldn't have to manually to it for the textdisplay...
         void Update () {
             if(Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
                 if(!visible){
@@ -140,10 +130,10 @@ namespace DebugTools {
             }
             HandleLogType(out var coloredLogType);
             var logAppend = FormLogAppend();
-            UpdateLogs();
+            textDisplay.AppendLine(logAppend);
             totalLogCount++;
             if(visible){
-                UpdateDisplay();
+                UpdateCountTextField();
             }
 
             void HandleLogType (out string coloredString) {
@@ -184,88 +174,40 @@ namespace DebugTools {
                 }
                 return output;
             }
-
-            void UpdateLogs () {
-                if(currentLog.Length + logAppend.Length >= UNITY_TEXT_CHAR_LIMIT){
-                    queuedLogs.Enqueue(currentLog);
-                    currentLog = logAppend;     // no newline at start because that would result in a two-newline gap between the texts
-                }else{
-                    currentLog += (currentLog.Length > 0 ? $"\n{logAppend}" : logAppend);
-                }
-            }
         }
 
         string FormatWithColor (object textToFormat, string hexColorToUse) {
             return $"<color=#{hexColorToUse}>{textToFormat}</color>";
         }
 
-        void UpdateDisplay () {
-            var normedPos = scrollView.verticalNormalizedPosition;
-            while(queuedLogs.Count > 0){
-                UpdateCurrentTextField(queuedLogs.Dequeue());
-                CreateNewActiveTextField();
+        void UpdateCountTextField () {
+            var total = $"Total: {totalLogCount}";
+            if(totalLogCount <= 0){
+                countDisplayTextField.text = total;
+                return;
             }
-            UpdateCurrentTextField(currentLog);
-            UpdateCountTextField();
-            if(normedPos <= 0){
-                scrollView.verticalNormalizedPosition = 0;
-            }
+            bool commaNeeded = false;
+            var categorized = string.Empty;
+            AddCategoryIfCountGreaterZero("Log", logCount, hexLogColor);
+            AddCategoryIfCountGreaterZero("Warning", warningCount, hexWarningColor);
+            AddCategoryIfCountGreaterZero("Error", errorCount, hexErrorColor);
+            AddCategoryIfCountGreaterZero("Exception", exceptionCount, hexExceptionColor);
+            AddCategoryIfCountGreaterZero("Other", otherCount, hexOtherColor);
+            countDisplayTextField.text = $"{total} | {categorized}";
 
-            void UpdateCurrentTextField (string textToUpdateWith) {
-                activeLogTextField.text = textToUpdateWith;
-                var preferredHeight = activeLogTextField.preferredHeight;
-                var preferredWidth = activeLogTextField.preferredWidth;
-                activeLogTextField.rectTransform.sizeDelta = new Vector2(preferredWidth, preferredHeight);
-                scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(preferredWidth + leftLogMargin + verticalScrollBarRT.rect.width, scrollView.content.rect.width));
-                var textPos = activeLogTextField.rectTransform.anchoredPosition.y;
-                var lowerTextBorder = textPos - preferredHeight;
-                scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(-lowerTextBorder, scrollView.viewport.rect.height));
-            }
-
-            void CreateNewActiveTextField () {
-                var newActiveField = Instantiate(activeLogTextField, activeLogTextField.rectTransform.parent);
-                newActiveField.text = string.Empty;
-                newActiveField.rectTransform.SetAnchoredPositionY(activeLogTextField.rectTransform.anchoredPosition.y - activeLogTextField.rectTransform.rect.height);
-                newActiveField.gameObject.name = $"{logTextFieldTemplate.gameObject.name} (Clone {clonedTextFields.Count+1})";
-                clonedTextFields.Add(newActiveField);
-                activeLogTextField = newActiveField;
-            }
-
-            void UpdateCountTextField () {
-                var total = $"Total: {totalLogCount}";
-                if(totalLogCount <= 0){
-                    countDisplayTextField.text = total;
-                    return;
+            void AddCategoryIfCountGreaterZero (string type, int count, string hexColor) {
+                if(count > 0){
+                    categorized = $"{categorized}{(commaNeeded ? ", " : "")}{FormatWithColor($"{count} {(count > 1 ? $"{type}s" : type)}", hexColor)}";
+                    commaNeeded = true;
                 }
-                bool commaNeeded = false;
-                var categorized = string.Empty;
-                AddCategoryIfCountGreaterZero("Log", logCount, hexLogColor);
-                AddCategoryIfCountGreaterZero("Warning", warningCount, hexWarningColor);
-                AddCategoryIfCountGreaterZero("Error", errorCount, hexErrorColor);
-                AddCategoryIfCountGreaterZero("Exception", exceptionCount, hexExceptionColor);
-                AddCategoryIfCountGreaterZero("Other", otherCount, hexOtherColor);
-                countDisplayTextField.text = $"{total} | {categorized}";
-
-                void AddCategoryIfCountGreaterZero (string type, int count, string hexColor) {
-                    if(count > 0){
-                        categorized = $"{categorized}{(commaNeeded ? ", " : "")}{FormatWithColor($"{count} {(count > 1 ? $"{type}s" : type)}", hexColor)}";
-                        commaNeeded = true;
-                    }
-                }
-            }            
+            }
         }
 
         void Clear () {
-            ClearLogs();
+            textDisplay.Clear();
             ResetCounts();
-            ResetUI();
             if(visible){
-                UpdateDisplay();
-            }
-
-            void ClearLogs () {
-                queuedLogs.Clear();
-                currentLog = string.Empty;
+                UpdateCountTextField();
             }
 
             void ResetCounts () {
@@ -276,26 +218,15 @@ namespace DebugTools {
                 exceptionCount = 0;
                 otherCount = 0;
             }
-
-            void ResetUI () {
-                foreach(var clone in clonedTextFields){
-                    Destroy(clone.gameObject);
-                }
-                clonedTextFields.Clear();
-                activeLogTextField = logTextFieldTemplate;
-                activeLogTextField.rectTransform.anchoredPosition = new Vector2(leftLogMargin, -topLogMargin);
-                activeLogTextField.rectTransform.sizeDelta = Vector2.zero;
-                scrollView.content.sizeDelta = Vector2.zero;
-            }
         }
 
         void InitUI () {
             background.color = colorScheme.BackgroundColor;
-            scrollView.verticalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
-            scrollView.verticalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
-            scrollView.horizontalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
-            scrollView.horizontalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
-            scrollView.content.SetAnchorAndPivot(0, 1);
+            textDisplay.ScrollView.verticalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
+            textDisplay.ScrollView.verticalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
+            textDisplay.ScrollView.horizontalScrollbar.GetComponent<Image>().color = colorScheme.MidgroundColor;
+            textDisplay.ScrollView.horizontalScrollbar.handleRect.GetComponent<Image>().color = colorScheme.ForegroundColor;
+            textDisplay.ScrollView.content.SetAnchorAndPivot(0, 1);
             logTextFieldTemplate.rectTransform.SetAnchorAndPivot(0, 1);
             logTextFieldTemplate.text = string.Empty;
             logTextFieldTemplate.color = colorScheme.TextColor;

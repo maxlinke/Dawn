@@ -1769,13 +1769,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9631146222eff4409b13a20f4a5fe85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  a: 1.0
-  b: 1.0
-  error: 
-  equals: 0
-  notEquals: 0
-  greater: 0
-  less: 0
+  charactersOnLine: 37
+  lines: 3
 --- !u!4 &2117278993
 Transform:
   m_ObjectHideFlags: 0

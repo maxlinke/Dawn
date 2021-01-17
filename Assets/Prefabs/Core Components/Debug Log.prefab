@@ -377,15 +377,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selfInit: 0
   canvas: {fileID: 4984440591279747816}
+  textDisplay: {fileID: 1706819166555570810}
   logTextFieldTemplate: {fileID: 4984440592788290079}
   countDisplayTextField: {fileID: 4984440591862629076}
   clearButton: {fileID: 4984440591895760978}
   clearButtonLabel: {fileID: 4984440591731615303}
-  scrollView: {fileID: 4984440592777864210}
   background: {fileID: 4984440592333231589}
   colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
-  leftLogMargin: 2
-  topLogMargin: 2
   openOnLog: 0
   openOnWarning: 1
   openOnError: 1
@@ -1067,6 +1065,7 @@ GameObject:
   - component: {fileID: 4984440592777864208}
   - component: {fileID: 4984440592777864210}
   - component: {fileID: 4984440592777864209}
+  - component: {fileID: 1706819166555570810}
   m_Layer: 5
   m_Name: Scroll View
   m_TagString: Untagged
@@ -1134,6 +1133,26 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4984440592777864207}
   m_CullTransparentMesh: 0
+--- !u!114 &1706819166555570810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4984440592777864207}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d083a3e7a10199d4ba7ef077b3300a95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textFieldTemplate: {fileID: 4984440592788290079}
+  scrollView: {fileID: 4984440592777864210}
+  textCreation: 0
+  updateScroll: 1
+  textMarginLeft: 4
+  textMarginRight: 16
+  textMarginTop: 4
+  textMarginBottom: 16
 --- !u!1 &4984440592788290077
 GameObject:
   m_ObjectHideFlags: 0

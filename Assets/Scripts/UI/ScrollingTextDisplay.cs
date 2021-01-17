@@ -39,6 +39,7 @@ public class ScrollingTextDisplay : MonoBehaviour {
         }
     }
 
+    public ScrollRect ScrollView => scrollView;
 
     public enum TextCreation {
         AlwaysCreateNew,
