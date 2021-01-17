@@ -106,9 +106,6 @@ namespace DebugTools {
             }
         }
 
-        // TODO have a different object always active listening for the inputs and calling this thing to enable itself? 
-        // maybe even just use gameobject.setactive? 
-        // then i wouldn't have to manually to it for the textdisplay...
         void Update () {
             if(Bind.TOGGLE_DEBUG_LOG.GetKeyDown()){
                 if(!visible){

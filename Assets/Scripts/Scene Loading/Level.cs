@@ -1,7 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using SceneLoading;
+#if UNITY_EDITOR
+using UnityEngine.SceneManagement;
+#endif
 
 public class Level : MonoBehaviour {
+
+    // this thing shouldn't need the id
+    // scriptable object that has an editor reference to the scene asset and serializes the name?
+    // also make a game init option in here
+
+#if UNITY_EDITOR
+    [Header("Editor")]
+    [SerializeField] bool ensureGameInitialized = true;
+#endif
 
     [Header("Settings")]
     [SerializeField] SceneID id = default;
@@ -24,6 +37,13 @@ public class Level : MonoBehaviour {
             return;
         }
         current = this;
+#if UNITY_EDITOR
+        if(ensureGameInitialized){
+            if(!GameInitializer.gameInitialized){
+                StartCoroutine(GameInitializer.EditorForceInitializeCoroutine());
+            }
+        }
+#endif
         CheckID();
         FirstTimeInit();
     }

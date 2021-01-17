@@ -1163,6 +1163,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b501a157ca93ad4b8be8f02f40e1352, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ensureGameInitialized: 1
   id: 0
   fogSettings:
     fogEnabled: 0
