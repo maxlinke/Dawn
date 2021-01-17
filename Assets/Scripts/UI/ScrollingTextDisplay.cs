@@ -1,26 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using RTAxis = UnityEngine.RectTransform.Axis;
 
 public class ScrollingTextDisplay : MonoBehaviour {
 
     const int UNITY_TEXT_CHAR_LIMIT = (65000 / 4) - 1;
-
-    // copy paste before cut paste for now
-    // options
-    // - new text gameobject per entry
-    // - text objects until they're full
-    // - stick to width or expand
 
     [Header("Components")]
     [SerializeField] Text textFieldTemplate = default;
     [SerializeField] ScrollRect scrollView = default;
 
     [Header("General Settings")]
-    // [SerializeField] bool limitTextWidth = default;      // scroll view sets width according to text. if it's set to wrap, then it'll wrap
     [SerializeField] TextCreation textCreation = default;
     [SerializeField] ScrollOnUpdate updateScroll = default;
 
@@ -35,9 +26,6 @@ public class ScrollingTextDisplay : MonoBehaviour {
 
     List<string> queuedLines;
     List<Text> clonedTextFields;
-    RectTransform scrollViewContent;
-    RectTransform verticalScrollbar;
-    RectTransform horizontalScrollbar;
 
     RectTransform _activeRT;
     RectTransform activeRT => _activeRT;
@@ -87,16 +75,12 @@ public class ScrollingTextDisplay : MonoBehaviour {
         clonedTextFields = new List<Text>();
         queuedLines = new List<string>();
         activeTextField = textFieldTemplate;
-        scrollViewContent = scrollView.content;
-        verticalScrollbar = scrollView.verticalScrollbar.transform as RectTransform;
-        horizontalScrollbar = scrollView.horizontalScrollbar.transform as RectTransform;
         Clear();
     }
 
     public void AppendLine (string text) {
         EnsureInitialized();
         queuedLines.Add(text);
-        Debug.Log(text);
         if(visible){
             UpdateDisplay();
         }
@@ -168,20 +152,20 @@ public class ScrollingTextDisplay : MonoBehaviour {
         UpdateActiveTextField(currentText);
     }
 
-    // TODO ensure that the text field TEMPLATE has a point pivot and anchor...
     void UpdateActiveTextField (string newText) {
         activeTextField.text = newText;
-        var preferredHeight = activeTextField.preferredHeight;
+        var preferredHeight = string.IsNullOrWhiteSpace(newText) ? 0 : activeTextField.preferredHeight;
         var preferredWidth = activeTextField.preferredWidth;
         activeTextField.rectTransform.sizeDelta = new Vector2(preferredWidth, preferredHeight);
+        var scrollViewContent = scrollView.content;
         var contentRect = scrollViewContent.rect;
+        var viewportRect = scrollView.viewport.rect;
         var rawScrollWidth = preferredWidth + textMarginLeft + textMarginRight;
-        // TODO check if i need the scrollbar width (or what the "spacing" does)
-        scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(rawScrollWidth, scrollView.content.rect.width));
+        scrollViewContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Max(rawScrollWidth, contentRect.width));
         var textPos = activeTextField.rectTransform.anchoredPosition.y;
         var lowerTextBorder = textPos - preferredHeight;
         var rawScrollHeight = -lowerTextBorder + textMarginBottom;
-        scrollView.content.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(rawScrollHeight, scrollView.viewport.rect.height)); // TODO << why viewport?
+        scrollViewContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(rawScrollHeight, viewportRect.height));  // viewport so the scrollbar looks nice
     }
 
     void CreateNewActiveTextField () {

@@ -12,7 +12,7 @@ public class Test : MonoBehaviour {
     [SerializeField, CustomRange(1, int.MaxValue, false)] int lines = default;
 
     void Awake () {
-        Debug.Log("TODO TEST THIS THING MORE (ESPECIALLY THE MORE COMPLICATED VERSION)");
+
     }
 
     void Update () {
@@ -27,12 +27,11 @@ public class Test : MonoBehaviour {
             for(int j=0; j<line.Length; j++){
                 line[j] = (char)(c + 'A');
                 c = (c+1) % ('Z' - 'A' + 1);
-                // Debug.Log(line[j]);
             }
-            // Debug.Log(new string(line));
             text += $"{new string(line)}\n";
         }
-        textDisplay.AppendLine(text.Trim());
+        // textDisplay.AppendLine(text.Trim());
+        textDisplay.AppendLine(text);
     }
 
     public void Clear () {
