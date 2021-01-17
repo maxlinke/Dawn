@@ -1,39 +1,61 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class Test : MonoBehaviour {
 
-    [SerializeField] string a = default;
-    [SerializeField] string b = default;
-
-    [SerializeField] string error = default;
-    [SerializeField] bool equals = false;
-    [SerializeField] bool notEquals = false;
-    [SerializeField] bool greater = false;
-    [SerializeField] bool less = false;
+    [SerializeField] ScrollingTextDisplay textDisplay = default;
+    [SerializeField, CustomRange(1, int.MaxValue, false)] int charactersOnLine = default;
+    [SerializeField, CustomRange(1, int.MaxValue, false)] int lines = default;
 
     void Awake () {
-
+        Debug.Log("TODO TEST THIS THING MORE (ESPECIALLY THE MORE COMPLICATED VERSION)");
     }
 
     void Update () {
-        try{
-            Version va = new Version(a);
-            Version vb = new Version(b);
-            equals = (va == vb);
-            notEquals = (va != vb);
-            greater = (va > vb);
-            less = (va < vb);
-            error = string.Empty;
-        }catch(System.Exception e){
-            equals = false;
-            notEquals = false;
-            greater = false;
-            less = false;
-            error = e.Message;
-        }        
+              
+    }
+
+    public void AddText () {
+        string text = string.Empty;
+        int c = 0;
+        for(int i=0; i<lines; i++){
+            var line = new char[charactersOnLine];
+            for(int j=0; j<line.Length; j++){
+                line[j] = (char)(c + 'A');
+                c = (c+1) % ('Z' - 'A' + 1);
+                // Debug.Log(line[j]);
+            }
+            // Debug.Log(new string(line));
+            text += $"{new string(line)}\n";
+        }
+        textDisplay.AppendLine(text.Trim());
+    }
+
+    public void Clear () {
+        textDisplay.Clear();
     }
 	
 }
 
+#if UNITY_EDITOR
+
+[CustomEditor(typeof(Test))]
+public class TestEditor : Editor {
+
+    public override void OnInspectorGUI () {
+        base.OnInspectorGUI();
+        if(GUILayout.Button("Add Text")){
+            ((Test)target).AddText();
+        }
+        if(GUILayout.Button("Clear")){
+            ((Test)target).Clear();
+        }
+    }
+
+}
+
+#endif
