@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using UnityEngine;
+﻿using UnityEngine;
 using SceneLoading;
-#if UNITY_EDITOR
-using UnityEngine.SceneManagement;
-#endif
 
 public class Level : MonoBehaviour {
 

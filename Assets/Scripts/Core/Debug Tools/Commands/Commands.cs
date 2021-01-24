@@ -34,6 +34,9 @@ namespace DebugTools {
         // auto clear text input on return
         // TODO KISS. don't make it too complicated. if it works, that's fine. 
 
+        // TODO bind command
+        // also needs some utility to list what arguments are valid there...
+
         private static Dictionary<string, Command> commands;
 
         // TODO this happens every time on startup but is hardly necessary, unless i just added new commands
