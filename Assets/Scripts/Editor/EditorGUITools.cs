@@ -6,14 +6,54 @@ public static class EditorGUITools {
     private static float SLH => EditorGUIUtility.singleLineHeight;
     private static float SVS => EditorGUIUtility.standardVerticalSpacing;
 
-    public static Rect NextLine (ref Rect position, float manualIndent = 0f) {
-        position = new Rect(position.x, position.y + SLH + SVS, position.width, position.height - SLH - SVS);
-        return new Rect(position.x + manualIndent, position.y, position.width - manualIndent, SLH);
+    public static Rect RemoveLine (ref Rect position) {
+        return RemoveLines(ref position, 1, SLH);
     }
 
-    public static Rect NextLineWithWidth (ref Rect position, float width, float manualIndent = 0f) {
-        position = new Rect(position.x, position.y + SLH + SVS, position.width, position.height - SLH - SVS);
-        return new Rect(position.x + manualIndent, position.y, Mathf.Min(width, position.width - manualIndent), SLH);
+    public static Rect RemoveLine (ref Rect position, float lineHeight) {
+        return RemoveLines(ref position, 1, lineHeight);
+    }
+
+    public static Rect RemoveLines (ref Rect position, int count) {
+        return RemoveLines(ref position, count, SLH);
+    }
+
+    public static Rect RemoveLines (ref Rect position, int count, float lineHeight) {
+        var height = (count * lineHeight) + ((count - 1) * SVS);
+        var output = new Rect(position.x, position.y, position.width, height);
+        position = new Rect(position.x, position.y + height + SVS, position.width, position.height - height - SVS);
+        return output;
+    }
+
+    public static Rect RemoveRectFromLeft (ref Rect position, float width, float space = 2) {
+        var output = new Rect(
+            x: position.x,
+            y: position.y,
+            width: width,
+            height: position.height
+        );
+        position = new Rect(
+            x: position.x + width + space,
+            y: position.y,
+            width: position.width - width - space,
+            height: position.height
+        );
+        return output;
+    }
+
+    public static Rect RemoveRectFromRight (ref Rect position, float width, float space = 2) {
+        position = new Rect(
+            x: position.x,
+            y: position.y,
+            width: position.width - width - space,
+            height: position.height
+        );
+        return new Rect(
+            x: position.x + position.width + space,
+            y: position.y,
+            width: width,
+            height: position.height
+        );
     }
 
     public static void DrawPropWithManualLabel (Rect baseRect, float labelWidth, SerializedProperty propToDraw, string labelText) {

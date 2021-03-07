@@ -6,13 +6,12 @@ namespace GeometryGenerators {
     [CustomPropertyDrawer(typeof(NoiseSource))]
     public abstract class NoiseSourceDrawer : PropertyDrawer {
 
-        protected const float LABELWIDTH = 54f;
-        protected const float LEFT_FRAC_WIDTH = 0.55f;
-        protected const float RIGHT_FRAC_WIDTH = 0.45f;
+        protected const float LABELWIDTH = 75f;
+        protected const float LEFT_FRAC_WIDTH = 0.5f;
+        protected const float RIGHT_FRAC_WIDTH = 0.5f;
 
         private Rect position;
         private SerializedProperty property;
-        private float manualIndent;
 
         public override float GetPropertyHeight (SerializedProperty property, GUIContent label) {
             var propCount = AdditionalPropLines + (property.FindPropertyRelative("useCustomTransform").boolValue ? 5 : 3);
@@ -24,7 +23,7 @@ namespace GeometryGenerators {
         protected abstract void DrawAdditionalProperty (int index, SerializedProperty property);
 
         Rect NextLine () {
-            return EditorGUITools.NextLine(ref position, manualIndent);
+            return EditorGUITools.RemoveLine(ref position);
         }
 
         protected void DoubleProp (string prop1Name, string prop1Label, string prop2Name, string prop2Label) {
@@ -42,19 +41,18 @@ namespace GeometryGenerators {
             var lw = EditorGUIUtility.labelWidth;
             var slh = EditorGUIUtility.singleLineHeight;
             var svs = EditorGUIUtility.standardVerticalSpacing;
-            EditorGUI.PrefixLabel(position, label, EditorStyles.boldLabel);
-            manualIndent = 10f;
-            DoubleProp("strength", "STR", "randomness", "RAND");
-            DoubleProp("size", "SIZE", "valueRange", "VAL");
+            EditorGUI.PrefixLabel(NextLine(), label, EditorStyles.boldLabel);
+            EditorGUITools.RemoveRectFromLeft(ref position, 10f, 0f);
+            DoubleProp("strength", "Strength", "randomness", "Random");
+            DoubleProp("size", "Size", "valueRange", "Value");
             for(int i=0; i<AdditionalPropLines; i++){
                 DrawAdditionalProperty(i, property);
             }
             DrawUseCustomTransformTransform(out var showTransform);
             if(showTransform){
-                DoubleProp("position", "POS", "angle", "ROT");
-                DoubleProp("vecSize", "SIZE", null, null);
+                DoubleProp("position", "Position", "angle", "Rotation");
+                DoubleProp("vecSize", "Size", null, null);
             }
-            manualIndent = 0f;
             EditorGUI.EndProperty();
 
             void DrawUseCustomTransformTransform (out bool output) {
@@ -65,7 +63,7 @@ namespace GeometryGenerators {
                 customTransformProp.boolValue = EditorGUI.Toggle(tr, customTransformProp.boolValue);
                 var lo = 20f;
                 var lr = new Rect(ctr.x + lo, ctr.y, ctr.width - lo, ctr.height);
-                EditorGUI.LabelField(lr, "USE CUSTOM TRANSFORM");
+                EditorGUI.LabelField(lr, "Use Custom Transform");
                 output = customTransformProp.boolValue;
             }
 
