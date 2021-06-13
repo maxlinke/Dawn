@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
 
 public static class MeshExtensions {
 
-    // TODO when i upgrade to 2019, use get/set submesh!!!
     public static void CopyDataFrom (this Mesh mesh, Mesh other) {
         mesh.Clear(false);
         mesh.indexFormat = other.indexFormat;
@@ -27,6 +27,19 @@ public static class MeshExtensions {
 
         mesh.triangles = other.triangles;
         mesh.bounds = other.bounds;
+
+        if(other.subMeshCount > 1){
+            mesh.subMeshCount = other.subMeshCount;
+            for(int i=0; i<other.subMeshCount; i++){
+                var sm = other.GetSubMesh(i);
+                var smd = new SubMeshDescriptor(
+                    indexStart: sm.indexStart,
+                    indexCount: sm.indexCount,
+                    topology: sm.topology
+                );
+                mesh.SetSubMesh(i, smd, MeshUpdateFlags.Default);
+            }
+        }
     }
 	
 }

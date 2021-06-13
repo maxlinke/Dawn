@@ -98,10 +98,6 @@ namespace GeometryGenerators {
                 path = FileUtil.GetProjectRelativePath(path);
                 var existing = AssetDatabase.LoadAssetAtPath<Mesh>(path);
                 if(existing != null){
-                    if(mesh.subMeshCount > 1){
-                        // TODO on upgrade to 2019, fix this
-                        Debug.LogWarning($"Mesh has {mesh.subMeshCount} submeshes. Overwriting an existing asset means losing them. If you want to keep the submeshes, save as a new asset.");
-                    }
                     existing.CopyDataFrom(mesh);
                     AssignMeshToTargets(mfs, mcs, existing);
                 }else{
@@ -136,10 +132,8 @@ namespace GeometryGenerators {
                 if(mesh == null){
                     mesh = input;
                     return true;
-                }else if(mesh == input){
-                    return true;
                 }
-                return false;
+                return (mesh == input);
             }
         }
         
