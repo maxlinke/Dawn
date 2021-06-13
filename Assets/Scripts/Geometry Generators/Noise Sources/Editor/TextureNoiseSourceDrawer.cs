@@ -8,7 +8,7 @@ namespace GeometryGenerators {
         protected override int AdditionalPropLines => 1;
 
         protected override void DrawAdditionalProperty (int index, SerializedProperty property) {
-            DoubleProp("texture", "TEX", "filterSize", "FLTR");
+            DoubleProp("texture", "Texture", "filterSize", "Filter Size");
         }
 
     }
