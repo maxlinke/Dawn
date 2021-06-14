@@ -7,10 +7,11 @@ namespace SceneLoading {
 
     public class SceneLoader : MonoBehaviour {
 
-        [SerializeField] Canvas loadingScreenCanvas = default;
-        [SerializeField] Image loadingBar = default;
-        [SerializeField] Text[] loadingTexts = default;
-        [SerializeField] Text continueText = default;
+        [SerializeField, RedIfEmpty] Canvas m_canvas = default;
+        [SerializeField, RedIfEmpty] Image  m_loadingBar = default;
+        [SerializeField, RedIfEmpty] Image  m_spinner = default;
+        [SerializeField, RedIfEmpty] Text[] m_loadingTexts = default;
+        [SerializeField, RedIfEmpty] Text   m_continueText = default;
 
         private static SceneLoader instance;
 
@@ -19,7 +20,7 @@ namespace SceneLoading {
                 if(instance == null){
                     return false;
                 }
-                return instance.loadingScreenCanvas.enabled;
+                return instance.m_canvas.enabled;
             }
         }
 
@@ -41,8 +42,8 @@ namespace SceneLoading {
                 return;
             }
             instance = this;
-            loadingScreenCanvas.sortingOrder = (int)(CanvasSortingOrder.LOADING_SCREEN);
-            loadingScreenCanvas.enabled = false;
+            m_canvas.sortingOrder = (int)(CanvasSortingOrder.LOADING_SCREEN);
+            m_canvas.enabled = false;
         }
 
         public static void LoadScene (SceneID newScene, LoadMode loadMode) {
@@ -64,27 +65,47 @@ namespace SceneLoading {
         }
 
         IEnumerator LoadingVis (AsyncOperation loadOp, bool manualContinue) {
-            loadingScreenCanvas.enabled = true;
-            continueText.gameObject.SetActive(false);
+            m_canvas.enabled = true;
+            m_continueText.gameObject.SetActive(false);
+            m_spinner.gameObject.SetActive(true);
+            var spinnerT = 0f;
             while(!loadOp.isDone){
                 float progress = loadOp.progress;
-                loadingBar.fillAmount = progress;
-                var loadingTextText = $"{(100f * progress):F0}%";
-                foreach(var text in loadingTexts){
-                    text.text = loadingTextText;
-                }
+                m_loadingBar.fillAmount = progress;
+                SetLoadingTextProgress(progress);
+                SetSpinnerT(spinnerT);
+                spinnerT += Time.unscaledDeltaTime;
                 yield return null;   
             }
             if(manualContinue){
                 // TODO pause game (time only)
-                continueText.gameObject.SetActive(true);
+                m_loadingBar.fillAmount = 1;
+                SetLoadingTextProgress(1);
+                m_continueText.gameObject.SetActive(true);
+                m_spinner.gameObject.SetActive(false);
                 while(!Input.anyKeyDown){
                     yield return null;
                 }
                 // TODO unpause game
             }
-            loadingScreenCanvas.enabled = false;
+            m_canvas.enabled = false;
             loadCoroutine = null;
+        }
+
+        void SetLoadingTextProgress (float progress) {
+            var loadingTextText = $"{(100f * progress):F0}%";
+            foreach(var text in m_loadingTexts){
+                text.text = loadingTextText;
+            }
+        }
+
+        void SetSpinnerT (float t) {
+            m_spinner.fillAmount = Mathf.PingPong(t, 1f);
+            m_spinner.transform.localScale = new Vector3(
+                x: ((Mathf.Repeat(0.5f * t, 1) < 0.5f) ? 1f : -1f), 
+                y: 1f, 
+                z: 1f
+            );
         }
         
     }

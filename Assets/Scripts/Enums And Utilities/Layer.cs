@@ -16,7 +16,7 @@ public class Layer {
     public static readonly Layer SmallProp = new Layer(11, "SmallProp");
     public static readonly Layer EntityGround = new Layer(12, "EntityGround");
     public static readonly Layer PropGround = new Layer(13, "PropGround");
-    public static readonly Layer FreeCam = new Layer(14, "FreeCam");
+    public static readonly Layer FreeCam = new Layer(14, "FreeCam");        // TODO isn't this a bit wasteful? can't the freecam just get default?
     public static readonly Layer PlayerHitboxesAndThirdPersonModel = new Layer(15, "PlayerHitboxesAndThirdPersonModel");    // TODO move this under layer 9 sooner than later!
 
     public readonly int index;

@@ -5,6 +5,11 @@ public static class EditorTools {
 
     public const float BACKGROUND_TINT_STRENGTH = 0.3f;
 
+    public static readonly Color ComfyGreen = new Color(100f / 255f, 1f, 100f / 255f, 1f);
+    public static readonly Color ComfyRed = new Color(1f, 100f / 255f, 100f / 255f, 1f);
+    public static readonly Color ComfyCyan = new Color(0f, 230f / 255f, 1f, 1f);
+    public static readonly Color ErrorRed = new Color(200f / 255f, 0f, 0f, 1f);
+
     public static void DrawScriptReference (UnityEngine.Object obj) {
         if(obj is MonoBehaviour monoBehaviour){
             DrawScriptReference(monoBehaviour);
