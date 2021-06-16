@@ -8,6 +8,12 @@ using UnityEngine.SceneManagement;
 
 public class GameInitializer : MonoBehaviour {
 
+    // TODO no transform.getchild, no icorecomponent
+    // just references to things in here that get initialized directly
+    // AND even better, this thing will be in the root scene of the finished game, so it'll get its awake either way
+    // but for raw starting scenes in the editor, i can just get a editor-guid-asset-reference thing going
+    // and do a static GameInitializer.EnsureGameInitialized call in the start of a level's awake
+
     [SerializeField] bool unloadSceneOnDone = false;
 
     public static bool gameInitialized { get; private set; }

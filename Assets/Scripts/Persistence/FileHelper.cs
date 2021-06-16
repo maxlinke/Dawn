@@ -14,10 +14,33 @@ namespace Persistence {
             return $"{directoryPath}/{fileName}";
         }
 
+#if UNITY_EDITOR
+
+        [UnityEditor.MenuItem("Data/Open Config Directory", true)]
+        private static bool EditorOpenConfigDir_Validate () => ConfigDirectoryExists;
+
+        [UnityEditor.MenuItem("Data/Open Config Directory")]
+        private static void EditorOpenConfigDir () => OpenConfigDirectory();
+
+        [UnityEditor.MenuItem("Data/Open Save File Directory", true)]
+        private static bool EditorOpenSaveFileDir_Validate () => SaveFileDirectoryExists;
+
+        [UnityEditor.MenuItem("Data/Open Save File Directory")]
+        private static void EditorOpenSaveFileDir () => OpenSaveFileDirectory();
+
+        [UnityEditor.MenuItem("Data/Open Persistent Data Directory")]
+        public static void EditorOpenDataDir () => OpenDataDirectory();
+
+#endif
+
+        public static bool ConfigDirectoryExists => Directory.Exists(configFilePath);
+
+        public static bool SaveFileDirectoryExists => Directory.Exists(saveFilePath);
+
         public static void OpenConfigDirectory () {
             System.Diagnostics.Process.Start(configFilePath);
         }
-
+        
         public static void OpenSaveFileDirectory () {
             System.Diagnostics.Process.Start(saveFilePath);
         }
@@ -27,7 +50,7 @@ namespace Persistence {
         }
 
         public static void DeleteAllConfigData () {
-            if(Directory.Exists(configFilePath)){
+            if(ConfigDirectoryExists){
                 try{
                     Directory.Delete(configFilePath, true);
                 }catch(System.Exception e){
@@ -37,7 +60,7 @@ namespace Persistence {
         }
 
         public static void DeleteAllSaveData () {
-            if(Directory.Exists(saveFilePath)){
+            if(SaveFileDirectoryExists){
                 try{
                     Directory.Delete(saveFilePath, true);
                 }catch(System.Exception e){
