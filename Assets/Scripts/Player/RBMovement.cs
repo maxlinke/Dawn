@@ -31,7 +31,7 @@ namespace PlayerController {
         protected Vector3 TargetModelPos => new Vector3(0f, -0.5f * col.height, 0f);
 
         public override Vector3 WorldVelocity => rb.velocity;
-        public override Vector3 LocalVelocity => rb.velocity;       // TODO either last state or actual calculation?
+        public override Vector3 LocalVelocity => rb.velocity;       // TODO either last state or actual calculation? (this is cached value, provide CalculateLocalVelocity)
         
         protected override Vector3 MoveVelocity { 
             get => rb.velocity;

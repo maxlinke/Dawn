@@ -11,7 +11,7 @@ public static class TimeScaleManager {
 
     class TimeScaler {
         public readonly object caller;
-        public readonly float timeScale;
+        public float timeScale;
         public TimeScaler (object caller, float timeScale) {
             this.caller = caller;
             this.timeScale = timeScale;
@@ -23,26 +23,45 @@ public static class TimeScaleManager {
         timeScalers = new List<TimeScaler>();
     }
 
-    public static void ResetTimeScale () {
+    public static void ForceResetTimeScale () {
+        if(timeScalers.Count > 0){
+            Debug.LogWarning($"Force reset of time scale deleting {timeScalers.Count} time scalers!");
+        }
         timeScalers.Clear();
         Time.timeScale = initTimeScale;
     }
 
     // TODO rigorously test all this
-    public static void AddTimeScaler (object caller, float newValue) {
+    public static bool AddTimeScaler (object caller, float newValue) {
         for(int i=0; i<timeScalers.Count; i++){
             if(timeScalers[i].caller == caller){
                 Debug.LogWarning($"Time scaler \"{caller.ToString()}\" is already registered! Time scale won't be set to {newValue}!");
-                return;
+                return false;
             }
         }
         Time.timeScale = newValue;
         timeScalers.Add(new TimeScaler(caller, newValue));
+        return true;
+    }
+
+    public static bool AdjustTimeScaler (object caller, float newValue) {
+        for(int i=timeScalers.Count-1; i>=0; i--){
+            if(timeScalers[i].caller == caller){
+                timeScalers[i].timeScale = newValue;
+                if(i == timeScalers.Count-1){
+                    Time.timeScale = newValue;
+                }else{
+                    Debug.LogWarning($"Time scaler \"{caller.ToString()} ({caller.GetType()}) adjusted time scale but it's not immediately visible because it's not the last time scaler!");
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     public static bool RemoveTimeScaler (object caller) {
         bool success = false;
-        for(int i=0; i<timeScalers.Count; i++){
+        for(int i=timeScalers.Count-1; i>=0; i--){
             if(timeScalers[i].caller == caller){
                 timeScalers.RemoveAt(i);
                 success = true;
@@ -56,7 +75,7 @@ public static class TimeScaleManager {
                 Time.timeScale = initTimeScale;
             }
         }else{
-            Debug.LogWarning($"Time scaler \"{caller.ToString()}\" wasn't register (maybe there was a forced reset?)");
+            Debug.LogWarning($"Time scaler \"{caller.ToString()}\" wasn't registered (maybe there was a forced reset?)");
         }
         return success;
     }

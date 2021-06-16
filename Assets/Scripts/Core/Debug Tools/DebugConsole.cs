@@ -18,7 +18,6 @@ namespace DebugTools {
 
         static DebugConsole instance;
 
-        // literally the same as debuglog and frameratedisplay. do i smell some inheritance?
         bool visible {
             get {
                 return canvas.enabled;
@@ -50,7 +49,6 @@ namespace DebugTools {
             textDisplay.SetGOActive(true);
         }
 
-        // TODO this eventsystem thing can also go in the inheritance...
         void OnHide () {
             textDisplay.SetGOActive(false);
             if(EventSystem.current != null){
@@ -83,8 +81,6 @@ namespace DebugTools {
             }
 
         }
-
-
         
     }
 
