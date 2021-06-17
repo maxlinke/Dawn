@@ -26,6 +26,19 @@ namespace DebugTools {
         //   {value:bool} on or off
         // god true
         //   God mode enabled
+        // gravity
+        //   gravity setdir down
+        //   gravity setdir left
+        //   gravity setdir 0 1 5 (gets normalized and used)
+        //   gravity setstr 9.81 
+        // framerate, timescale, lagsim
+        //   framerate is sensible and stops stupid values
+        //   timescale set 2 (use timescaler and make lock objects or simply set time.timescale "without a trace"?)
+        //   lagsim needs a gameobject, but that can be created and simply dontdestroyonloaded
+        //   also place a label somewhere on screen if lagsim is active, reminding you of the fact (probably in the middle of the screen)
+        // load
+        //   loads a scene, either by intex or by name, depending on what's given
+
 
         // TODO think about this stuff ^^^^
         // TODO non-debug-log thing to enter the commands into the console
@@ -42,6 +55,11 @@ namespace DebugTools {
         // TODO this happens every time on startup but is hardly necessary, unless i just added new commands
         // make use of code generation to generate a file that has all the things in it, so i do the reflection once offline and not during runtime
         // also copy baste's layer code generation thingy and make it do my stuff. so not layer.mask.default but rather layer.default.mask
+        // this class then basically becomes just the list of all commands with an ienumerable getter
+        // and the actual execute and string-to-command-and-arguments-parse go into the console
+        // on the other hand, this works
+        // and until game startup in the editor takes like 10 seconds and the profiler says it's all THIS thing's fault, it's fine. 
+
         static Commands () {
             commands = new Dictionary<string, Command>();
             List<string> problematicCommands = new List<string>();

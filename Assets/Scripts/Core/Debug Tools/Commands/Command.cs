@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DebugTools.DebugCommands {
+﻿namespace DebugTools.DebugCommands {
 
     public abstract class Command {
 

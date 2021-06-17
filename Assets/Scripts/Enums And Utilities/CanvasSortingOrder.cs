@@ -1,6 +1,8 @@
-﻿public enum CanvasSortingOrder {
-    DEBUG_LOG = 9001,
-    DEBUG_FRAMERATE = 8002,
-    DEBUG_PLAYERCONTROLLER = 8001,
-    LOADING_SCREEN = 1001
+﻿public static class CanvasSortingOrder {
+
+    public const int DebugLog = 9001;
+    public const int FrameRateDisplay = 8002;
+    public const int PlayerControllerDebugUI = 8001;
+    public const int LoadingScreen = 1001;
+    
 }

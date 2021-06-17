@@ -22,11 +22,8 @@ namespace CustomInputSystem {
             public float deadzone;
             public float sensitivity;
 
-            private float d => deadzone;
-            private float s => sensitivity;
-
             public float ApplyConfig (float rawValue) {
-                return Mathf.Sign(rawValue) * Mathf.Max(0f, (s / (1f - d)) * (Mathf.Abs(rawValue) - d));
+                return Mathf.Sign(rawValue) * Mathf.Max(0f, (sensitivity / (1f - deadzone)) * (Mathf.Abs(rawValue) - deadzone));
             }
 
             public Config (float deadzone, float sensitivity) {

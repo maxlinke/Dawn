@@ -89,7 +89,7 @@ namespace DebugTools {
                 return;
             }
             instance = this;
-            canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_FRAMERATE;
+            canvas.sortingOrder = CanvasSortingOrder.FrameRateDisplay;
             lineCol32 = colorScheme.FramerateLineColor;
             prevLineCol32 = colorScheme.FramerateLinePrevCycleColor;
             clearCol32 = Color.clear;

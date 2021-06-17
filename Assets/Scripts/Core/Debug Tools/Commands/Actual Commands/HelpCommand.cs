@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace DebugTools.DebugCommands {
+﻿namespace DebugTools.DebugCommands {
 
     public class HelpCommand : Command {
 

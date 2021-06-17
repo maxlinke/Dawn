@@ -4,6 +4,8 @@ using UnityEditor.SceneManagement;
 [InitializeOnLoad]
 public static class BootstrapSceneLoader {
 
+    // TODO get rid of this, just do some init call in level.awake to make sure all the necessary things exist
+
     // this bootstrapper is editor only, so hardcoding this is fine...
     const string initScenePath = "Assets/Scenes/CoreComponentsBootstrap.unity";
 

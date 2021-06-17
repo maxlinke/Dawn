@@ -7,6 +7,20 @@ namespace SceneLoading {
 
     public class SceneLoader : MonoBehaviour {
 
+        // TODO take the loading screen out of this
+        // and i'm not sure what THIS will be useful for in the end
+        // obviously showing and hiding the loading screen i guess
+        // and the scene enum can go as well
+        // because you can only load scenes that are in the build order
+        // and i can iterate over those and get the names and such
+        // so... no need for an enum that i need to maintain
+        // for "next scene" things i can just make a scriptable object ..
+        // .. with an #if UNITY_EDITOR array scenes and a duplicate ..
+        // .. background array of either the names of build indices ..
+        // .. that get synced via the thing's custom editor. just make ..
+        // .. sure that when a build is made, some postprocessor call ..
+        // .. or something exists to update that background array again
+
         [SerializeField, RedIfEmpty] Canvas m_canvas = default;
         [SerializeField, RedIfEmpty] Image  m_loadingBar = default;
         [SerializeField, RedIfEmpty] Image  m_spinner = default;
@@ -42,7 +56,7 @@ namespace SceneLoading {
                 return;
             }
             instance = this;
-            m_canvas.sortingOrder = (int)(CanvasSortingOrder.LOADING_SCREEN);
+            m_canvas.sortingOrder = CanvasSortingOrder.LoadingScreen;
             m_canvas.enabled = false;
         }
 

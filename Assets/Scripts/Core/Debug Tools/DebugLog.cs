@@ -72,7 +72,7 @@ namespace DebugTools {
                 return;
             }
             instance = this;
-            canvas.sortingOrder = (int)CanvasSortingOrder.DEBUG_LOG;
+            canvas.sortingOrder = CanvasSortingOrder.DebugLog;
             InitUI();
             hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
             hexWarningColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugWarningColor);

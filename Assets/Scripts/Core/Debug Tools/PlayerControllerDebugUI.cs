@@ -69,7 +69,7 @@ namespace DebugTools {
                 return;
             }
             instance = this;
-            canvas.sortingOrder = (int)(CanvasSortingOrder.DEBUG_PLAYERCONTROLLER);
+            canvas.sortingOrder = CanvasSortingOrder.PlayerControllerDebugUI;
             InitUI();
             ResetText();
             ApplyText();
