@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using CustomInputSystem;
 
 namespace DebugTools {
 
-    public class DebugLog : MonoBehaviour, ICoreComponent {
+    public class DebugLog : MonoBehaviour {
 
-        [Header("Settings")]
-        [SerializeField] bool selfInit = false;
+        // TODO get rid of anything selectable on here
+        // so all buttons should become simple pointerenter/... handlers
+        // and the scrollbars shouldn't be interactable
+
+        // i want to see if i can get away with just using unity ui in this project and not mess with my custom thing
 
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
@@ -29,7 +31,7 @@ namespace DebugTools {
         [SerializeField] bool openOnError = false;
         [SerializeField] bool openOnException = false;
 
-        bool visible {
+        public bool visible {
             get {
                 return canvas.enabled;
             } set {
@@ -59,19 +61,16 @@ namespace DebugTools {
         string hexExceptionColor;
         string hexOtherColor;
 
-        void Awake () {
-            if(selfInit){
-                InitializeCoreComponent(null);
-            }
-        }
-
-        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
+        public void Initialize () {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(DebugLog)} is not null!");
                 Destroy(this.gameObject);
                 return;
             }
             instance = this;
+            this.transform.SetParent(null);
+            this.gameObject.SetActive(true);
+            DontDestroyOnLoad(this.gameObject);
             canvas.sortingOrder = CanvasSortingOrder.DebugLog;
             InitUI();
             hexLogColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugLogColor);
@@ -81,7 +80,6 @@ namespace DebugTools {
             hexOtherColor = ColorUtility.ToHtmlStringRGB(colorScheme.DebugOtherColor);
             textDisplay.EnsureInitialized();
             Clear();
-            visible = false;
             Application.logMessageReceived += HandleLog;
         }
 

@@ -7,11 +7,6 @@ public class Level : MonoBehaviour {
     // scriptable object that has an editor reference to the scene asset and serializes the name?
     // also make a game init option in here
 
-#if UNITY_EDITOR
-    [Header("Editor")]
-    [SerializeField] bool ensureGameInitialized = true;
-#endif
-
     [Header("Settings")]
     [SerializeField] SceneID id = default;
     [SerializeField] FogSettings fogSettings = FogSettings.Default;
@@ -33,14 +28,16 @@ public class Level : MonoBehaviour {
             return;
         }
         current = this;
-#if UNITY_EDITOR
-        if(ensureGameInitialized){
-            if(!GameInitializer.gameInitialized){
-                StartCoroutine(GameInitializer.EditorForceInitializeCoroutine());
-            }
-        }
-#endif
+        GameInitializer.EnsureGameInitialized();
+
+        // TODO this can go, i'll do stuff straight via the build-list of scenes...
         CheckID();
+
+        // TODO if i make the gameinit thing do it's "slower" stuff asynchronously, i can put this in the start-ienumerator
+        // as well as all other stuff that'd like the game to be properly initialized by the time it runs
+        // maybe use the loading screen here for that, if i can... 
+        // i'll still have to rip out the loading screen from the scene loader
+        // it can USE the loading screen but it shouldn't BE the loading screen
         FirstTimeInit();
     }
 

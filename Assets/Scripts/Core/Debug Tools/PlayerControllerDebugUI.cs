@@ -1,15 +1,11 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using CustomInputSystem;
 
 namespace DebugTools {
 
-    public class PlayerControllerDebugUI : MonoBehaviour, ICoreComponent {
+    public class PlayerControllerDebugUI : MonoBehaviour {
 
-        [Header("Settings")]
-        [SerializeField] bool selfInit = false;
-        [SerializeField] bool hideAfterInit = true;
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
         [Header("Components")]
@@ -19,7 +15,7 @@ namespace DebugTools {
         [SerializeField] Text viewText = default;
         [SerializeField] Text viewTextBG = default;
 
-        bool visible {
+        public bool visible {
             get {
                 return canvas.enabled;
             } set {
@@ -56,26 +52,20 @@ namespace DebugTools {
             }
         }
 
-        void Awake () {
-            if(selfInit){
-                InitializeCoreComponent(null);
-            }
-        }
-
-        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
+        public void Initialize () {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(PlayerControllerDebugUI)} is not null!");
                 Destroy(this.gameObject);
                 return;
             }
             instance = this;
+            this.transform.SetParent(null);
+            this.gameObject.SetActive(true);
+            DontDestroyOnLoad(this.gameObject);
             canvas.sortingOrder = CanvasSortingOrder.PlayerControllerDebugUI;
             InitUI();
             ResetText();
             ApplyText();
-            if(hideAfterInit){
-                visible = false;
-            }
         }
 
         void OnDestroy () {

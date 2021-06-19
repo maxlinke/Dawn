@@ -7,10 +7,7 @@ using UnityEngine.EventSystems;
 
 namespace DebugTools {
 
-    public class DebugConsole : MonoBehaviour, ICoreComponent {
-
-        [Header("Settings")]
-        [SerializeField] bool selfInit = false;
+    public class DebugConsole : MonoBehaviour {
 
         [Header("Components")]
         [SerializeField] Canvas canvas = default;
@@ -33,10 +30,14 @@ namespace DebugTools {
             }
         }
 
-        void Awake () {
-            if(selfInit){
-                InitializeCoreComponent(null);
+        public void Initialize () {
+            if(instance != null){
+                Debug.LogError($"Singleton violation, instance of {nameof(DebugConsole)} is not null!");
+                Destroy(this.gameObject);
+                return;
             }
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
 
         void OnDestroy () {
@@ -46,7 +47,7 @@ namespace DebugTools {
         }
 
         void OnShow () {
-            textDisplay.SetGOActive(true);
+            textDisplay.SetGOActive(true);      // bad bad bad. no more setgoactive calls on other gameobjects that have proper scripts on them...
         }
 
         void OnHide () {
@@ -71,15 +72,6 @@ namespace DebugTools {
                     CursorLockManager.RemoveUnlocker(this);
                 }
             }
-        }
-
-        public void InitializeCoreComponent(IEnumerable<ICoreComponent> allCoreComponents) {
-            if(instance != null){
-                Debug.LogError($"Singleton violation, instance of {nameof(DebugConsole)} is not null!");
-                Destroy(this.gameObject);
-                return;
-            }
-
         }
         
     }

@@ -5,19 +5,20 @@ using System.Collections.Generic;
 
 namespace DebugTools {
 
-    public class FramerateDisplay : MonoBehaviour, ICoreComponent {
+    public class FramerateDisplay : MonoBehaviour {
+
+        // i have a feeling that this thing could be simpler, but it works. 
+        // i could make a tex2d line graph component to take that part out of here, but eh. for now i don't need that as a separate component...
 
         const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
 
-        enum Mode {
+        public enum Mode {
             Hidden,
             Small,
             Detailed
         }
 
         [Header("Settings")]
-        [SerializeField] bool selfInit = false;
-        [SerializeField] Mode mode;
         [SerializeField] DebugToolColorScheme colorScheme = default;
 
         [Header("Components")]
@@ -37,7 +38,7 @@ namespace DebugTools {
         [SerializeField] Text minFPSText = default;
         [SerializeField] Text maxFPSText = default;
 
-        bool visible {
+        public bool visible {
             get {
                 return canvas.enabled;
             } set {
@@ -52,7 +53,10 @@ namespace DebugTools {
             }
         }
 
+        public Mode mode { get; private set; }
+
         private static FramerateDisplay instance;
+
         bool initialized = false;
 
         RectTransform imageRT => graphImage.rectTransform;
@@ -76,19 +80,16 @@ namespace DebugTools {
         float texMin;
         float texMax;
 
-        void Awake () {
-            if(selfInit){
-                InitializeCoreComponent(null);
-            }
-        }
-
-        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
+        public void Initialize () {
             if(instance != null){
                 Debug.LogError($"Singleton violation, instance of {nameof(FramerateDisplay)} is not null!");
                 Destroy(this.gameObject);
                 return;
             }
             instance = this;
+            this.transform.SetParent(null);
+            this.gameObject.SetActive(true);
+            DontDestroyOnLoad(this.gameObject);
             canvas.sortingOrder = CanvasSortingOrder.FrameRateDisplay;
             lineCol32 = colorScheme.FramerateLineColor;
             prevLineCol32 = colorScheme.FramerateLinePrevCycleColor;
@@ -136,6 +137,7 @@ namespace DebugTools {
         void OnHide () {
             ClearImage();
             smallModeDeltaTimes.Clear();
+            mode = Mode.Hidden;
         }
 
         void ClearImage () {
@@ -153,8 +155,15 @@ namespace DebugTools {
                 case Mode.Detailed:
                     return Mode.Hidden;
                 default:
-                    Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
+                    Debug.LogError($"Unknown {nameof(Mode)} \"{input}\"!");
                     return input;
+            }
+        }
+
+        public void SetMode (Mode newMode) {
+            if(newMode != this.mode){
+                this.mode = newMode;
+                ModeUpdated();
             }
         }
 

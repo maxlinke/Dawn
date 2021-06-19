@@ -4,42 +4,61 @@ using CustomInputSystem.Inputs;
 
 namespace CustomInputSystem {
 
-    public class InputSystem : MonoBehaviour, ICoreComponent {
-
-        [Header("Settings")]
-        [SerializeField] bool selfInit = false;
-        [SerializeField] bool resetAxisConfigToDefault = false;
-        [SerializeField] bool resetKeybindsToDefault = false;
+    public class InputSystem : MonoBehaviour {
 
         private static InputSystem instance;
 
-        int lastUpdatedFrame = -1;
-        int m_fixedUpdateCount = 0;
-        List<AxisInput> axisInputs = new List<AxisInput>();
+        int lastUpdatedFrame;
+        List<AxisInput> axisInputs;
 
-        public static int fixedUpdateCount => instance.m_fixedUpdateCount;
+        bool initialized = false;
 
-        void Awake () {
-            if(selfInit){
-                InitializeCoreComponent(null);
+        public static void EnsureExists () {
+            if(instance != null){
+                return;
+            }
+            var instanceGO = new GameObject("[Input System]");
+            instance = instanceGO.AddComponent<InputSystem>();
+            instance.Initialize();
+            DontDestroyOnLoad(instanceGO);
+        }
+
+        void OnDestroy () {
+            if(instance == this){
+                instance = null;
             }
         }
 
-        public void InitializeCoreComponent (IEnumerable<ICoreComponent> others) {
-            if(instance != null){
-                Debug.LogError($"Singleton violation, instance of {nameof(InputSystem)} is not null!");
-                Destroy(this.gameObject);
-                return;
-            }
-            instance = this;
+        // big overhaul in this in general
+        // i'm not really in need of the new input system
+        // keycodes behind the scenes are just fine
+        // axis config needs a rework to just encompass ALL axes though
+        // and also an "enabeld" flag, because of the whole z-axis thingy
+        
+        // remove the partial class binds thingy
+        // make it so i can actually serialize binds directly
+        // bind-constructor: with default binds (it remembers them, doesn't serialize them)
+        // actual static binds are still readonly
+        // when the loading thing is done, i'll have a bunch of binds too and i can then slap their actual values onto the readonly binds
+
+        public void Initialize () {
+            lastUpdatedFrame = -1;
+            axisInputs = new List<AxisInput>();
+
+            // TODO this is a disk read, so making it async sounds like a good idea
+            // but i also need my stuff done and finished on awake in the editor, to reduce complexity
+            // unless i manage to keep the complexity contained in level... hmm...
             Bind.Initialize();
-            if(resetAxisConfigToDefault){
-                Axis.Config.ResetToDefault();
-            }
-            if(resetKeybindsToDefault){
-                Bind.ResetToDefault();
-            }
-            LogState();
+
+            initialized = true;
+        }
+
+        public static void ResetAxisConfigToDefault () {
+            Axis.Config.ResetToDefault();
+        }
+
+        public static void ResetKeybindsToDefault () {
+            Bind.ResetToDefault();
         }
 
         public static void LogState () {
@@ -56,19 +75,18 @@ namespace CustomInputSystem {
             return output;
         }
 
-        void OnDestroy () {
-            if(instance == this){
-                instance = null;
-            }
-        }
-
         void Update () {
+            if(!initialized){
+                return;
+            }
             EnsureAllInputsUpToDate();
         }
 
         void FixedUpdate () {
+            if(!initialized){
+                return;
+            }
             EnsureAllInputsUpToDate();
-            m_fixedUpdateCount++;
         }
 
         void EnsureAllInputsUpToDate () {
