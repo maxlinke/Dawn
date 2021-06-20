@@ -17,7 +17,6 @@ public class GameInitializer : MonoBehaviour {
         // TODO alternative that also works in builds:
         // move this prefab into resources
         // then both can load it
-        // also make sure 
 #if UNITY_EDITOR
         var path = UnityEditor.AssetDatabase.GUIDToAssetPath("56255569b7329e0468f9e49be4544043");
         var initializerPrefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameInitializer>(path);
@@ -34,10 +33,6 @@ public class GameInitializer : MonoBehaviour {
             Debug.LogWarning("Game is already initialized! Aborting call...");
             return;
         }
-        // TODO the other components, some of which need asset references
-        // first the debug log, so it can catch anything that comes after it
-        // and remember to do manual setvisible/whatev calls on the things that have canvases
-        // initialize should always just make sure the thing is set up and ready to do things
         m_debugLog.Initialize();
         m_debugLog.visible = false;
         m_fpsDisplay.Initialize();

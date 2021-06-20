@@ -2,8 +2,11 @@
 using System.Reflection;
 using UnityEngine;
 using UnityEditor;
+using Persistence;
 
 public static class EditorCommands {
+
+#region Commands
 
     [MenuItem("Commands/Clear Selection %#d")]
     static void ClearSelection() {
@@ -30,9 +33,25 @@ public static class EditorCommands {
         }
     }
 
-    [MenuItem("Commands/Start With Bootstrapper %&#p")]
-    static void PlayWithBootstrapper () {
-        BootstrapSceneLoader.StartPlayMode();
-    }
+#endregion
+
+#region Data
+
+    [MenuItem("Data/Open Config Directory", true)]
+    private static bool EditorOpenConfigDir_Validate () => FileHelper.ConfigDirectoryExists;
+
+    [MenuItem("Data/Open Config Directory")]
+    private static void EditorOpenConfigDir () => FileHelper.OpenConfigDirectory();
+
+    [MenuItem("Data/Open Save File Directory", true)]
+    private static bool EditorOpenSaveFileDir_Validate () => FileHelper.SaveFileDirectoryExists;
+
+    [MenuItem("Data/Open Save File Directory")]
+    private static void EditorOpenSaveFileDir () => FileHelper.OpenSaveFileDirectory();
+
+    [MenuItem("Data/Open Persistent Data Directory")]
+    public static void EditorOpenDataDir () => FileHelper.OpenDataDirectory();
+
+#endregion
 	
 }
