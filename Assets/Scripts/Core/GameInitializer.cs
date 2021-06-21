@@ -36,7 +36,7 @@ public class GameInitializer : MonoBehaviour {
         m_debugLog.Initialize();
         m_debugLog.visible = false;
         m_fpsDisplay.Initialize();
-        m_fpsDisplay.visible = false;
+        m_fpsDisplay.SetMode(DebugTools.FramerateDisplay.Mode.Hidden);
         m_playerDebugUI.Initialize();
         m_playerDebugUI.visible = false;
         m_eventSystem.transform.SetParent(null);

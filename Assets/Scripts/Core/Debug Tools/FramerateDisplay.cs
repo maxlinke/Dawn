@@ -7,10 +7,13 @@ namespace DebugTools {
 
     public class FramerateDisplay : MonoBehaviour {
 
-        // i have a feeling that this thing could be simpler, but it works. 
-        // i could make a tex2d line graph component to take that part out of here, but eh. for now i don't need that as a separate component...
-
-        const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
+        // if i feel like giving this a rework
+        // i could make the line graph constantly keep the most recent value to the right
+        // start drawing there and shift all the columns of pixels one over
+        // even works when initialized as clear, so that's nice
+        // and make it so that when the fps is <=59 the line is a bit reddish there
+        // i'll be updating the WHOLE texture every frame though, so that's ONE thing to keep in mind
+        // so definitely profile before and after and see how bad it is!
 
         public enum Mode {
             Hidden,
@@ -19,43 +22,31 @@ namespace DebugTools {
         }
 
         [Header("Settings")]
-        [SerializeField] DebugToolColorScheme colorScheme = default;
+        [SerializeField, RedIfEmpty] DebugToolColorScheme colorScheme = default;
 
         [Header("Components")]
-        [SerializeField] Canvas canvas = default;
+        [SerializeField, RedIfEmpty] Canvas canvas = default;
 
         [Header("Small Mode")]
-        [SerializeField] RectTransform smallParent = default;
-        [SerializeField] Image smallBackground = default;
-        [SerializeField] Text smallFPSText = default;
+        [SerializeField, RedIfEmpty] RectTransform smallParent = default;
+        [SerializeField, RedIfEmpty] Image smallBackground = default;
+        [SerializeField, RedIfEmpty] Text smallFPSText = default;
+        // [SerializeField] int m_rollingAverageLength = 30;
 
         [Header("Detailed Mode")]
-        [SerializeField] RectTransform detailedParent = default;
-        [SerializeField] RawImage graphImage = default;
-        [SerializeField] Image detailedBackground = default;
-        [SerializeField] Text rawFPSText = default;
-        [SerializeField] Text avgFPSText = default;
-        [SerializeField] Text minFPSText = default;
-        [SerializeField] Text maxFPSText = default;
-
-        public bool visible {
-            get {
-                return canvas.enabled;
-            } set {
-                if(canvas.enabled != value){
-                    canvas.enabled = value;
-                    if(value){
-                        OnShow();
-                    }else{
-                        OnHide();
-                    }
-                }
-            }
-        }
+        [SerializeField, RedIfEmpty] RectTransform detailedParent = default;
+        [SerializeField, RedIfEmpty] RawImage graphImage = default;
+        [SerializeField, RedIfEmpty] Image detailedBackground = default;
+        [SerializeField, RedIfEmpty] Text rawFPSText = default;
+        [SerializeField, RedIfEmpty] Text avgFPSText = default;
+        [SerializeField, RedIfEmpty] Text minFPSText = default;
+        [SerializeField, RedIfEmpty] Text maxFPSText = default;
 
         public Mode mode { get; private set; }
 
         private static FramerateDisplay instance;
+
+        private const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
 
         bool initialized = false;
 
@@ -67,6 +58,8 @@ namespace DebugTools {
         Color32 lineCol32;
         Color32 prevLineCol32;
         Color32 clearCol32;
+
+        Mode lastMode;
 
         Queue<float> smallModeDeltaTimes;
         float smallModeDeltaTimeSum;
@@ -87,10 +80,12 @@ namespace DebugTools {
                 return;
             }
             instance = this;
+            this.enabled = true;
             this.transform.SetParent(null);
             this.gameObject.SetActive(true);
             DontDestroyOnLoad(this.gameObject);
             canvas.sortingOrder = CanvasSortingOrder.FrameRateDisplay;
+            ApplyUIColors();
             lineCol32 = colorScheme.FramerateLineColor;
             prevLineCol32 = colorScheme.FramerateLinePrevCycleColor;
             clearCol32 = Color.clear;
@@ -101,18 +96,29 @@ namespace DebugTools {
                 mipChain: false,
                 linear: false
             );
+            tex.filterMode = FilterMode.Point;
+            graphImage.texture = tex;
             texWidth = tex.width;
             texHeight = tex.height;
             pixels = tex.GetPixels32();
             ClearImage();
             framerates = new float[texWidth];
             smallModeDeltaTimes = new Queue<float>();
-            InitUI();
-            ModeUpdated();
-            if(visible){
-                OnShow();
-            }
+            ResetAllValues();
+            lastMode = Mode.Hidden;
+            mode = Mode.Hidden;     // so that setmode doesn't quit because the set mode is the same as the current one
+            SetMode(Mode.Small);
             initialized = true;
+        }
+
+        void ApplyUIColors () {
+            smallBackground.color = colorScheme.BackgroundColor;
+            smallFPSText.color = colorScheme.TextColor;
+            detailedBackground.color = colorScheme.BackgroundColor;
+            rawFPSText.color = colorScheme.TextColor;
+            avgFPSText.color = colorScheme.TextColor;
+            minFPSText.color = colorScheme.TextColor;
+            maxFPSText.color = colorScheme.TextColor;
         }
 
         void OnDestroy () {
@@ -121,23 +127,18 @@ namespace DebugTools {
             }
         }
 
-        void OnShow () {
+        void ResetAllValues () {
             for(int i=0; i<framerates.Length; i++){
                 framerates[i] = 0f;
             }
-            currentFrameIndex = 0;
-            smallModeDeltaTimeSum = 0f;
+            currentFrameIndex = -1;
             var dt = Time.unscaledDeltaTime;
+            smallModeDeltaTimes.Clear();
+            smallModeDeltaTimeSum = 0f;
             for(int i=0; i<SMALL_MODE_FPS_AVERAGE_LENGTH; i++){
                 smallModeDeltaTimes.Enqueue(dt);
                 smallModeDeltaTimeSum += dt;
             }
-        }
-
-        void OnHide () {
-            ClearImage();
-            smallModeDeltaTimes.Clear();
-            mode = Mode.Hidden;
         }
 
         void ClearImage () {
@@ -146,99 +147,105 @@ namespace DebugTools {
             }
         }
 
-        Mode NextMode (Mode input) {
-            switch(input){
-                case Mode.Hidden:
-                    return Mode.Small;
-                case Mode.Small:
-                    return Mode.Detailed;
-                case Mode.Detailed:
-                    return Mode.Hidden;
-                default:
-                    Debug.LogError($"Unknown {nameof(Mode)} \"{input}\"!");
-                    return input;
-            }
-        }
-
         public void SetMode (Mode newMode) {
             if(newMode != this.mode){
                 this.mode = newMode;
-                ModeUpdated();
+                switch(mode){
+                    case Mode.Hidden:
+                        canvas.enabled = false;
+                        break;
+                    case Mode.Small:
+                        smallParent.gameObject.SetActive(true);
+                        detailedParent.gameObject.SetActive(false);
+                        canvas.enabled = true;
+                        break;
+                    case Mode.Detailed:
+                        smallParent.gameObject.SetActive(false);
+                        detailedParent.gameObject.SetActive(true);
+                        canvas.enabled = true;
+                        break;
+                    default:
+                        Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
+                        break;
+                }
             }
         }
 
-        void ModeUpdated () {
-            switch(mode){
-                case Mode.Hidden:
-                    visible = false;
-                    break;
-                case Mode.Small:
-                    smallParent.gameObject.SetActive(true);
-                    detailedParent.gameObject.SetActive(false);
-                    visible = true;
-                    break;
-                case Mode.Detailed:
-                    smallParent.gameObject.SetActive(false);
-                    detailedParent.gameObject.SetActive(true);
-                    visible = true;
-                    break;
-                default:
-                    Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
-                    break;
-            }
-        }
+        // TODO optional
+        // check right before draw small that number of values in queue is equal to rolling average length, if not reset that (i save the reset in the init)
+        // and before drawing detailed check that the text dimensions and the rect dimensions are equal, otherwise reset that (bit more work because of the arrays being in use before i guess)
 
-        void Update () {
+        void LateUpdate () {
             if(!initialized){
                 return;
             }
-            bool modeUpdated = false;
             if(Bind.TOGGLE_FRAMERATE_DISPLAY.GetKeyDown()){
-                mode = NextMode(mode);
-                ModeUpdated();
-                modeUpdated = true;
+                var currentModeIndex = (int)mode;
+                var modeCount = System.Enum.GetValues(typeof(Mode)).Length;
+                var nextMode = (Mode)((currentModeIndex + 1) % modeCount);
+                SetMode(nextMode);
             }
-            if(!visible){
-                return;
-            }
+            currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;    // works properly because default value is -1
             var currentDeltaTime = Time.unscaledDeltaTime;
-            UpdateSmallParts(currentDeltaTime);
-            UpdateDetailedParts(currentDeltaTime, modeUpdated);
+            var currentFPS = 1f / currentDeltaTime;
+            CollectCurrentDeltaTime(currentDeltaTime);
+            CollectCurrentFPS(currentFPS);
+            switch(mode){
+                case Mode.Hidden:
+                    break;
+                case Mode.Small:
+                    UpdateSmallTextField();
+                    break;
+                case Mode.Detailed:
+                    var nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
+                    var modeUpdated = (mode != lastMode);
+                    UpdateTexture(currentFPS, modeUpdated, nextFrameIndex);
+                    UpdateDetailedTextFields(currentFPS);
+                    break;
+                default:
+                    Debug.LogError($"Unknown mode \"{mode}\"!");
+                    break;
+            }
+            lastMode = mode;
         }
 
-        void UpdateSmallParts (float currentDeltaTime) {
+        void UpdateSmallTextField () {
+            var smallAvgDT = smallModeDeltaTimeSum / SMALL_MODE_FPS_AVERAGE_LENGTH;
+            var smallAvgFPS = Mathf.RoundToInt(1f / smallAvgDT);
+            smallFPSText.text = Mathf.Min(smallAvgFPS, 999).ToString();
+        }
+
+        void UpdateDetailedTextFields (float currentFPS) {
+            rawFPSText.text = $"Raw: {currentFPS:F1}";
+            avgFPSText.text = $"Avg: {avgFPS:F1}";
+            minFPSText.text = $"Min: {minFPS:F1}";
+            maxFPSText.text = $"Max: {maxFPS:F1}";
+        }
+
+        void CollectCurrentDeltaTime (float currentDeltaTime) {
             smallModeDeltaTimeSum -= smallModeDeltaTimes.Dequeue();
             smallModeDeltaTimeSum += currentDeltaTime;
-            smallModeDeltaTimes.Enqueue(currentDeltaTime);
-            if(mode == Mode.Small){
-                var smallAvgDT = smallModeDeltaTimeSum / SMALL_MODE_FPS_AVERAGE_LENGTH;
-                var smallAvgFPS = Mathf.RoundToInt(1f / smallAvgDT);
-                smallFPSText.text = Mathf.Min(smallAvgFPS, 999).ToString();
-            }
+            smallModeDeltaTimes.Enqueue(currentDeltaTime);            
         }
 
-        void UpdateDetailedParts (float currentDeltaTime, bool modeUpdated) {
-            var currentFPS = 1f / currentDeltaTime;
+        void CollectCurrentFPS (float currentFPS) {
             if(currentFrameIndex == 0){
                 var texDelta = texHeight / 2f;
-                texMin = avgFPS - texDelta;     // TODO roll over from last unless not
-                texMax = avgFPS + texDelta;     // use prev min and maxfps
+                texMin = avgFPS - texDelta;
+                texMax = avgFPS + texDelta;
                 avgFPS = currentFPS;
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
             }else{
-                var div = (float)(currentFrameIndex + 2);
-                avgFPS = ((div - 1f) / div) * avgFPS + (1f / div) * currentFPS;
+                var numPrev = currentFrameIndex;
+                var avgPrev = avgFPS;
+                var curr = currentFPS;
+                var numCurr = currentFrameIndex + 1;
+                avgFPS = ((avgPrev * numPrev) + curr) / numCurr;
                 minFPS = Mathf.Min(minFPS, currentFPS);
                 maxFPS = Mathf.Max(maxFPS, currentFPS);
             }
             framerates[currentFrameIndex] = currentFPS;
-            int nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
-            if(mode == Mode.Detailed){
-                UpdateTexture(currentFPS, modeUpdated, nextFrameIndex);
-                UpdateTextFields(currentFPS);
-            }
-            currentFrameIndex = nextFrameIndex;
         }
 
         void UpdateTexture (float currentFPS, bool startAtZero, int nextFrameIndex) {
@@ -287,24 +294,6 @@ namespace DebugTools {
                 var normed = (inputFramerate - texMin) / (texMax - texMin);
                 return (int)(Mathf.Clamp01(normed) * (texHeight - 1));
             }
-        }
-
-        void UpdateTextFields (float currentFPS) {
-            rawFPSText.text = $"Raw: {currentFPS:F1}";
-            avgFPSText.text = $"Avg: {avgFPS:F1}";
-            minFPSText.text = $"Min: {minFPS:F1}";
-            maxFPSText.text = $"Max: {maxFPS:F1}";
-        }
-
-        void InitUI () {
-            graphImage.texture = tex;
-            smallBackground.color = colorScheme.BackgroundColor;
-            smallFPSText.color = colorScheme.TextColor;
-            detailedBackground.color = colorScheme.BackgroundColor;
-            rawFPSText.color = colorScheme.TextColor;
-            avgFPSText.color = colorScheme.TextColor;
-            minFPSText.color = colorScheme.TextColor;
-            maxFPSText.color = colorScheme.TextColor;
         }
         
     }
