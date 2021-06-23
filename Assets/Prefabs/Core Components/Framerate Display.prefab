@@ -114,6 +114,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colorScheme: {fileID: 11400000, guid: dbc0a09fa5ed4b347940158c97b9aff2, type: 2}
+  textUpdateInterval: 0.08335
   canvas: {fileID: 2596352589241916807}
   smallParent: {fileID: 3472987666547828670}
   smallBackground: {fileID: 8262323051171412598}

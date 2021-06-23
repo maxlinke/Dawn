@@ -15,6 +15,10 @@ namespace DebugTools {
         // i'll be updating the WHOLE texture every frame though, so that's ONE thing to keep in mind
         // so definitely profile before and after and see how bad it is!
 
+        // still todo for the current graph: rollover last texmin/max (sort of)
+        // obviously don't use the max(max) and min(min) because then they'll never change
+        // rather use the recorded maxfps and minfps of the last cycle to get their max/min and use those
+
         public enum Mode {
             Hidden,
             Small,
@@ -23,6 +27,7 @@ namespace DebugTools {
 
         [Header("Settings")]
         [SerializeField, RedIfEmpty] DebugToolColorScheme colorScheme = default;
+        [SerializeField, RangedUnit("s", 0, 1)] float textUpdateInterval = 0.1f;
 
         [Header("Components")]
         [SerializeField, RedIfEmpty] Canvas canvas = default;
@@ -59,6 +64,7 @@ namespace DebugTools {
         Color32 clearCol32;
 
         Mode lastMode;
+        float nextTextUpdateTime;
 
         Queue<float> smallModeDeltaTimes;
         float smallModeDeltaTimeSum;
@@ -139,6 +145,7 @@ namespace DebugTools {
                 smallModeDeltaTimes.Enqueue(dt);
                 smallModeDeltaTimeSum += dt;
             }
+            nextTextUpdateTime = Time.unscaledTime;
         }
 
         void ClearImage () {
@@ -184,18 +191,24 @@ namespace DebugTools {
             currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;    // works properly because default value is -1
             var currentDeltaTime = Time.unscaledDeltaTime;
             var currentFPS = 1f / currentDeltaTime;
+            var modeUpdated = (mode != lastMode);
+            var updateText = modeUpdated || Time.unscaledTime > nextTextUpdateTime;
+            if(updateText){
+                nextTextUpdateTime = Time.unscaledTime + textUpdateInterval;
+            }
             CollectCurrentDeltaTime(currentDeltaTime);
             CollectCurrentFPS(currentFPS);
             switch(mode){
                 case Mode.Hidden:
                     break;
                 case Mode.Small:
-                    UpdateSmallTextField();
+                    if(updateText){
+                        UpdateSmallTextField();
+                    }
                     break;
                 case Mode.Detailed:
-                    var modeUpdated = (mode != lastMode);
                     UpdateTexture(modeUpdated);
-                    UpdateDetailedTextFields(currentFPS);
+                    UpdateDetailedTextFields(currentFPS, updateText);
                     break;
                 default:
                     Debug.LogError($"Unknown mode \"{mode}\"!");
@@ -210,11 +223,13 @@ namespace DebugTools {
             smallFPSText.text = Mathf.Min(smallAvgFPS, 999).ToString();
         }
 
-        void UpdateDetailedTextFields (float currentFPS) {
+        void UpdateDetailedTextFields (float currentFPS, bool updateText) {
             rawFPSText.text = $"Raw: {currentFPS:F1}";
-            avgFPSText.text = $"Avg: {avgFPS:F1}";
-            minFPSText.text = $"Min: {minFPS:F1}";
-            maxFPSText.text = $"Max: {maxFPS:F1}";
+            if(updateText){
+                avgFPSText.text = $"Avg: {avgFPS:F1}";
+                minFPSText.text = $"Min: {minFPS:F1}";
+                maxFPSText.text = $"Max: {maxFPS:F1}";
+            }
         }
 
         void CollectCurrentDeltaTime (float currentDeltaTime) {
