@@ -11,13 +11,11 @@ namespace DebugTools {
         // i could make the line graph constantly keep the most recent value to the right
         // start drawing there and shift all the columns of pixels one over
         // even works when initialized as clear, so that's nice
-        // and make it so that when the fps is <=59 the line is a bit reddish there
         // i'll be updating the WHOLE texture every frame though, so that's ONE thing to keep in mind
         // so definitely profile before and after and see how bad it is!
 
-        // still todo for the current graph: rollover last texmin/max (sort of)
-        // obviously don't use the max(max) and min(min) because then they'll never change
-        // rather use the recorded maxfps and minfps of the last cycle to get their max/min and use those
+        // one way to keep it efficient: check if the texture needs to be reDRAWN or ..
+        // .. if everything can just be moved left and only the rightmost column has to be drawn
 
         public enum Mode {
             Hidden,
@@ -51,6 +49,7 @@ namespace DebugTools {
         private static FramerateDisplay instance;
 
         private const int SMALL_MODE_FPS_AVERAGE_LENGTH = 30;
+        private const int TEX_MIN_MAX_UPDATE_OFFSET = 10;
 
         bool initialized = false;
 
@@ -69,7 +68,7 @@ namespace DebugTools {
         Queue<float> smallModeDeltaTimes;
         float smallModeDeltaTimeSum;
 
-        int[] framerates;
+        int[] graphFPS;
         float avgDeltaTime;
         float avgFPS => 1f / avgDeltaTime;
         float maxFPS;
@@ -95,26 +94,18 @@ namespace DebugTools {
             lineCol32 = colorScheme.FramerateLineColor;
             prevLineCol32 = colorScheme.FramerateLinePrevCycleColor;
             clearCol32 = Color.clear;
-            tex = new Texture2D(
-                width: (int)(imageRT.rect.width), 
-                height: (int)(imageRT.rect.height), 
-                textureFormat: TextureFormat.RGBA32,
-                mipChain: false,
-                linear: false
-            );
-            tex.filterMode = FilterMode.Point;
-            graphImage.texture = tex;
-            texWidth = tex.width;
-            texHeight = tex.height;
-            pixels = tex.GetPixels32();
-            ClearImage();
-            framerates = new int[texWidth];
-            smallModeDeltaTimes = new Queue<float>();
-            ResetAllValues();
-            lastMode = Mode.Hidden;
-            mode = Mode.Hidden;     // so that setmode doesn't quit because the set mode is the same as the current one
-            SetMode(Mode.Small);
+            InitGraph();
+            InitDeltaTimeQueue();
+            this.lastMode = Mode.Hidden;
+            this.mode = Mode.Hidden;     // so that setmode doesn't quit because the set mode is the same as the current one
+            SetMode(Mode.Small, false);
             initialized = true;
+        }
+
+        void OnDestroy () {
+            if(this == instance){
+                instance = null;
+            }
         }
 
         void ApplyUIColors () {
@@ -127,34 +118,40 @@ namespace DebugTools {
             maxFPSText.color = colorScheme.TextColor;
         }
 
-        void OnDestroy () {
-            if(this == instance){
-                instance = null;
-            }
-        }
-
-        void ResetAllValues () {
-            for(int i=0; i<framerates.Length; i++){
-                framerates[i] = 0;
-            }
-            currentFrameIndex = -1;
+        void InitDeltaTimeQueue () {
             var dt = Time.unscaledDeltaTime;
-            smallModeDeltaTimes.Clear();
+            smallModeDeltaTimes = new Queue<float>();
             smallModeDeltaTimeSum = 0f;
             for(int i=0; i<SMALL_MODE_FPS_AVERAGE_LENGTH; i++){
                 smallModeDeltaTimes.Enqueue(dt);
                 smallModeDeltaTimeSum += dt;
             }
-            nextTextUpdateTime = Time.unscaledTime;
         }
 
-        void ClearImage () {
+        void InitGraph () {
+            tex = new Texture2D(
+                width: (int)(imageRT.rect.width), 
+                height: (int)(imageRT.rect.height), 
+                textureFormat: TextureFormat.RGBA32,
+                mipChain: false,
+                linear: false
+            );
+            tex.filterMode = FilterMode.Point;
+            graphImage.texture = tex;
+            texWidth = tex.width;
+            texHeight = tex.height;
+            pixels = tex.GetPixels32();
             for(int i=0; i<pixels.Length; i++){
                 pixels[i] = clearCol32;
             }
+            graphFPS = new int[texWidth];
+            for(int i=0; i<graphFPS.Length; i++){
+                graphFPS[i] = 0;
+            }
+            currentFrameIndex = -1;
         }
 
-        public void SetMode (Mode newMode) {
+        public void SetMode (Mode newMode, bool updateVisuals = true) {
             if(newMode != this.mode){
                 this.mode = newMode;
                 switch(mode){
@@ -175,6 +172,9 @@ namespace DebugTools {
                         Debug.LogError($"Unknown {nameof(Mode)} \"{mode}\"!");
                         break;
                 }
+                if(updateVisuals){
+                    UpdateVisuals(currentFPS: 1f / Time.unscaledDeltaTime);
+                }
             }
         }
 
@@ -186,25 +186,28 @@ namespace DebugTools {
                 var currentModeIndex = (int)mode;
                 var modeCount = System.Enum.GetValues(typeof(Mode)).Length;
                 var nextMode = (Mode)((currentModeIndex + 1) % modeCount);
-                SetMode(nextMode);
+                SetMode(nextMode, false);
             }
-            currentFrameIndex = (currentFrameIndex + 1) % framerates.Length;    // works properly because default value is -1
+            currentFrameIndex = (currentFrameIndex + 1) % graphFPS.Length;
             var currentDeltaTime = Time.unscaledDeltaTime;
             var currentFPS = 1f / currentDeltaTime;
+            CollectCurrentDeltaTimeForSmallMode(currentDeltaTime);
+            CollectCurrentFPSForDetailedMode(currentFPS);
+            UpdateVisuals(currentFPS);
+            lastMode = mode;
+        }
+        
+        void UpdateVisuals (float currentFPS) {
             var modeUpdated = (mode != lastMode);
             var updateText = modeUpdated || Time.unscaledTime > nextTextUpdateTime;
             if(updateText){
                 nextTextUpdateTime = Time.unscaledTime + textUpdateInterval;
             }
-            CollectCurrentDeltaTime(currentDeltaTime);
-            CollectCurrentFPS(currentFPS);
             switch(mode){
                 case Mode.Hidden:
                     break;
                 case Mode.Small:
-                    if(updateText){
-                        UpdateSmallTextField();
-                    }
+                    if(updateText) UpdateSmallTextField();
                     break;
                 case Mode.Detailed:
                     UpdateTexture(modeUpdated);
@@ -214,7 +217,6 @@ namespace DebugTools {
                     Debug.LogError($"Unknown mode \"{mode}\"!");
                     break;
             }
-            lastMode = mode;
         }
 
         void UpdateSmallTextField () {
@@ -232,17 +234,19 @@ namespace DebugTools {
             }
         }
 
-        void CollectCurrentDeltaTime (float currentDeltaTime) {
+        void CollectCurrentDeltaTimeForSmallMode (float currentDeltaTime) {
             smallModeDeltaTimeSum -= smallModeDeltaTimes.Dequeue();
             smallModeDeltaTimeSum += currentDeltaTime;
             smallModeDeltaTimes.Enqueue(currentDeltaTime);            
         }
 
-        void CollectCurrentFPS (float currentFPS) {
+        void CollectCurrentFPSForDetailedMode (float currentFPS) {
             if(currentFrameIndex == 0){
                 avgDeltaTime = 1f / currentFPS;
-                texMinFPS = (int)(avgFPS - (texHeight / 2f));
+                texMinFPS = Mathf.RoundToInt(avgFPS - (texHeight / 2f));
                 texMaxFPS = texMinFPS + texHeight;
+                texMinFPS = Mathf.Min(texMinFPS, Mathf.RoundToInt(minFPS - TEX_MIN_MAX_UPDATE_OFFSET));
+                texMaxFPS = Mathf.Max(texMaxFPS, Mathf.RoundToInt(maxFPS + TEX_MIN_MAX_UPDATE_OFFSET));
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
             }else{
@@ -254,25 +258,25 @@ namespace DebugTools {
                 minFPS = Mathf.Min(minFPS, currentFPS);
                 maxFPS = Mathf.Max(maxFPS, currentFPS);
             }
-            framerates[currentFrameIndex] = Mathf.RoundToInt(currentFPS);
+            graphFPS[currentFrameIndex] = Mathf.RoundToInt(currentFPS);
         }
 
         void UpdateTexture (bool startAtZero) {
-            int currentFPS = framerates[currentFrameIndex];
+            int currentFPS = graphFPS[currentFrameIndex];
             int startIndex = startAtZero ? 0 : currentFrameIndex;
-            int nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
-            bool gotPrev = framerates[nextFrameIndex] > 0f;
+            int nextFrameIndex = (currentFrameIndex + 1) % graphFPS.Length;
+            bool gotPrev = graphFPS[nextFrameIndex] > 0f;
             bool redrawPrevious = ((startIndex == 0) && gotPrev);
             if(currentFPS < texMinFPS || currentFPS > texMaxFPS){
-                texMinFPS = Mathf.Min(texMinFPS, currentFPS - 10);
-                texMaxFPS = Mathf.Max(texMaxFPS, currentFPS + 10);
+                texMinFPS = Mathf.Min(texMinFPS, currentFPS - TEX_MIN_MAX_UPDATE_OFFSET);
+                texMaxFPS = Mathf.Max(texMaxFPS, currentFPS + TEX_MIN_MAX_UPDATE_OFFSET);
                 startIndex = 0;
                 redrawPrevious |= gotPrev;
             }
             int toPixelYDivider = texMaxFPS - texMinFPS;
-            DrawValues(framerates, startIndex, currentFrameIndex+1, lineCol32);
+            DrawValues(graphFPS, startIndex, currentFrameIndex+1, lineCol32);
             if(redrawPrevious){
-                DrawValues(framerates, currentFrameIndex+1, framerates.Length, prevLineCol32);
+                DrawValues(graphFPS, currentFrameIndex+1, graphFPS.Length, prevLineCol32);
             }
             tex.SetPixels32(pixels);
             tex.Apply(false, false);

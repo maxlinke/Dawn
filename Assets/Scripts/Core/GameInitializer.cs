@@ -25,7 +25,7 @@ public class GameInitializer : MonoBehaviour {
 #else
         // for builds, they should be getting initialized in the boot scene via an explicit call to the object...
         Debug.LogError("The game should already be initialized, something must have gone VERY wrong here!");
-#endif        
+#endif
     }
 
     public void InitializeGame () {
@@ -36,7 +36,7 @@ public class GameInitializer : MonoBehaviour {
         m_debugLog.Initialize();
         m_debugLog.visible = false;
         m_fpsDisplay.Initialize();
-        m_fpsDisplay.SetMode(DebugTools.FramerateDisplay.Mode.Hidden);
+        m_fpsDisplay.SetMode(DebugTools.FramerateDisplay.Mode.Small, updateVisuals: false);
         m_playerDebugUI.Initialize();
         m_playerDebugUI.visible = false;
         m_eventSystem.transform.SetParent(null);
