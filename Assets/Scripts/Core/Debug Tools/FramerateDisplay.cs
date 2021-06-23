@@ -31,7 +31,6 @@ namespace DebugTools {
         [SerializeField, RedIfEmpty] RectTransform smallParent = default;
         [SerializeField, RedIfEmpty] Image smallBackground = default;
         [SerializeField, RedIfEmpty] Text smallFPSText = default;
-        // [SerializeField] int m_rollingAverageLength = 30;
 
         [Header("Detailed Mode")]
         [SerializeField, RedIfEmpty] RectTransform detailedParent = default;
@@ -64,14 +63,15 @@ namespace DebugTools {
         Queue<float> smallModeDeltaTimes;
         float smallModeDeltaTimeSum;
 
-        float[] framerates;
-        float avgFPS;
+        int[] framerates;
+        float avgDeltaTime;
+        float avgFPS => 1f / avgDeltaTime;
         float maxFPS;
         float minFPS;
         int currentFrameIndex;
 
-        float texMin;
-        float texMax;
+        int texMinFPS;
+        int texMaxFPS;
 
         public void Initialize () {
             if(instance != null){
@@ -102,7 +102,7 @@ namespace DebugTools {
             texHeight = tex.height;
             pixels = tex.GetPixels32();
             ClearImage();
-            framerates = new float[texWidth];
+            framerates = new int[texWidth];
             smallModeDeltaTimes = new Queue<float>();
             ResetAllValues();
             lastMode = Mode.Hidden;
@@ -129,7 +129,7 @@ namespace DebugTools {
 
         void ResetAllValues () {
             for(int i=0; i<framerates.Length; i++){
-                framerates[i] = 0f;
+                framerates[i] = 0;
             }
             currentFrameIndex = -1;
             var dt = Time.unscaledDeltaTime;
@@ -171,10 +171,6 @@ namespace DebugTools {
             }
         }
 
-        // TODO optional
-        // check right before draw small that number of values in queue is equal to rolling average length, if not reset that (i save the reset in the init)
-        // and before drawing detailed check that the text dimensions and the rect dimensions are equal, otherwise reset that (bit more work because of the arrays being in use before i guess)
-
         void LateUpdate () {
             if(!initialized){
                 return;
@@ -197,9 +193,8 @@ namespace DebugTools {
                     UpdateSmallTextField();
                     break;
                 case Mode.Detailed:
-                    var nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
                     var modeUpdated = (mode != lastMode);
-                    UpdateTexture(currentFPS, modeUpdated, nextFrameIndex);
+                    UpdateTexture(modeUpdated);
                     UpdateDetailedTextFields(currentFPS);
                     break;
                 default:
@@ -230,34 +225,36 @@ namespace DebugTools {
 
         void CollectCurrentFPS (float currentFPS) {
             if(currentFrameIndex == 0){
-                var texDelta = texHeight / 2f;
-                texMin = avgFPS - texDelta;
-                texMax = avgFPS + texDelta;
-                avgFPS = currentFPS;
+                avgDeltaTime = 1f / currentFPS;
+                texMinFPS = (int)(avgFPS - (texHeight / 2f));
+                texMaxFPS = texMinFPS + texHeight;
                 minFPS = currentFPS;
                 maxFPS = currentFPS;
             }else{
                 var numPrev = currentFrameIndex;
-                var avgPrev = avgFPS;
-                var curr = currentFPS;
+                var avgPrev = avgDeltaTime;
+                var curr = 1f / currentFPS;
                 var numCurr = currentFrameIndex + 1;
-                avgFPS = ((avgPrev * numPrev) + curr) / numCurr;
+                avgDeltaTime = ((avgPrev * numPrev) + curr) / numCurr;
                 minFPS = Mathf.Min(minFPS, currentFPS);
                 maxFPS = Mathf.Max(maxFPS, currentFPS);
             }
-            framerates[currentFrameIndex] = currentFPS;
+            framerates[currentFrameIndex] = Mathf.RoundToInt(currentFPS);
         }
 
-        void UpdateTexture (float currentFPS, bool startAtZero, int nextFrameIndex) {
+        void UpdateTexture (bool startAtZero) {
+            int currentFPS = framerates[currentFrameIndex];
             int startIndex = startAtZero ? 0 : currentFrameIndex;
+            int nextFrameIndex = (currentFrameIndex + 1) % framerates.Length;
             bool gotPrev = framerates[nextFrameIndex] > 0f;
             bool redrawPrevious = ((startIndex == 0) && gotPrev);
-            if(currentFPS < texMin || currentFPS > texMax){
-                texMin = Mathf.Min(texMin, currentFPS - 10);
-                texMax = Mathf.Max(texMax, currentFPS + 10);
+            if(currentFPS < texMinFPS || currentFPS > texMaxFPS){
+                texMinFPS = Mathf.Min(texMinFPS, currentFPS - 10);
+                texMaxFPS = Mathf.Max(texMaxFPS, currentFPS + 10);
                 startIndex = 0;
                 redrawPrevious |= gotPrev;
             }
+            int toPixelYDivider = texMaxFPS - texMinFPS;
             DrawValues(framerates, startIndex, currentFrameIndex+1, lineCol32);
             if(redrawPrevious){
                 DrawValues(framerates, currentFrameIndex+1, framerates.Length, prevLineCol32);
@@ -265,11 +262,11 @@ namespace DebugTools {
             tex.SetPixels32(pixels);
             tex.Apply(false, false);
 
-            void DrawValues (float[] values, int start, int end, Color32 drawCol32) {
-                float lastValue = (start == 0) ? values[0] : values[start-1];
+            void DrawValues (int[] values, int start, int end, Color32 drawCol32) {
+                int lastValue = (start == 0) ? values[0] : values[start-1];
+                int lastY = ToPixelY(lastValue);
                 for(int i=start; i<end; i++){
-                    var currentValue = values[i];
-                    int lastY = ToPixelY(lastValue);
+                    int currentValue = values[i];
                     int currentY = ToPixelY(currentValue);
                     int minY = Mathf.Min(currentY, lastY);
                     int maxY = Mathf.Max(currentY, lastY);
@@ -287,12 +284,13 @@ namespace DebugTools {
                         index += texWidth;
                     }
                     lastValue = currentValue;
+                    lastY = currentY;
                 }
             }
 
-            int ToPixelY (float inputFramerate) {
-                var normed = (inputFramerate - texMin) / (texMax - texMin);
-                return (int)(Mathf.Clamp01(normed) * (texHeight - 1));
+            int ToPixelY (int inputFramerate) {
+                int rawY = ((inputFramerate - texMinFPS) * texHeight) / toPixelYDivider;
+                return Mathf.Max(0, Mathf.Min(rawY, texHeight - 1));
             }
         }
         
